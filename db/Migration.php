@@ -122,12 +122,24 @@ class Migration extends BaseObject// TODO abstract
         $this->_migrationBuilder->dropForeignKey($name, $table);
     }
 
+    /**
+     * @param int $length
+     * @return \core\db\MigrationColumnBuilder
+     */
     protected function string($length = 255){
         return $this->createMigrationColumnBuilder()->string($length);
     }
+    /**
+     * @param int $length
+     * @return \core\db\MigrationColumnBuilder
+     */
     protected function integer($length = 6){
         return $this->createMigrationColumnBuilder()->integer($length);
     }
+    /**
+     * @param int $length
+     * @return \core\db\MigrationColumnBuilder
+     */
     protected function timestamp(){
         return $this->createMigrationColumnBuilder()->timestamp();
     }

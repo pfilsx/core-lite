@@ -29,6 +29,7 @@ return [
     'core\components\Model' => CRL_PATH.'/components/Model.php',
     'core\components\ActiveModel' => CRL_PATH.'/components/ActiveModel.php',
     'core\components\Controller' => CRL_PATH.'/components/Controller.php',
+    'core\components\View' => CRL_PATH.'/components/View.php',
     'core\formatters\ResponseFormatterInterface' => CRL_PATH.'/formatters/ResponseFormatterInterface.php',
     'core\formatters\HtmlResponseFormatter' => CRL_PATH.'/formatters/HtmlResponseFormatter.php',
     'core\formatters\JsonResponseFormatter' => CRL_PATH.'/formatters/JsonResponseFormatter.php',

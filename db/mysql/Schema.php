@@ -52,6 +52,11 @@ class Schema extends \core\db\Schema
         $this->tableNames = $this->findTableNames();
     }
 
+    public function refresh(){
+        parent::refresh();
+        $this->tableNames = $this->findTableNames();
+    }
+
     /**
      * @inheritDoc
      */
@@ -75,6 +80,9 @@ class Schema extends \core\db\Schema
 
     public function getTableSchema($name, $refresh = false)
     {
+        if ($refresh){
+            $this->tableNames = $this->findTableNames();
+        }
         if (array_key_exists($name, $this->tableMetadata)){
             return $this->tableMetadata[$name];
         }
