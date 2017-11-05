@@ -13,11 +13,12 @@ use core\components\ActiveModel;
  *
  * @property string sql
  * @property array params
+ * @property string model
  * @package core\db
  */
 abstract class QueryBuilder extends BaseObject
 {
-    protected $_model;
+    protected $_model = null;
 
     protected $_sql;
 
@@ -186,6 +187,12 @@ abstract class QueryBuilder extends BaseObject
     /**
      * @return array
      */
+    public function all(){
+        return $this->queryAll();
+    }
+    /**
+     * @return array
+     */
     public function queryAll(){
         $command = new Command($this->_db, $this->sql, $this->params);
         $result = $command->queryAssoc();
@@ -207,7 +214,14 @@ abstract class QueryBuilder extends BaseObject
         return $returnData;
     }
     /**
-     * @return array|ActiveModel
+     * @return null|ActiveModel
+     * @throws \Exception
+     */
+    public function one(){
+        return $this->queryOne();
+    }
+    /**
+     * @return null|ActiveModel
      * @throws \Exception
      */
     public function queryOne(){
@@ -292,5 +306,9 @@ abstract class QueryBuilder extends BaseObject
 
     protected function mapPreparedFields($key){
         return ':'.$key;
+    }
+
+    public function getModel(){
+        return $this->_model;
     }
 }

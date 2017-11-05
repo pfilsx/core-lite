@@ -31,8 +31,8 @@ abstract class Controller extends BaseObject
 
     public final function render($viewName, $_params_ = [])
     {
-        $view = new View($this, $viewName);
-        return $view->getContent($_params_);
+        App::$instance->view = new View($this, $viewName);
+        return App::$instance->view->getContent($_params_);
     }
 
     public final function redirect($url)

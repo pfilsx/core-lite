@@ -84,9 +84,16 @@ class Html
         if (!is_array($items)){
             throw new \Exception('Parameter $items must be array');
         }
+        if (isset($options['empty'])){
+            $empty = $options['empty'];
+            unset($options['empty']);
+        }
         $html = static::startTag('select', array_merge($options, [
             'name' => $name
         ]));
+        if (isset($empty)){
+            $html .= static::startTag('option', ['value' => null]).$empty.static::endTag('option');
+        }
         foreach ($items as $key => $text){
             $html .= static::startTag('option', [
                 'value' => $key,

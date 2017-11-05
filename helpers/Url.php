@@ -8,7 +8,7 @@ use core\base\App;
 
 class Url
 {
-    static function toRoute($url)
+    static function toRoute($url, array $params = [])
     {
         if (is_array($url)) {
             $url = '/' . str_replace('/', '', $url[0])
@@ -17,6 +17,16 @@ class Url
         } else if (is_string($url)) {
             $url = (substr($url,0,1) == '/' ? '' : '/').$url;
         }
-        return App::$instance->request->getBaseUrl().$url;
+
+        return App::$instance->request->getBaseUrl().$url
+            .(!empty($params) ? '?'.implode('&', static::prepareParams($params)) : '');
+    }
+
+    static function prepareParams(array $params){
+        $prepareParams = [];
+        foreach ($params as $key => $value){
+            $prepareParams[] = $key.'='.$value;
+        }
+        return $prepareParams;
     }
 }

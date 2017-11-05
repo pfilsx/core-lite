@@ -176,7 +176,7 @@ class MigrateController
         Console::output('Not found `migrations` table. Creating it...');
         if ($this->createMigrationsTable('migrations', [
             'migration_name' => 'VARCHAR(255) NOT NULL COMMENT \'name of applied migration\'',
-            'applied_time' => 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'time of applied migration\''
+            'applied_time' => 'TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'time of applied migration\''
         ])){
             Console::output('`migrations` table successfully created.');
             return true;

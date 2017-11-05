@@ -8,13 +8,22 @@ abstract class Widget extends BaseObject
 {
     protected static $stack = [];
 
-    public static function begin($config = []){
+    public static function begin(array $config = []){
         $widgetClass = get_called_class();
         $widget = new $widgetClass($config);
         static::$stack[] = $widget;
         return $widget;
     }
     public abstract function run();
+
+    public static function widget(array $config = []){
+        $widgetClass = get_called_class();
+        /**
+         * @var Widget $widget
+         */
+        $widget = new $widgetClass($config);
+        echo $widget->run();
+    }
 
     public static function end(){
         if (!empty(static::$stack)){

@@ -16,6 +16,9 @@ use core\web\HeaderCollection;
  * @property bool isGet
  * @property array post
  * @property array get
+ * @property array files
+ * @property bool enableCookieValidation
+ * @property string cookieValidationKey
  */
 class Request extends BaseObject
 {

@@ -12,6 +12,11 @@ abstract class Model extends BaseObject
 
     protected $rules = [];
 
+    public static function instance(){
+        $className = get_called_class();
+        return new $className();
+    }
+
     public function init(){
         foreach ($this->rules as $key => $value){
             $this->createProperty($key);

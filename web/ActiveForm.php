@@ -4,6 +4,7 @@
 namespace core\web;
 
 
+use core\base\App;
 use core\base\Widget;
 
 class ActiveForm extends Widget
@@ -25,6 +26,7 @@ class ActiveForm extends Widget
     }
 
     public function init(){
+        App::$instance->assetManager->addDepend('@crl/assets/crl.activeForm.js');
         foreach ($this->_config as $key => $value){
             if (property_exists($this, $key)){
                 $this->$key = $value;

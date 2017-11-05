@@ -17,6 +17,8 @@ final class Router extends BaseObject
 
     private $_action;
 
+    private $_rules = [];
+
     private $_controllersPath;
     private $_controllersNamespace;
 
@@ -32,6 +34,9 @@ final class Router extends BaseObject
         } else {
             $this->_controllersPath = '@app'.DIRECTORY_SEPARATOR.'controllers';
             $this->_controllersNamespace = '\\app\\controllers';
+        }
+        if (isset($this->_config['rules'])){
+            $this->_rules = $this->_config['rules'];
         }
     }
 
@@ -101,17 +106,20 @@ final class Router extends BaseObject
     {
         $request = $_SERVER['REQUEST_URI'];
         $requestParts = explode('?', $request);
-        $this->getControllerAndAction($requestParts[0]);
+        $route = str_replace(App::$instance->request->getBaseUrl().'/', '',$requestParts[0]);
+        if (array_key_exists($route, $this->_rules)){
+            $route = $this->_rules[$route];
+        }
+        $this->getControllerAndAction($route);
     }
 
 
     private function getControllerAndAction($request)
     {
-        $request = str_replace(App::$instance->request->getBaseUrl(), '', $request);
         $pathParts = explode('/', $request);
 
-        $this->_controller = Inflector::id2camel(ucfirst(!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultController)) . 'Controller';
-        $this->_action = 'action' . Inflector::id2camel(ucfirst(!empty($pathParts[2]) ? $pathParts[2] : $this->_defaultAction));
+        $this->_controller = Inflector::id2camel(ucfirst(!empty($pathParts[0]) ? $pathParts[0] : $this->_defaultController)) . 'Controller';
+        $this->_action = 'action' . Inflector::id2camel(ucfirst(!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultAction));
     }
 
     public function getAction(){

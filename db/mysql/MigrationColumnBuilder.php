@@ -8,7 +8,11 @@ class MigrationColumnBuilder extends \core\db\MigrationColumnBuilder
 
     public function string($length = 255)
     {
-        $this->_query = 'VARCHAR('.intval($length).')';
+        if ($length > 255){
+            $this->_query = 'TEXT';
+        } else {
+            $this->_query = 'VARCHAR('.intval($length).')';
+        }
         return $this;
     }
 

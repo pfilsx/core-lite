@@ -9,6 +9,7 @@ use core\db\QueryBuilder;
 
 /**
  * @property bool isNewRecord
+ * @property string primaryKey
  */
 abstract class ActiveModel extends Model
 {
@@ -38,14 +39,26 @@ abstract class ActiveModel extends Model
     public function beforeSave(){
 
     }
+    public function afterSave(){
+
+    }
 
     public function save()
     {
         $this->beforeSave();
         if ($this->isNewRecord) {
-            return $this->insert();
+            $result = $this->insert();
         } else {
-            return $this->update();
+            $result = $this->update();
+        }
+        $this->afterSave();
+        return $result;
+    }
+    public function delete(){
+        if (!$this->isNewRecord){
+            $builder = App::$instance->db->createQueryBuilder();
+            $builder->delete()->from(static::schemaTableName())->where([$this->primaryKey => $this->user_properties[$this->primaryKey]]);
+            $builder->execute();
         }
     }
 
@@ -79,6 +92,10 @@ abstract class ActiveModel extends Model
             $builder->where($criteria);
         }
         return $builder;
+    }
+
+    public function getPrimaryKey(){
+        return $this->primaryKey;
     }
 
     private function update()

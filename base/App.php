@@ -5,6 +5,7 @@ namespace core\base;
 use Core;
 
 use core\components\Model;
+use core\components\View;
 use core\db\Connection;
 use core\db\Db;
 use core\translate\TranslateManager;
@@ -69,6 +70,11 @@ final class App extends BaseObject
     private $_translateManager;
 
     private $_user;
+
+    /**
+     * @var null|View
+     */
+    public $view = null;
 
 
     /**
