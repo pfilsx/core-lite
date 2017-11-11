@@ -60,25 +60,7 @@ class QueryBuilder extends \core\db\QueryBuilder
         return false;
     }
 
-    public function from($table)
-    {
-        $this->_from = $this->_db->quoteTableName($table);
-        return $this;
-    }
 
-    public function where($where, $params = [], $delimiter = 'AND'){
-        $this->_where = $this->generateWhereQuery($where, $params, $delimiter);
-        return $this;
-    }
-    public function andWhere($where, $params = [], $delimiter = 'AND'){
-        $this->_andWhere[] = '('.$this->generateWhereQuery($where, $params, $delimiter).')';
-        return $this;
-    }
-
-    public function orWhere($where, $params = [], $delimiter = 'AND'){
-        $this->_orWhere[] = '('.$this->generateWhereQuery($where, $params, $delimiter).')';
-        return $this;
-    }
     public function limit($limit)
     {
         $this->_limit = ' LIMIT '.intval($limit);
@@ -92,49 +74,13 @@ class QueryBuilder extends \core\db\QueryBuilder
         }
         return $this;
     }
+
     public function join($type, $table, $on)
     {
         $query = $type.' '.$this->_db->quoteTableName($table).' ON '.$this->parseJoinOn($table, $on);
         $this->_joins[] = $query;
         return $this;
     }
-
-    public function leftJoin($table, $on)
-    {
-        return $this->join(QueryBuilder::LEFT_JOIN, $table, $on);
-    }
-    public function rightJoin($table, $on)
-    {
-        return $this->join(QueryBuilder::RIGHT_JOIN, $table, $on);
-    }
-    public function innerJoin($table, $on)
-    {
-        return $this->join(QueryBuilder::INNER_JOIN, $table, $on);
-    }
-
-    public function groupBy($fields){
-        if (is_array($fields)){
-            foreach ($fields as $field){
-                $this->_groupBy[] = $this->_db->quoteColumnName($field);
-            }
-        } else if (is_string($fields)){
-            $this->_groupBy[] = $fields;
-        }
-        return $this;
-    }
-
-    public function orderBy(array $fields)
-    {
-        foreach ($fields as $key => $method){
-            $this->_orderBy[] = $this->_db->quoteColumnName($key).' '.$method;
-        }
-        return $this;
-    }
-
-    public function addOrderBy(array $fields){
-        return $this->orderBy($fields);
-    }
-
 
     public function getSql(){
         $query = $this->_query;
@@ -166,34 +112,6 @@ class QueryBuilder extends \core\db\QueryBuilder
             $query .= $this->_offset;
         }
         return $this->_sql = $query;
-    }
-
-    /**
-     * @param string|array $where
-     * @param array $params
-     * @param string $delimiter
-     * @return string
-     * @throws \Exception
-     */
-    private function generateWhereQuery($where, $params = [], $delimiter = 'and'){
-        if (empty($where)){
-            throw new \Exception('Empty where condition');
-        }
-        if (is_array($where)){
-            $preparedWhere = [];
-            foreach ($where as $key => $value){
-                $preparedWhere[] = $this->_db->quoteColumnName($key).' = :'.$key;
-            }
-            $query = implode(" $delimiter ",$preparedWhere);
-            $this->_params = array_merge($this->_params, $where);
-
-        } else if (is_string($where)) {
-            $query = $where;
-            $this->_params = array_merge($this->_params, $params);
-        } else {
-            $query = '';
-        }
-        return $query;
     }
 
     /**
