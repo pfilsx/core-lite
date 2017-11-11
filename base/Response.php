@@ -155,7 +155,6 @@ class Response extends BaseObject
         $this->formatters = array_merge($this->defaultFormatters(), $this->formatters);
     }
 
-    //TODO json and xml
     protected function defaultFormatters()
     {
         return [

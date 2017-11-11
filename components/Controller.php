@@ -6,7 +6,6 @@ namespace core\components;
 use \core\base\App;
 use Core;
 use core\base\BaseObject;
-use core\helpers\FileHelper;
 
 abstract class Controller extends BaseObject
 {
@@ -32,6 +31,7 @@ abstract class Controller extends BaseObject
     public final function render($viewName, $_params_ = [])
     {
         App::$instance->view = new View($this, $viewName);
+        App::$instance->assetManager->registerBundles();
         return App::$instance->view->getContent($_params_);
     }
 

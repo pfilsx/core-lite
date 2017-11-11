@@ -37,9 +37,9 @@ class View extends BaseObject
     const BODY_END = '<![CDATA[CRL-BLOCK-BODY-END]]>';
     const BODY_BEGIN = '<![CDATA[CRL-BLOCK-BODY-BEGIN]]>';
 
-    const POS_HEAD = 'POS_HEAD';
-    const POS_BODY_BEGIN = 'POS_BODY_BEGIN';
-    const POS_BODY_END = 'POS_BODY_END';
+    const POS_HEAD = 0;
+    const POS_BODY_BEGIN = 1;
+    const POS_BODY_END = 2;
 
     /**
      * View constructor.
@@ -64,13 +64,24 @@ class View extends BaseObject
     public function getContent(array $_params_ = []){
         if (file_exists($this->_layout)){
             $this->_params = $_params_;
+            $_obInitialLevel_ = ob_get_level();
             ob_start();
             ob_implicit_flush(false);
             extract($_params_, EXTR_OVERWRITE);
-            require($this->_layout);
-            $this->_content = ob_get_clean();
-            $this->prepareContent();
-            return $this->_content;
+            try {
+                require $this->_layout;
+                $this->_content = ob_get_clean();
+                $this->prepareContent();
+                return $this->_content;
+            }
+            catch (\Exception $ex){
+                while (ob_get_level() > $_obInitialLevel_) {
+                    if (!@ob_end_clean()) {
+                        ob_clean();
+                    }
+                }
+                throw $ex;
+            }
         }
         return null;
     }
@@ -102,49 +113,47 @@ class View extends BaseObject
     }
 
     public function registerJs($js, $position = View::POS_BODY_END){
+        $content = "<script>$js</script>";
         if ($position == View::POS_HEAD){
-            $this->_jsHead[] = "<script>$js</script>";
+            $this->_jsHead[] = $content;
         } else if ($position == View::POS_BODY_BEGIN) {
-            $this->_jsBodyBegin[] = "<script>$js</script>";
+            $this->_jsBodyBegin[] = $content;
         } else {
-            $this->_jsBodyEnd[] = "<script>$js</script>";
+            $this->_jsBodyEnd[] = $content;
         }
     }
     public function registerJsFile($file, $position = View::POS_BODY_END){
         $path = App::$instance->request->getBaseUrl().'/'.$file;
+        $content = "<script src='$path'></script>";
         if ($position == View::POS_HEAD){
-            $this->_jsHead[] = "<script src='$path'></script>";
+            $this->_jsHead[] = $content;
         } else if ($position == View::POS_BODY_BEGIN) {
-            $this->_jsBodyBegin[] = "<script src='$path'></script>";
+            $this->_jsBodyBegin[] = $content;
         } else {
-            $this->_jsBodyEnd[] = "<script src='$path'></script>";
+            $this->_jsBodyEnd[] = $content;
         }
-    }
-    public function registerJsAssets(){
-        return App::$instance->assetManager->registerJsAssets();
     }
 
     public function registerCss($css, $position = View::POS_HEAD){
+        $content = "<style>$css</style>";
         if ($position == View::POS_BODY_BEGIN){
-            $this->_cssBodyBegin[] = "<style>$css</style>";
+            $this->_cssBodyBegin[] = $content;
         } else if ($position == View::POS_BODY_END){
-            $this->_cssBodyEnd[] = "<style>$css</style>";
+            $this->_cssBodyEnd[] = $content;
         } else {
-            $this->_cssHead[] = "<style>$css</style>";
+            $this->_cssHead[] = $content;
         }
     }
     public function registerCssFile($file, $position = View::POS_HEAD){
         $path = App::$instance->request->getBaseUrl().'/'.$file;
+        $content = "<link rel='stylesheet' href='$path'/>";
         if ($position == View::POS_BODY_BEGIN){
-            $this->_cssBodyBegin[] = "<link rel='stylesheet' href='$path'/>";
+            $this->_cssBodyBegin[] = $content;
         } else if ($position == View::POS_BODY_END){
-            $this->_cssBodyEnd[] = "<link rel='stylesheet' href='$path'/>";
+            $this->_cssBodyEnd[] = $content;
         } else {
-            $this->_cssHead[] = "<link rel='stylesheet' href='$path'/>";
+            $this->_cssHead[] = $content;
         }
-    }
-    public function registerCssAssets(){
-        return App::$instance->assetManager->registerCssAssets();
     }
 
     public function head(){

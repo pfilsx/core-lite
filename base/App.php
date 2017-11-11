@@ -20,6 +20,7 @@ use core\translate\TranslateManager;
  * @property array config
  * @property AssetManager assetManager
  * @property Model user
+ * @property string charset
  * @package core\base
  */
 final class App extends BaseObject
@@ -95,19 +96,21 @@ final class App extends BaseObject
     public function run()
     {
         try {
-            static::$instance = $this;
             $this->_response = new Response();
             $response = $this->_router->route();
             $response->send();
             return $response->exitStatus;
         } catch (\Exception $ex) {
-            echo (new ExceptionManager())->renderException($ex);
+            $response = new Response();
+            $response->content = (new ExceptionManager())->renderException($ex);
+            $response->send();
             return $ex->getCode();
         }
     }
 
     private function preInit($config)
     {
+        static::$instance = $this;
         if (isset($config['basePath'])) {
             $this->setBasePath($config['basePath']);
         } else {
@@ -130,7 +133,11 @@ final class App extends BaseObject
         Core::setAlias('@webroot', dirname($this->_request->scriptFile));
         Core::setAlias('@crl', CRL_PATH);
         $this->_translateManager = new TranslateManager();
-        $this->_assetManager = new AssetManager(isset($this->_config['assets']) ? $this->_config['assets'] : []);
+        if (isset($this->_config['assets'])){
+            $this->_assetManager = new AssetManager($this->_config['assets']);
+        } else {
+            $this->_assetManager = new AssetManager();
+        }
     }
 
     public function getDb()
@@ -198,10 +205,9 @@ final class App extends BaseObject
      * @param string $dictionary
      * @param string $message
      * @param array $params
-     * @param null|string $language
      * @return string
      */
-    public function translate($dictionary, $message, $params = [], $language = null){
+    public function translate($dictionary, $message, $params = []){
         $placeholders = [];
         foreach ($params as $key => $value){
             $placeholders['{'.$key.'}'] = $value;
@@ -209,6 +215,6 @@ final class App extends BaseObject
         if ($this->_translateManager == null){
             return strtr($message, $placeholders);
         }
-        return $this->_translateManager->translate($dictionary, $message, $placeholders, $language);
+        return $this->_translateManager->translate($dictionary, $message, $placeholders, $this->request->userLanguage);
     }
 }
