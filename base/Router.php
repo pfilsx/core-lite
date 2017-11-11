@@ -117,9 +117,13 @@ final class Router extends BaseObject
     private function getControllerAndAction($request)
     {
         $pathParts = explode('/', $request);
-
-        $this->_controller = Inflector::id2camel(ucfirst(!empty($pathParts[0]) ? $pathParts[0] : $this->_defaultController)) . 'Controller';
-        $this->_action = 'action' . Inflector::id2camel(ucfirst(!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultAction));
+        if (count($pathParts) == 3){
+            $this->_controller = Inflector::id2camel(ucfirst(!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultController)) . 'Controller';
+            $this->_action = 'action' . Inflector::id2camel(ucfirst(!empty($pathParts[2]) ? $pathParts[2] : $this->_defaultAction));
+        } else {
+            $this->_controller = Inflector::id2camel(ucfirst(!empty($pathParts[0]) ? $pathParts[0] : $this->_defaultController)) . 'Controller';
+            $this->_action = 'action' . Inflector::id2camel(ucfirst(!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultAction));
+        }
     }
 
     public function getAction(){
