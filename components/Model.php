@@ -4,6 +4,8 @@
 namespace core\components;
 
 use core\base\BaseObject;
+use core\validators\Validator;
+use core\validators\ValidatorInterface;
 
 
 abstract class Model extends BaseObject
@@ -111,5 +113,48 @@ abstract class Model extends BaseObject
             $ref->getShortName()
         )));
 
+    }
+
+    /**
+     * @return bool|array
+     */
+    public function validate(){
+        $errors = [];
+        foreach ($this->user_properties as $key => $value){
+            if (($valResult = $this->validateField($key)) !== true){
+                $errors[] = $valResult;
+            }
+        }
+        return empty($errors) ? true : $errors;
+    }
+
+    /**
+     * @param string $fieldName
+     * @return bool|string
+     */
+    public function validateField($fieldName){
+        if (!$this->hasProperty($fieldName)){
+            return true;
+        }
+        $validateResult = true;
+        $field = $this->$fieldName;
+        foreach ($this->rules as $rule){
+            if (isset($rule[0]) && isset($rule[1])){
+                $ruleFields = (array) $rule[0];
+                if (in_array($fieldName, $ruleFields)){
+                    /**
+                     * @var ValidatorInterface $validator
+                     */
+                    $validator = Validator::createValidator($rule[1], ['properties' => array_slice($rule, 2)]);
+                    if ($validator != null){
+                        $validateResult = $validator->validateValue($field);
+                        if ($validateResult !== true){
+                            return str_replace('{attribute}', $this->getAttributeLabel($fieldName), $validateResult);
+                        }
+                    }
+                }
+            }
+        }
+        return $validateResult;
     }
 }
