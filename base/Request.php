@@ -19,6 +19,7 @@ use core\web\HeaderCollection;
  * @property array files
  * @property bool enableCookieValidation
  * @property string cookieValidationKey
+ * @property string userLanguage
  */
 class Request extends BaseObject
 {
@@ -41,6 +42,8 @@ class Request extends BaseObject
     private $_request;
 
     private $_url;
+
+    private $_userLanguage;
 
     /**
      * @var CookieCollection
@@ -91,6 +94,7 @@ class Request extends BaseObject
         if ($_SERVER['REQUEST_METHOD'] === 'GET'){
             $this->_isGet = true;
         }
+        $this->_userLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'],0,2);
         $this->_get = $_GET;
         $this->_post = $_POST;
         $this->_files = $_FILES;
@@ -450,6 +454,9 @@ class Request extends BaseObject
                 : false;
         }
         return $this->_enableCookieValidation;
+    }
+    public function getUserLanguage(){
+        return $this->_userLanguage;
     }
 
     protected function loadCookies()
