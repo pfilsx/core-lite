@@ -13,7 +13,8 @@ class DataColumn extends BaseColumn
 {
 
     public function init(){
-        if ($this->_gridView->orderBy == $this->name){
+        parent::init();
+        if ($this->_gridView->orderBy != null && $this->_gridView->orderBy === $this->name){
             if (isset($this->_config['sort']) && is_callable($this->_config['sort'])){
                 $this->_needSort = true;
                 $this->sortMethod = [$this, 'sort'];
@@ -25,19 +26,23 @@ class DataColumn extends BaseColumn
 
     public function getLabel()
     {
-        if (isset($this->_config['label'])){
-            return $this->_config['label'];
-        } elseif (isset($this->_config['field'])){
-            if ($this->_gridView->dataProvider instanceof QueryBuilder && $this->_gridView->dataProvider->model != null){
-                $className = $this->_gridView->dataProvider->model;
-                /**
-                 * @var ActiveModel $model
-                 */
-                $model = $className::instance();
-                return $model->getAttributeLabel($this->_config['field']);
+        if ($this->_label == null) {
+            if (isset($this->_config['label'])){
+                $this->_label = $this->_config['label'];
+            } elseif (isset($this->_config['field'])){
+                if ($this->_gridView->dataProvider instanceof QueryBuilder && $this->_gridView->dataProvider->model != null){
+                    $className = $this->_gridView->dataProvider->model;
+                    /**
+                     * @var ActiveModel $model
+                     */
+                    $model = $className::instance();
+                    $this->_label = $model->getAttributeLabel($this->_config['field']);
+                }
+            } else {
+                $this->_label = '';
             }
         }
-        return '';
+        return $this->_label;
     }
 
     public function getHeader(){
@@ -50,7 +55,7 @@ class DataColumn extends BaseColumn
                                 : 'DESC'
                             )]))),
                         'class' => $this->name == $this->_gridView->orderBy
-                            ? 'sort-active '. ($this->_gridView->orderDirection == 'ASC' ? 'sort-up' : 'sort-down')
+                            ? ' sort-active '. ($this->_gridView->orderDirection == 'ASC' ? 'sort-up' : 'sort-down')
                             : ''
                     ]);
         }

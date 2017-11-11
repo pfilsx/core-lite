@@ -15,6 +15,8 @@ use core\web\Html;
 abstract class BaseColumn extends BaseObject
 {
     protected $_name;
+
+    protected $_label;
     /**
      * @var GridView
      */
@@ -27,21 +29,20 @@ abstract class BaseColumn extends BaseObject
     public function __construct($gridview, array $config = [])
     {
         $this->_gridView = $gridview;
-        if (isset($config['name'])){
-            $this->_name = $config['name'];
-        } elseif (isset($config['field'])){
-            $this->_name = $config['field'];
-        } else {
-            $this->_name = '';
-        }
         parent::__construct($config);
     }
 
-    public function afterInit(){
-
+    public function init(){
+        if (isset($config['name'])){
+            $this->_name = $this->_config['name'];
+        } elseif (isset($config['field'])){
+            $this->_name = $this->_config['field'];
+        } else {
+            $this->_name = $this->label;
+        }
     }
 
-    public function getHeader(){
+    public function getHeader() {
         return Html::startTag('th', ['class' => (isset($this->_config['class']) ? $this->_config['class'] : false)])
             .$this->label
             .Html::endTag('th');
