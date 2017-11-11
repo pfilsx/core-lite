@@ -38,9 +38,10 @@ abstract class MigrationColumnBuilder extends BaseObject
     public abstract function integer($length = 6);
 
     /**
+     * * @param int $length
      * @return MigrationColumnBuilder
      */
-    public abstract function timestamp();
+    public abstract function timestamp($length = 6);
     /**
      * @return MigrationColumnBuilder
      */

@@ -22,9 +22,9 @@ class MigrationColumnBuilder extends \core\db\MigrationColumnBuilder
         return $this;
     }
 
-    public function timestamp()
+    public function timestamp($length = 6)
     {
-        $this->_query = 'TIMESTAMP';
+        $this->_query = "TIMESTAMP($length)";
         return $this;
     }
 

@@ -10,7 +10,7 @@ use core\db\mysql\MigrationBuilder;
 use core\db\mysql\MigrationColumnBuilder;
 use core\helpers\Console;
 
-class Migration extends BaseObject// TODO abstract
+abstract class Migration extends BaseObject
 {
     public $db;
 
@@ -140,8 +140,8 @@ class Migration extends BaseObject// TODO abstract
      * @param int $length
      * @return \core\db\MigrationColumnBuilder
      */
-    protected function timestamp(){
-        return $this->createMigrationColumnBuilder()->timestamp();
+    protected function timestamp($length = 6){
+        return $this->createMigrationColumnBuilder()->timestamp($length);
     }
 
     public function up(){
