@@ -7,6 +7,13 @@ use core\components\Controller;
 use core\helpers\FileHelper;
 use core\helpers\Inflector;
 
+/**
+ * Class Router
+ * @package core\base
+ *
+ * @property string controller
+ * @property string action
+ */
 final class Router extends BaseObject
 {
     private $_defaultController = 'Default';
@@ -127,10 +134,10 @@ final class Router extends BaseObject
     }
 
     public function getAction(){
-        return $this->_action;
+        return Inflector::camel2id(str_replace('action','',$this->_action));
     }
 
     public function getController(){
-        return $this->_controller;
+        return Inflector::camel2id(str_replace('Controller', '', $this->_controller));
     }
 }

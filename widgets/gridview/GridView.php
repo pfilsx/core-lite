@@ -10,6 +10,9 @@ use core\base\Widget;
 use core\components\ActiveModel;
 use core\db\QueryBuilder;
 use core\helpers\Url;
+use core\providers\ActiveDataProvider;
+use core\providers\ArrayDataProvider;
+use core\providers\DataProvider;
 use core\web\Html;
 use core\widgets\pagination\Pagination;
 
@@ -17,22 +20,21 @@ use core\widgets\pagination\Pagination;
  * Class GridView
  * @package core\widgets\gridview
  * @property string orderDirection
- * @property array|QueryBuilder dataProvider
+ * @property DataProvider dataProvider
  * @property string orderBy
+ * @property array columns
+ * @property bool paginationEnabled
+ * @property Pagination|null pagination
  */
 class GridView extends Widget
 {
     private $_columns = [];
     /**
-     * @var array|QueryBuilder
+     * @var DataProvider
      */
     private $_dataProvider;
 
     private $_pagination;
-    private $_limit;
-    private $_offset;
-    private $_pageCount;
-    private $_currentPage;
 
     private $_orderBy = null;
     private $_orderDirection = 'ASC';
@@ -46,8 +48,9 @@ class GridView extends Widget
         $this->_dataProvider = $config['provider'];
 
         if (isset($config['pagination'])){
-            $this->_pagination = $config['pagination'];
-            $this->_limit = (int)$this->_pagination['pageSize'];
+            $this->_pagination = Pagination::begin([
+                'pageSize' => isset($config['pagination']['pageSize']) ? (int)$config['pagination']['pageSize'] : 10,
+            ]);
             $this->_paginationEnable = true;
         }
         if (isset(App::$instance->request->get['sort'])){
@@ -59,33 +62,28 @@ class GridView extends Widget
         }
         parent::__construct($config);
 
+        if ($this->_dataProvider instanceof QueryBuilder){
+            $query = clone $this->_dataProvider;
+            $this->_dataProvider = new ActiveDataProvider(['query' => $query]);
+        } elseif (is_array($this->_dataProvider)) {
+            $data = clone $this->_dataProvider;
+            $this->_dataProvider = new ArrayDataProvider(['data' => $data]);
+        } else {
+            throw new \Exception('"provider" must be a DataProvider|QueryBuilder|array instance');
+        }
         foreach ($config['columns'] as $column){
             $className = 'core\widgets\gridview\\'.$column['type'];
             $columnClass = new $className($this, $column);
             $this->_columns[] = $columnClass;
-        }
-
-        if ($this->_dataProvider instanceof QueryBuilder){
-            $this->_data = $this->_dataProvider->queryAll();
-        } else {
-            $this->_data = $this->_dataProvider;
-        }
-        foreach ($this->_columns as $column){
-            if ($column->needSort){
-                usort($this->_data, $column->sortMethod);
-                break;
+            if ($columnClass->needSort){
+                $this->_dataProvider->customSort($columnClass->sortMethod);
             }
         }
         if ($this->_paginationEnable){
-            $total = count($this->_data);
-            $this->_pageCount = ceil($total/$this->_limit);
-            $this->_currentPage = isset(App::$instance->request->get['page']) ? (int)App::$instance->request->get['page'] : 1;
-            if ($this->_currentPage > $this->_pageCount){
-                $this->_currentPage = 1;
-            }
-            $this->_offset = $this->_currentPage - 1;
-            $this->_data = array_slice($this->_data, $this->_offset, $this->_limit);
+            $this->_pagination->pageCount = $this->_dataProvider
+                ->pagination($this->_pagination->currentPage, $this->_pagination->pageSize);
         }
+        $this->_data = $this->_dataProvider->getData();
     }
 
     public function run(){
@@ -136,10 +134,7 @@ class GridView extends Widget
         if (!$this->_paginationEnable){
             return;
         }
-        echo Pagination::widget([
-            'currentPage' => $this->_currentPage,
-            'pageCount' => $this->_pageCount
-        ]);
+        Pagination::end();
     }
 
     public function getData(){
@@ -153,5 +148,14 @@ class GridView extends Widget
     }
     public function getOrderBy(){
         return $this->_orderBy;
+    }
+    public function getColumns(){
+        return $this->_columns;
+    }
+    public function getPaginationEnabled(){
+        return $this->_paginationEnable;
+    }
+    public function getPagination(){
+        return $this->_pagination;
     }
 }

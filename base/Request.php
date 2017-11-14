@@ -20,6 +20,7 @@ use core\web\HeaderCollection;
  * @property bool enableCookieValidation
  * @property string cookieValidationKey
  * @property string userLanguage
+ * @property string url
  */
 class Request extends BaseObject
 {

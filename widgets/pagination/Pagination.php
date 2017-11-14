@@ -4,30 +4,47 @@
 namespace core\widgets\pagination;
 
 
+use core\base\App;
 use core\base\Widget;
 use core\helpers\Url;
 use core\web\Html;
 
+/**
+ * Class Pagination
+ * @package core\widgets\pagination
+ *
+ * @property int currentPage
+ * @property int pageSize
+ * @property int pageCount
+ */
 class Pagination extends Widget
 {
     private $_currPage;
 
+    private $_pageSize;
+
     private $_pageCount;
 
     public function init(){
-        $this->_currPage = $this->_config['currentPage'];
-        $this->_pageCount = $this->_config['pageCount'];
+        $this->_pageCount = isset($this->_config['pageCount']) ? $this->_config['pageCount'] : null;
+        $this->_pageSize = isset($this->_config['pageSize']) ? $this->_config['pageSize'] : null;
+        $this->_currPage = isset(App::$instance->request->get['page'])
+            ? (int)App::$instance->request->get['page']
+            : 1;
     }
 
     public function run()
     {
+        if ($this->_currPage > $this->_pageCount){
+            $this->_currPage = 1;
+        }
         ob_start();
         ob_implicit_flush(false);
         echo Html::startTag('nav');
         echo Html::startTag('ul', ['class' => 'pagination']);
         for ($i = 0; $i < $this->_pageCount; $i++){
             echo Html::startTag('li', ['class' => ($this->_currPage == ($i+1) ? 'active' : '')]);
-            $href = '?'.implode('&', Url::prepareParams(array_merge($_REQUEST, ['page' => ($i+1)]))) ;
+            $href = '?'.Url::prepareParams(array_merge($_REQUEST, ['page' => ($i+1)]));
             echo Html::startTag('a', ['href' => $href]);
             echo ($i+1);
             echo Html::endTag('a');
@@ -36,5 +53,19 @@ class Pagination extends Widget
         echo Html::endTag('ul');
         echo Html::endTag('nav');
         return ob_get_clean();
+    }
+
+    public function getPageCount(){
+        return $this->_pageCount;
+    }
+    public function setPageCount($value){
+        $this->_pageCount = $value;
+    }
+
+    public function getCurrentPage(){
+        return $this->_currPage;
+    }
+    public function getPageSize(){
+        return $this->_pageSize;
     }
 }

@@ -19,14 +19,21 @@ class Url
         }
 
         return App::$instance->request->getBaseUrl().$url
-            .(!empty($params) ? '?'.implode('&', static::prepareParams($params)) : '');
+            .(!empty($params) ? '?'.static::prepareParams($params) : '');
+    }
+    static function toAction($action, array $params= []){
+        $controller = App::$instance->getRouter()->controller;
+        return static::toRoute([$controller, $action], $params);
     }
 
     static function prepareParams(array $params){
         $prepareParams = [];
+        if (isset($params['_pjax'])){
+            unset($params['_pjax']);
+        }
         foreach ($params as $key => $value){
             $prepareParams[] = $key.'='.$value;
         }
-        return $prepareParams;
+        return implode('&', $prepareParams);
     }
 }

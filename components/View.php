@@ -21,6 +21,8 @@ class View extends BaseObject
 
     private $_params;
 
+    public $title = '';
+
     private $_content;
 
     private $_jsHead = [];
@@ -156,6 +158,15 @@ class View extends BaseObject
         }
     }
 
+    public function clear(){
+        $this->_jsHead = [];
+        $this->_jsBodyBegin = [];
+        $this->_jsBodyEnd = [];
+        $this->_cssHead = [];
+        $this->_cssBodyBegin = [];
+        $this->_cssBodyEnd = [];
+    }
+
     public function head(){
         echo View::HEAD;
     }
@@ -165,6 +176,11 @@ class View extends BaseObject
 
     public function endBody(){
         echo View::BODY_END;
+    }
+
+    public function endPage(){
+        $content = ob_get_clean();
+        return $content;
     }
 
     private function getViewPath($viewName = null){
@@ -190,5 +206,6 @@ class View extends BaseObject
             $preparedBodyEnd
         ], $this->_content);
     }
+
 
 }

@@ -4,8 +4,6 @@
 namespace core\widgets\gridview;
 
 
-use core\web\Html;
-
 class SerialColumn extends BaseColumn
 {
     private $_counter = 1;
@@ -20,8 +18,15 @@ class SerialColumn extends BaseColumn
         return '#';
     }
 
+    /**
+     * @param null $data
+     * @return int
+     */
     public function getContent($data = null)
     {
+        if ($this->_gridView->paginationEnabled){
+            return ($this->_gridView->pagination->currentPage-1)*$this->_gridView->pagination->pageSize + $this->_counter++;
+        }
         return $this->_counter++;
     }
 }

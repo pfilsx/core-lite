@@ -33,9 +33,9 @@ abstract class BaseColumn extends BaseObject
     }
 
     public function init(){
-        if (isset($config['name'])){
+        if (isset($this->_config['name'])){
             $this->_name = $this->_config['name'];
-        } elseif (isset($config['field'])){
+        } elseif (isset($this->_config['field'])){
             $this->_name = $this->_config['field'];
         } else {
             $this->_name = $this->label;
@@ -63,7 +63,7 @@ abstract class BaseColumn extends BaseObject
 
     public function sort($obj1, $obj2){
         $result = $this->_config['sort']($obj1, $obj2);
-        if ($this->_gridView->orderDirection == 'ASC'){
+        if ($this->_gridView->orderDirection == 'DESC'){
             $result = -1*$result;
         }
         return $result;

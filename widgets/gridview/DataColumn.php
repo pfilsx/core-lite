@@ -7,6 +7,7 @@ namespace core\widgets\gridview;
 use core\components\ActiveModel;
 use core\db\QueryBuilder;
 use core\helpers\Url;
+use core\providers\DataProvider;
 use core\web\Html;
 
 class DataColumn extends BaseColumn
@@ -18,8 +19,8 @@ class DataColumn extends BaseColumn
             if (isset($this->_config['sort']) && is_callable($this->_config['sort'])){
                 $this->_needSort = true;
                 $this->sortMethod = [$this, 'sort'];
-            } elseif ($this->_gridView->dataProvider instanceof QueryBuilder){
-                $this->_gridView->dataProvider->orderBy([$this->name => $this->_gridView->orderDirection]);
+            } elseif ($this->_gridView->dataProvider instanceof DataProvider){
+                $this->_gridView->dataProvider->sort($this->name, $this->_gridView->orderDirection);
             }
         }
     }
@@ -30,13 +31,10 @@ class DataColumn extends BaseColumn
             if (isset($this->_config['label'])){
                 $this->_label = $this->_config['label'];
             } elseif (isset($this->_config['field'])){
-                if ($this->_gridView->dataProvider instanceof QueryBuilder && $this->_gridView->dataProvider->model != null){
-                    $className = $this->_gridView->dataProvider->model;
-                    /**
-                     * @var ActiveModel $model
-                     */
-                    $model = $className::instance();
-                    $this->_label = $model->getAttributeLabel($this->_config['field']);
+                if ($this->_gridView->dataProvider instanceof DataProvider){
+                    $this->_label = $this->_gridView->dataProvider->getAttributeLabel($this->_config['field']);
+                } else {
+                    $this->_label = $this->_config['field'];
                 }
             } else {
                 $this->_label = '';
@@ -49,11 +47,11 @@ class DataColumn extends BaseColumn
         $content = Html::startTag('th', ['class' => (isset($this->_config['class']) ? $this->_config['class'] : false)]);
         if (isset($this->_config['field']) || (!empty($this->name) && isset($this->_config['sort']))){
             $content .= Html::startTag('a', [
-                        'href' => '?'.implode('&', Url::prepareParams(array_merge($_REQUEST, ['sort'=>$this->name,
+                        'href' => '?'.Url::prepareParams(array_merge($_REQUEST, ['sort'=>$this->name,
                                 'sort_direction' =>($this->_gridView->orderDirection == 'DESC'
                                 ? 'ASC'
                                 : 'DESC'
-                            )]))),
+                            )])),
                         'class' => $this->name == $this->_gridView->orderBy
                             ? ' sort-active '. ($this->_gridView->orderDirection == 'ASC' ? 'sort-up' : 'sort-down')
                             : ''
@@ -77,7 +75,8 @@ class DataColumn extends BaseColumn
             }
         } elseif (isset($this->_config['field'])){
             $field = $this->_config['field'];
-            return $data->$field;
+            return $this->_gridView->dataProvider->getField($field, $data);
+//            return $data->$field;
         }
         return '';
     }

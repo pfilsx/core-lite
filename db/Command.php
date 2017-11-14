@@ -24,6 +24,12 @@ class Command extends BaseObject
 
     private $_params;
 
+    /**
+     * Command constructor.
+     * @param Connection $db
+     * @param $sql
+     * @param array $params
+     */
     public function __construct($db, $sql, $params = [])
     {
         $this->db = $db;
