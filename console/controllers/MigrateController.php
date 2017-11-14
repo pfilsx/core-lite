@@ -8,6 +8,7 @@ use core\console\App;
 use core\db\Command;
 use core\db\Connection;
 use core\db\Migration;
+use core\db\QueryBuilder;
 use core\helpers\Console;
 use core\helpers\FileHelper;
 
@@ -176,7 +177,7 @@ class MigrateController
         Console::output('Not found `migrations` table. Creating it...');
         if ($this->createMigrationsTable('migrations', [
             'migration_name' => 'VARCHAR(255) NOT NULL COMMENT \'name of applied migration\'',
-            'applied_time' => 'TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'time of applied migration\''
+            'applied_time' => 'TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT \'time of applied migration\''
         ])){
             Console::output('`migrations` table successfully created.');
             return true;
@@ -239,10 +240,10 @@ class MigrateController
      * @param string $migrationName
      */
     private function createMigrationRecord($migrationName){
-        $query = 'INSERT INTO '.$this->db->quoteTableName('migrations').'('.$this->db->quoteColumnName('migration_name')
-            .') VALUES (:migration_name)';
-        $command = $this->db->createCommand($query, ['migration_name' => $migrationName]);
-        $command->execute();
+
+        App::$instance->db->createQueryBuilder()->insert('migrations', [
+            'migration_name' => $migrationName
+        ]);
     }
     private function removeMigrationRecord($migrationName){
         $query = 'DELETE FROM '.$this->db->quoteColumnName('migrations').' WHERE '.$this->db->quoteColumnName('migration_name')
