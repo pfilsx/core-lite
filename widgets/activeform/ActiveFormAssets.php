@@ -14,4 +14,10 @@ class ActiveFormAssets extends AssetBundle
           '@crl/assets/crl.activeForm.js' => static::POS_BODY_END
         ];
     }
+    public static function depends()
+    {
+        return [
+            'core\assets\MainAssets'
+        ];
+    }
 }

@@ -56,13 +56,19 @@ class StringValidator extends BaseObject implements ValidatorInterface
             $this->message = App::$instance->translate('crl', '{attribute} must be a string');
         }
         if ($this->min !== null && $this->tooShort === null) {
-            $this->tooShort = App::$instance->translate('crl', '{attribute} should contain at least {min} characters');
+            $this->tooShort = App::$instance->translate('crl', '{attribute} should contain at least {min} characters',[
+                'min' => $this->min
+            ]);
         }
         if ($this->max !== null && $this->tooLong === null) {
-            $this->tooLong = App::$instance->translate('crl', '{attribute} should contain at most {max} characters');
+            $this->tooLong = App::$instance->translate('crl', '{attribute} should contain at most {max} characters', [
+                'max' => $this->max
+            ]);
         }
         if ($this->length !== null && $this->notEqual === null) {
-            $this->notEqual = App::$instance->translate('crl', '{attribute} should contain {length} characters');
+            $this->notEqual = App::$instance->translate('crl', '{attribute} should contain {length} characters', [
+                'length' => $this->length
+            ]);
         }
     }
 
@@ -85,6 +91,6 @@ class StringValidator extends BaseObject implements ValidatorInterface
         if ($this->length !== null && $length !== $this->length) {
             return $this->notEqual;
         }
-        return null;
+        return true;
     }
 }

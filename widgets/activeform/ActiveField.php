@@ -61,7 +61,10 @@ class ActiveField
             default:
                 $this->getFieldName();
                 $this->_elements[] = Html::input($this->getFieldName(), $type, $this->_model->{$this->_attribute},
-                    $this->mergeOptions($options, []));
+                    $this->mergeOptions($options, [
+                        'data-field' => $this->_attribute
+                    ]));
+                $this->_elements[] = Html::startTag('span', ['class' => $this->_attribute.'_help help-block']).Html::endTag('span');
                 return $this;
         }
     }
@@ -73,12 +76,16 @@ class ActiveField
             $html .= Html::startTag('label', [
                 'for' => $this->getFieldName()
                 ]).Html::checkbox($this->getFieldName(), $this->_model->{$this->_attribute},
-                    $this->mergeOptions($options,[]))
+                    $this->mergeOptions($options,[
+                        'data-field' => $this->_attribute
+                    ]))
                 .$this->_model->getAttributeLabel($this->_attribute)
                 .Html::endTag('label');
         } else {
             $html .= Html::checkbox($this->getFieldName(), $this->_model->{$this->_attribute},
-                $this->mergeOptions($options, []));
+                $this->mergeOptions($options, [
+                    'data-field' => $this->_attribute
+                ]));
         }
         $html .= Html::endTag('div');
         $this->_elements[] = $html;
@@ -93,12 +100,16 @@ class ActiveField
             $html .= Html::startTag('label', [
                     'for' => $this->getFieldName()
                 ]).Html::radio($this->getFieldName(), $this->_model->{$this->_attribute},
-                    $this->mergeOptions($options, []))
+                    $this->mergeOptions($options, [
+                        'data-field' => $this->_attribute
+                    ]))
                 .$this->_model->getAttributeLabel($this->_attribute)
                 .Html::endTag('label');
         } else {
             $html .= Html::radio($this->getFieldName(), $this->_model->{$this->_attribute},
-                $this->mergeOptions($options,[]));
+                $this->mergeOptions($options,[
+                    'data-field' => $this->_attribute
+                ]));
         }
         $html .= Html::endTag('div');
         $this->_elements[] = $html;
@@ -128,14 +139,18 @@ class ActiveField
 
     public function select($items, $options = []){
         $this->_elements[] = Html::select($this->getFieldName(), $items, $this->_model->{$this->_attribute},
-            $this->mergeOptions($options, []));
+            $this->mergeOptions($options, [
+                'data-field' => $this->_attribute
+            ]));
         return $this;
     }
 
     public function textarea($options = [])
     {
         $this->_elements[] = Html::textarea($this->getFieldName(), $this->_model->{$this->_attribute},
-            $this->mergeOptions($options, []));
+            $this->mergeOptions($options, [
+                'data-field' => $this->_attribute
+            ]));
         return $this;
     }
 
@@ -144,13 +159,17 @@ class ActiveField
         if (!isset($this->_form->options['enctype'])) {
             $this->_form->options['enctype'] = 'multipart/form-data';
         }
-        $this->_elements[] = Html::fileInput($this->getFieldName(), null, $this->mergeOptions($options, []));
+        $this->_elements[] = Html::fileInput($this->getFieldName(), null, $this->mergeOptions($options, [
+            'data-field' => $this->_attribute
+        ]));
         return $this;
     }
 
     public function hiddenInput($options = [])
     {
-        $this->_elements[] = Html::hiddenInput($this->getFieldName(), $this->_model->{$this->_attribute}, $options);
+        $this->_elements[] = Html::hiddenInput($this->getFieldName(), $this->_model->{$this->_attribute}, array_merge($options, [
+            'data-field' => $this->_attribute
+        ]));
         return $this;
     }
 
@@ -162,12 +181,14 @@ class ActiveField
 
     private function render()
     {
+        $html = Html::startTag('div', ['class' => 'crl-active-form-group']);
         if ($this->_label == null && !$this->_enclosedByLabel) {
             $this->label($this->_model->getAttributeLabel($this->_attribute));
 
         }
-        $html = $this->_label . PHP_EOL;
+        $html .= $this->_label . PHP_EOL;
         $html .= implode(PHP_EOL, $this->_elements);
+        $html .= Html::endTag('div');
 
         return $html;
     }

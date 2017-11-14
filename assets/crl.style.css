@@ -114,3 +114,10 @@ html{font-family:sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:1
 .breadcrumbs li a:active:after {
     border-left-color: #3498db;
 }
+
+.crl-active-form .help-block {
+    display: none;
+}
+.crl-active-form .has-error .help-block {
+    display: block;
+}

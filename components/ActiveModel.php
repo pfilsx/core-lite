@@ -5,11 +5,13 @@ namespace core\components;
 
 use core\base\App;
 use core\db\QueryBuilder;
+use core\db\TableSchema;
 
 
 /**
  * @property bool isNewRecord
  * @property string primaryKey
+ * @property TableSchema tableSchema
  */
 abstract class ActiveModel extends Model
 {
@@ -22,16 +24,18 @@ abstract class ActiveModel extends Model
         return empty($this->old_params);
     }
 
-    private $primaryKey;
+    private $_primaryKey;
 
     private $old_params = [];
 
+    private $_tableSchema;
+
     public function init(){
-        $tableMetadata = App::$instance->db->getSchema()->getTableSchema(static::schemaTableName());
-        foreach ($tableMetadata->columns as $key => $column){
+        $this->_tableSchema = App::$instance->db->getSchema()->getTableSchema(static::schemaTableName());
+        foreach ($this->_tableSchema->columns as $key => $column){
             $this->createProperty($key);
             if ($column->isPrimaryKey){
-                $this->primaryKey = $key;
+                $this->_primaryKey = $key;
             }
         }
     }
@@ -46,6 +50,9 @@ abstract class ActiveModel extends Model
     public function save()
     {
         $this->beforeSave();
+        if ($this->validate() !== true){
+            return false;
+        }
         if ($this->isNewRecord) {
             $result = $this->insert();
         } else {
@@ -95,7 +102,11 @@ abstract class ActiveModel extends Model
     }
 
     public function getPrimaryKey(){
-        return $this->primaryKey;
+        return $this->_primaryKey;
+    }
+
+    public function getTableSchema(){
+        return $this->_tableSchema;
     }
 
     private function update()

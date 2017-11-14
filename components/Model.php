@@ -3,6 +3,7 @@
 
 namespace core\components;
 
+use core\base\App;
 use core\base\BaseObject;
 use core\validators\Validator;
 use core\validators\ValidatorInterface;
@@ -156,5 +157,14 @@ abstract class Model extends BaseObject
             }
         }
         return $validateResult;
+    }
+
+    public function ajaxValidate(){
+        $result = $result = $this->validateField(App::$instance->request->post['fieldName']);
+        if ($result === true){
+            return json_encode([]);
+        } else {
+            return json_encode(['message' => $result]);
+        }
     }
 }

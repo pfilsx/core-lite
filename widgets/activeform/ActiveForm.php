@@ -4,6 +4,7 @@
 namespace core\widgets\activeform;
 
 use core\base\Widget;
+use core\helpers\ArrayHelper;
 use core\web\Html;
 
 class ActiveForm extends Widget
@@ -12,15 +13,20 @@ class ActiveForm extends Widget
 
     public $action = null;
 
+    public $ajaxValidation = false;
+
     public $options = [];
 
     private $_fields;
 
     public function run(){
         $content = ob_get_clean();
-        echo Html::beginForm($this->action, $this->method, $this->options);
-        echo $content;
-        echo Html::endForm();
+        $html = Html::beginForm($this->action, $this->method, ArrayHelper::merge_recursive($this->options, [
+            'class' => 'crl-active-form '.($this->ajaxValidation ? ' with-validation ' : '')
+        ]));
+        $html .= $content;
+        $html .= Html::endForm();
+        return $html;
     }
 
     public function init(){
