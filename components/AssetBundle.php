@@ -3,6 +3,7 @@
 namespace core\components;
 
 use core\base\App;
+use core\base\AssetManager;
 use core\base\BaseObject;
 
 abstract class AssetBundle extends BaseObject
@@ -29,7 +30,7 @@ abstract class AssetBundle extends BaseObject
     public final static function registerAssets()
     {
         $view = App::$instance->view;
-        if ($view == null) {
+        if ($view == null || in_array(static::className(), App::$instance->assetManager->registeredBundles)) {
             return;
         }
         $cssAssets = static::cssAssets();
@@ -44,7 +45,7 @@ abstract class AssetBundle extends BaseObject
         if (!empty($jsAssets)){
             static::_registerJsAssets($view, $jsAssets);
         }
-
+        App::$instance->assetManager->registeredBundles[] = static::className();
     }
     /**
      * @param View $view

@@ -14,6 +14,8 @@ class AssetManager extends BaseObject
 
     private $_bundles = [];
 
+    public $registeredBundles = [];
+
     function __construct($config = [])
     {
         parent::__construct($config);
@@ -72,5 +74,7 @@ class AssetManager extends BaseObject
             }
         }
     }
+
+
 
 }
