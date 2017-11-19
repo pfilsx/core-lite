@@ -4,23 +4,17 @@
 namespace core\base;
 
 use Core;
+use core\components\AssetBundle;
 use core\helpers\FileHelper;
 
 class AssetManager extends BaseObject
 {
 
-    private $_jsAssets = [];
+    private $_basicFontsPath = '@crl/assets/fonts';
 
-    private $_cssAssets = [];
+    private $_bundles = [];
 
-    protected $_config = [
-        'js' => [],
-        'css' => [],
-        'depends' => [
-            '@crl/assets/crl.activeForm.js',
-            '@crl/assets/crl.style.css'
-        ]
-    ];
+    public $registeredBundles = [];
 
     function __construct($config = [])
     {
@@ -28,55 +22,63 @@ class AssetManager extends BaseObject
     }
 
     public function init(){
-        $this->_jsAssets = $this->_config['js'];
-        $this->_cssAssets = $this->_config['css'];
-        $this->replaceDepends();
-    }
-
-    public function registerJsAssets()
-    {
-        $result = '';
-        foreach ($this->_jsAssets as $asset) {
-            $result .= '<script type="text/javascript" src="' . App::$instance->request->getBaseUrl() .'/'. $asset . '"></script>';
+        $this->placeFonts();
+        foreach ($this->_config as $bundle){
+            if (new $bundle() instanceof AssetBundle){
+                $this->_bundles[] = $bundle;
+            }
         }
-        return $result;
     }
 
-    public function registerCssAssets()
-    {
-        $result = '';
-        foreach ($this->_cssAssets as $asset) {
-            $result .= '<link rel="stylesheet" href="' . App::$instance->request->getBaseUrl() .'/'. $asset . '">';
-        }
-        return $result;
-    }
 
-    private function replaceDepends(){
-        if (is_array($this->_config['depends']) && !empty($this->_config['depends'])){
-            foreach ($this->_config['depends'] as $depend){
-                $dependPath = Core::getAlias($depend);
-                if (is_file($dependPath)){
-                    $newPath = FileHelper::normalizePath(Core::getAlias('@webroot').'\\assets\\'.basename($dependPath));
-                    if (is_file($newPath)){
-                        if (md5_file($newPath) !== md5_file($dependPath)){
-                            copy($dependPath, $newPath);
-                        }
-                    } else {
-                        if (FileHelper::createDirectory(dirname($newPath))){
-                            copy($dependPath, $newPath);
-                            $fileName = 'assets/'.basename($newPath);
-                            if (!in_array($fileName,$this->_cssAssets) && !in_array($fileName, $this->_jsAssets)){
-                                $ext = pathinfo($newPath, PATHINFO_EXTENSION);
-                                if ($ext == 'js'){
-                                    $this->_jsAssets[] = $fileName;
-                                } else {
-                                    $this->_cssAssets[] = $fileName;
-                                }
-                            }
-                        }
-                    }
+    private function placeFonts(){
+        $dependPath = FileHelper::normalizePath(Core::getAlias($this->_basicFontsPath));
+        if (is_dir($dependPath)){
+            $newPath = FileHelper::normalizePath(Core::getAlias('@webroot').'\\assets\\fonts\\');
+            if (!is_dir($newPath)){
+                if (!FileHelper::createDirectory($newPath)){
+                    return;
+                }
+            }
+            foreach (FileHelper::findFiles($dependPath) as $file){
+                $newFilePath = $newPath.DIRECTORY_SEPARATOR.basename($file);
+                if (!is_file($newFilePath)){
+                    copy($file, $newFilePath);
                 }
             }
         }
     }
+
+    public function registerAsset($path){
+        $path = FileHelper::normalizePath(Core::getAlias($path));
+        if (is_file($path)){
+            $assetPath = FileHelper::normalizePath(Core::getAlias('@webroot').'\\assets\\'.basename($path));
+            if (is_file($assetPath)){
+                if (md5_file($assetPath) !== md5_file($path)){
+                    copy($path, $assetPath);
+                }
+            } else {
+                if (FileHelper::createDirectory(dirname($assetPath))){
+                    copy($path, $assetPath);
+                }
+            }
+             return 'assets/'.basename($assetPath);
+        }
+        return null;
+    }
+
+    public function registerBundles(){
+        if (!empty($this->_bundles) && App::$instance->view != null){
+            foreach ($this->_bundles as $bundle){
+                $bundle::registerAssets();
+            }
+        }
+    }
+
+    public function clearBundles(){
+        $this->_bundles = [];
+    }
+
+
+
 }

@@ -5,10 +5,13 @@ namespace core\components;
 
 use core\base\App;
 use core\db\QueryBuilder;
+use core\db\TableSchema;
 
 
 /**
  * @property bool isNewRecord
+ * @property string primaryKey
+ * @property TableSchema tableSchema
  */
 abstract class ActiveModel extends Model
 {
@@ -21,31 +24,49 @@ abstract class ActiveModel extends Model
         return empty($this->old_params);
     }
 
-    private $primaryKey;
+    private $_primaryKey;
 
     private $old_params = [];
 
+    private $_tableSchema;
+
     public function init(){
-        $tableMetadata = App::$instance->db->getSchema()->getTableSchema(static::schemaTableName());
-        foreach ($tableMetadata->columns as $key => $column){
+        $this->_tableSchema = App::$instance->db->getSchema()->getTableSchema(static::schemaTableName());
+        foreach ($this->_tableSchema->columns as $key => $column){
             $this->createProperty($key);
             if ($column->isPrimaryKey){
-                $this->primaryKey = $key;
+                $this->_primaryKey = $key;
             }
         }
+        $this->initializeValidators();
     }
 
     public function beforeSave(){
+
+    }
+    public function afterSave(){
 
     }
 
     public function save()
     {
         $this->beforeSave();
+        if ($this->validate() !== true){
+            return false;
+        }
         if ($this->isNewRecord) {
-            return $this->insert();
+            $result = $this->insert();
         } else {
-            return $this->update();
+            $result = $this->update();
+        }
+        $this->afterSave();
+        return $result;
+    }
+    public function delete(){
+        if (!$this->isNewRecord){
+            $builder = App::$instance->db->createQueryBuilder();
+            $builder->delete()->from(static::schemaTableName())->where([$this->primaryKey => $this->user_properties[$this->primaryKey]]);
+            $builder->execute();
         }
     }
 
@@ -79,6 +100,14 @@ abstract class ActiveModel extends Model
             $builder->where($criteria);
         }
         return $builder;
+    }
+
+    public function getPrimaryKey(){
+        return $this->_primaryKey;
+    }
+
+    public function getTableSchema(){
+        return $this->_tableSchema;
     }
 
     private function update()

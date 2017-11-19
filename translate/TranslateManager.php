@@ -34,7 +34,11 @@ class TranslateManager extends BaseObject
     {
         $params = [];
         foreach ($_params_ as $key => $value){
-            $params['{'.$key.'}'] = $value;
+            if (substr($key, 0, 1) !== '{'){
+                $params['{'.$key.'}'] = $value;
+            } else {
+                $params[$key] = $value;
+            }
         }
         if (!array_key_exists($dictionary,$this->_translators)){
             return strtr($message, $params);

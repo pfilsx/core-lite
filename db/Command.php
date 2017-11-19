@@ -4,22 +4,38 @@
 namespace core\db;
 
 
-class Command
+use core\base\BaseObject;
+
+/**
+ * Class Command
+ * @package core\db
+ *
+ * @property array params
+ * @property string sql
+ */
+class Command extends BaseObject
 {
     /**
      * @var Connection
      */
     private $db;
 
-    private $sql;
+    private $_sql;
 
-    private $params;
+    private $_params;
 
+    /**
+     * Command constructor.
+     * @param Connection $db
+     * @param $sql
+     * @param array $params
+     */
     public function __construct($db, $sql, $params = [])
     {
         $this->db = $db;
-        $this->sql = $sql;
-        $this->params = $params;
+        $this->_sql = $sql;
+        $this->_params = $params;
+        parent::__construct([]);
     }
 
     /**
@@ -54,5 +70,12 @@ class Command
     public function queryAssoc(){
         $statement = $this->execute();
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getSql(){
+        return $this->_sql;
+    }
+    public function getParams(){
+        return $this->_params;
     }
 }

@@ -221,32 +221,32 @@ abstract class Schema extends BaseObject
         return strpos($name, '"') !== false || $name === '*' ? $name : '"' . $name . '"';
     }
 
-//    /**
-//     * Extracts the PHP type from abstract DB type.
-//     * @param ColumnSchema $column the column schema information
-//     * @return string PHP type name
-//     */
-//    protected function getColumnPhpType($column)
-//    {
-//        static $typeMap = [
-//            'smallint' => 'integer',
-//            'integer' => 'integer',
-//            'bigint' => 'integer',
-//            'boolean' => 'boolean',
-//            'float' => 'double',
-//            'double' => 'double',
-//            'binary' => 'resource',
-//        ];
-//        if (isset($typeMap[$column->type])) {
-//            if ($column->type === 'bigint') {
-//                return PHP_INT_SIZE === 8 && !$column->unsigned ? 'integer' : 'string';
-//            } elseif ($column->type === 'integer') {
-//                return PHP_INT_SIZE === 4 && $column->unsigned ? 'string' : 'integer';
-//            }
-//            return $typeMap[$column->type];
-//        }
-//        return 'string';
-//    }
+    /**
+     * Extracts the PHP type from abstract DB type.
+     * @param ColumnSchema $column the column schema information
+     * @return string PHP type name
+     */
+    protected function getColumnPhpType($column)
+    {
+        static $typeMap = [
+            'smallint' => 'integer',
+            'integer' => 'integer',
+            'bigint' => 'integer',
+            'boolean' => 'boolean',
+            'float' => 'double',
+            'double' => 'double',
+            'binary' => 'resource',
+        ];
+        if (isset($typeMap[$column->type])) {
+            if ($column->type === 'bigint') {
+                return PHP_INT_SIZE === 8 && !$column->unsigned ? 'integer' : 'string';
+            } elseif ($column->type === 'integer') {
+                return PHP_INT_SIZE === 4 && $column->unsigned ? 'string' : 'integer';
+            }
+            return $typeMap[$column->type];
+        }
+        return 'string';
+    }
 
     /**
      * Returns a value indicating whether a SQL statement is for read purpose.
@@ -262,4 +262,6 @@ abstract class Schema extends BaseObject
     public function getTableNames(){
         return $this->tableNames;
     }
+
+
 }

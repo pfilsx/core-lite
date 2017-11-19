@@ -16,6 +16,13 @@ use core\web\HeaderCollection;
  * @property bool isGet
  * @property array post
  * @property array get
+ * @property array files
+ * @property bool enableCookieValidation
+ * @property string cookieValidationKey
+ * @property string userLanguage
+ * @property string url
+ * @property string baseUrl
+ * @property string scriptFile
  */
 class Request extends BaseObject
 {
@@ -38,6 +45,8 @@ class Request extends BaseObject
     private $_request;
 
     private $_url;
+
+    private $_userLanguage;
 
     /**
      * @var CookieCollection
@@ -88,6 +97,7 @@ class Request extends BaseObject
         if ($_SERVER['REQUEST_METHOD'] === 'GET'){
             $this->_isGet = true;
         }
+        $this->_userLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'],0,2);
         $this->_get = $_GET;
         $this->_post = $_POST;
         $this->_files = $_FILES;
@@ -148,17 +158,42 @@ class Request extends BaseObject
     public function getPost(){
         return $this->_post;
     }
+    public function post($name){
+        if (isset($this->_post[$name])){
+            return $this->_post[$name];
+        }
+        return null;
+    }
     public function getGet(){
         return $this->_get;
+    }
+    public function get($name){
+        if (isset($this->_get[$name])){
+            return $this->_get[$name];
+        }
+        return null;
     }
 
     public function getFiles(){
         return $this->_files;
     }
+    public function files($name){
+        if (isset($this->_files[$name])){
+            return $this->_files[$name];
+        }
+        return null;
+    }
 
     public function getRequest(){
         return $this->_request;
     }
+    public function request($name){
+        if (isset($this->_request[$name])){
+            return $this->_request[$name];
+        }
+        return null;
+    }
+
 
     public function getIsAjax()
     {
@@ -447,6 +482,9 @@ class Request extends BaseObject
                 : false;
         }
         return $this->_enableCookieValidation;
+    }
+    public function getUserLanguage(){
+        return $this->_userLanguage;
     }
 
     protected function loadCookies()

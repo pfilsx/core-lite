@@ -8,7 +8,11 @@ class MigrationColumnBuilder extends \core\db\MigrationColumnBuilder
 
     public function string($length = 255)
     {
-        $this->_query = 'VARCHAR('.intval($length).')';
+        if ($length > 255){
+            $this->_query = 'TEXT';
+        } else {
+            $this->_query = 'VARCHAR('.intval($length).')';
+        }
         return $this;
     }
 
@@ -18,9 +22,9 @@ class MigrationColumnBuilder extends \core\db\MigrationColumnBuilder
         return $this;
     }
 
-    public function timestamp()
+    public function timestamp($length = 6)
     {
-        $this->_query = 'TIMESTAMP';
+        $this->_query = "TIMESTAMP($length)";
         return $this;
     }
 

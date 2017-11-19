@@ -4,6 +4,7 @@
 namespace core\validators;
 
 
+use core\base\App;
 use core\base\BaseObject;
 
 class EmailValidator extends BaseObject implements ValidatorInterface
@@ -19,16 +20,22 @@ class EmailValidator extends BaseObject implements ValidatorInterface
 
     public $enableIDN = false;
 
+    public $message;
+    /**
+     * @inheritdoc
+     */
     public function init(){
         parent::init();
         if ($this->enableIDN && !function_exists('idn_to_ascii')) {
             throw new \Exception('In order to use IDN validation intl extension must be installed and enabled.');
         }
+        if ($this->message === null) {
+            $this->message = App::$instance->translate('crl', '{attribute} is not a valid email address');
+        }
     }
 
     /**
-     * @param mixed $value
-     * @return boolean
+     * @inheritdoc
      */
     function validateValue($value)
     {
@@ -38,8 +45,8 @@ class EmailValidator extends BaseObject implements ValidatorInterface
             $valid = false;
         } else {
             if ($this->enableIDN) {
-                $matches['local'] = idn_to_ascii($matches['local']);
-                $matches['domain'] = idn_to_ascii($matches['domain']);
+                $matches['local'] = $this->idnToAscii($matches['local']);
+                $matches['domain'] = $this->idnToAscii($matches['domain']);
                 $value = $matches['name'] . $matches['open'] . $matches['local'] . '@' . $matches['domain'] . $matches['close'];
             }
             if (strlen($matches['local']) > 64) {
@@ -61,6 +68,14 @@ class EmailValidator extends BaseObject implements ValidatorInterface
                 }
             }
         }
-        return $valid;
+        return $valid ? true : $this->message;
+    }
+
+    private function idnToAscii($idn)
+    {
+        if (PHP_VERSION_ID < 50600) {
+            return idn_to_ascii($idn);
+        }
+        return idn_to_ascii($idn, 0, INTL_IDNA_VARIANT_UTS46);
     }
 }

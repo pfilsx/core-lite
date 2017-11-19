@@ -64,19 +64,12 @@ class Json
         throw new \Exception('Unknown JSON encoding/decoding error.');
     }
 
-    //TODO remove unused stuff
     protected static function processData($data, &$expressions, $expPrefix)
     {
         if (is_object($data)) {
-//            if ($data instanceof JsExpression) {
-//                $token = "!{[$expPrefix=" . count($expressions) . ']}!';
-//                $expressions['"' . $token . '"'] = $data->expression;
-//                return $token;
-//            } else
+
             if ($data instanceof \JsonSerializable) {
                 return static::processData($data->jsonSerialize(), $expressions, $expPrefix);
-//            } elseif ($data instanceof Arrayable) {
-//                $data = $data->toArray();
             } elseif ($data instanceof \SimpleXMLElement) {
                 $data = (array) $data;
             } else {

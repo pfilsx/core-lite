@@ -7,7 +7,7 @@ interface ValidatorInterface {
 
     /**
      * @param mixed $value
-     * @return boolean
+     * @return boolean|string
      */
     function validateValue($value);
 }

@@ -4,9 +4,20 @@ namespace core\base;
 
 use Core;
 use core\components\Controller;
+use core\components\Module;
+use core\components\UrlRule;
 use core\helpers\FileHelper;
 use core\helpers\Inflector;
 
+/**
+ * Class Router
+ * @package core\base
+ *
+ * @property string controller
+ * @property string action
+ * @property string route
+ * @property string module
+ */
 final class Router extends BaseObject
 {
     private $_defaultController = 'Default';
@@ -16,6 +27,15 @@ final class Router extends BaseObject
     private $_controller;
 
     private $_action;
+
+    private $_module;
+
+    private $_route;
+
+    /**
+     * @var UrlRule[]
+     */
+    private $_rules = [];
 
     private $_controllersPath;
     private $_controllersNamespace;
@@ -33,6 +53,11 @@ final class Router extends BaseObject
             $this->_controllersPath = '@app'.DIRECTORY_SEPARATOR.'controllers';
             $this->_controllersNamespace = '\\app\\controllers';
         }
+        if (isset($this->_config['rules'])){
+            foreach ($this->_config['rules'] as $key => $value){
+                $this->_rules[] = new UrlRule($this, $key, $value);
+            }
+        }
     }
 
     /**
@@ -42,52 +67,37 @@ final class Router extends BaseObject
     public function route()
     {
         $this->parseRequest();
-        $controllerPath = Core::getAlias($this->_controllersPath).DIRECTORY_SEPARATOR.$this->_controller.'.php';
-        if (file_exists($controllerPath)) {
-            $className = $this->_controllersNamespace.'\\' . $this->_controller;
-            /**
-             * @var Controller $controller
-             */
-            $controller = new $className();
-            if (method_exists($controller, $this->_action)) {
-                $ref = new \ReflectionMethod($controller, $this->_action);
-                if (!empty($ref->getParameters())) {
-                    $_params_ = [];
-                    foreach ($ref->getParameters() as $param) {
-                        if (array_key_exists($param->name, App::$instance->request->request)) {
-                            $_params_[$param->name] = App::$instance->request->request[$param->name];
-                        } else if (!$param->isOptional()) {
-                            throw new \Exception("Required parameter $param->name is missed");
-                        } else {
-                            $_params_[$param->name] = $param->getDefaultValue();
-                        }
-                    }
-                    $content = $controller->beforeAction($this->_action);
-                    if ($content !== false){
-                        $content = call_user_func_array([$controller, $this->_action],$_params_);
-                    }
-                } else {
-                    $content = $controller->beforeAction($this->_action);
-                    if ($content !== false){
-                        $content = $controller->{$this->_action}();
-                    }
-                }
-                if ($content instanceof Response){
-                    return $content;
-                } else {
-                    $response = App::$instance->response;
-                    if ($content !== null){
-                        $response->data = $content;
-                    }
-                    return $response;
-                }
-            } else {
-                if (CRL_DEBUG === true){
-                    throw new \Exception("Action {$this->_action} does not exist in {$this->_controller}");
-                } else {
-                    return App::$instance->getResponse()->redirect('/');
-                }
+        foreach ($this->_rules as $rule){
+            if ($rule->parseRequest()){
+                $rule->resolve();
+                break;
             }
+        }
+        $this->parseRoute();
+        if ($this->_module == null){
+            return $this->defaultResolve();
+        } else {
+            $module = App::$instance->getModule($this->module);
+            $action = 'action'.$this->_action;
+            return $module->runAction($action, App::$instance->request->request);
+        }
+    }
+
+    /**
+     * @return Response
+     * @throws \Exception
+     */
+    public function defaultResolve(){
+        $controller = $this->_controller.'Controller';
+        $action = 'action'.$this->_action;
+        $controllerPath = Core::getAlias($this->_controllersPath).DIRECTORY_SEPARATOR.$controller.'.php';
+        if (file_exists($controllerPath)) {
+            $className = $this->_controllersNamespace.'\\' . $controller;
+            /**
+             * @var Controller $controllerClass
+             */
+            $controllerClass = new $className();
+            return $controllerClass->runAction($action, App::$instance->request->request);
         } else {
             if (CRL_DEBUG === true) {
                 throw new \Exception("Controller {$this->_controller} does not exist");
@@ -97,28 +107,58 @@ final class Router extends BaseObject
         }
     }
 
-    private function parseRequest()
+    public function parseRequest()
     {
         $request = $_SERVER['REQUEST_URI'];
         $requestParts = explode('?', $request);
-        $this->getControllerAndAction($requestParts[0]);
+        $this->_route = str_replace(App::$instance->request->getBaseUrl().'/', '',$requestParts[0]);
+        $this->parseRoute();
     }
 
 
-    private function getControllerAndAction($request)
+    public function parseRoute()
     {
-        $request = str_replace(App::$instance->request->getBaseUrl(), '', $request);
-        $pathParts = explode('/', $request);
-
-        $this->_controller = Inflector::id2camel(ucfirst(!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultController)) . 'Controller';
-        $this->_action = 'action' . Inflector::id2camel(ucfirst(!empty($pathParts[2]) ? $pathParts[2] : $this->_defaultAction));
+        $pathParts = explode('/', $this->_route);
+        if (count($pathParts) == 3){
+            $this->_module = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : ''));
+            $this->_controller = Inflector::id2camel((!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultController));
+            $this->_action = Inflector::id2camel((!empty($pathParts[2]) ? $pathParts[2] : $this->_defaultAction));
+        } else {
+            $this->_controller = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : $this->_defaultController));
+            $this->_action = Inflector::id2camel((!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultAction));
+        }
     }
 
     public function getAction(){
-        return $this->_action;
+        return Inflector::camel2id($this->_action);
     }
 
     public function getController(){
-        return $this->_controller;
+        return Inflector::camel2id($this->_controller);
+    }
+
+    public function getModule(){
+        return Inflector::camel2id($this->_module);
+    }
+
+    public function getRoute(){
+        return $this->_route;
+    }
+
+    public function setRoute($value){
+        $this->_route = $value;
+    }
+
+    /**
+     * Add a custom rule to routing
+     * @param array $rules
+     *
+     * @usage
+     * App::$instance->router->addRules(['my-custom-path' => ['route' => 'default/route']])
+     */
+    public function addRules(array $rules){
+        foreach ($rules as $pattern => $options){
+            $this->_rules[] = new UrlRule($this, $pattern, $options);
+        }
     }
 }

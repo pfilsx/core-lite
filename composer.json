@@ -1,0 +1,40 @@
+{
+  "name": "pfilsx/core-lite",
+  "description": "Core-Lite PHP Framework",
+  "keywords": [
+    "crl",
+    "core-lite",
+    "framework"
+  ],
+  "homepage": "https://github.com/pfilsx/core-lite",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Pavel Filimonov",
+      "email": "pfilsx@gmail.com",
+      "homepage": "https://github.com/pfilsx/",
+      "role": "Core developer and project lead"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/pfilsx/core-lite/issues?state=open",
+    "source": "https://github.com/pfilsx/core-lite"
+  },
+  "require": {
+    "php": ">=5.4.0",
+    "ext-mbstring": "*",
+    "ext-ctype": "*",
+    "lib-pcre": "*"
+  },
+  "autoload": {
+    "psr-4": {"core\\": ""}
+  },
+  "bin": [
+    "crl"
+  ],
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0"
+    }
+  }
+}

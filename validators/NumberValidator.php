@@ -4,6 +4,7 @@
 namespace core\validators;
 
 
+use core\base\App;
 use core\base\BaseObject;
 use core\helpers\StringHelper;
 
@@ -15,27 +16,57 @@ class NumberValidator extends BaseObject implements ValidatorInterface
 
     public $min;
 
+    /**
+     * @var string user-defined error message used when the value is bigger than [[max]].
+     */
+    public $tooBig;
+    /**
+     * @var string user-defined error message used when the value is smaller than [[min]].
+     */
+    public $tooSmall;
+
+    public $message;
+
     public $integerPattern = '/^\s*[+-]?\d+\s*$/';
 
     public $numberPattern = '/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/';
 
-
     /**
-     * @param mixed $value
-     * @return boolean
+     * @inheritdoc
+     */
+    public function init(){
+        parent::init();
+        if ($this->message === null) {
+            $this->message = $this->integerOnly
+                ? App::$instance->translate('crl', '{attribute} must be an integer')
+                : App::$instance->translate('crl', '{attribute} must be a number');
+        }
+        if ($this->min !== null && $this->tooSmall === null) {
+            $this->tooSmall = App::$instance->translate('crl', '{attribute} must be no less than {min}', [
+                'min' => $this->min
+            ]);
+        }
+        if ($this->max !== null && $this->tooBig === null) {
+            $this->tooBig = App::$instance->translate('crl', '{attribute} must be no greater than {max}', [
+                'max' => $this->max
+            ]);
+        }
+    }
+    /**
+     * @inheritdoc
      */
     function validateValue($value)
     {
         if (is_array($value) || is_object($value)) {
-            return false;
+            return $this->message;
         }
         $pattern = $this->integerOnly ? $this->integerPattern : $this->numberPattern;
         if (!preg_match($pattern, StringHelper::normalizeNumber($value))) {
-            return false;
+            return $this->message;
         } elseif ($this->min !== null && $value < $this->min) {
-            return false;
+            return $this->tooSmall;
         } elseif ($this->max !== null && $value > $this->max) {
-            return false;
+            return $this->tooBig;
         }
         return true;
     }

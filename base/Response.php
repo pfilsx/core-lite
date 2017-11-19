@@ -12,6 +12,9 @@ use core\helpers\Url;
 use core\web\CookieCollection;
 use core\web\HeaderCollection;
 
+/**
+ * @property HeaderCollection  headers
+ */
 class Response extends BaseObject
 {
     public $exitStatus = 0;
@@ -155,7 +158,6 @@ class Response extends BaseObject
         $this->formatters = array_merge($this->defaultFormatters(), $this->formatters);
     }
 
-    //TODO json and xml
     protected function defaultFormatters()
     {
         return [
