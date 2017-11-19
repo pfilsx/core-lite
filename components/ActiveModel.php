@@ -38,6 +38,7 @@ abstract class ActiveModel extends Model
                 $this->_primaryKey = $key;
             }
         }
+        $this->initializeValidators();
     }
 
     public function beforeSave(){

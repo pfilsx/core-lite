@@ -16,7 +16,9 @@ class BooleanValidator extends BaseObject implements ValidatorInterface
     public $strict = false;
 
     public $message;
-
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         parent::init();
@@ -29,8 +31,7 @@ class BooleanValidator extends BaseObject implements ValidatorInterface
     }
 
     /**
-     * @param mixed $value
-     * @return boolean
+     * @inheritdoc
      */
     function validateValue($value)
     {

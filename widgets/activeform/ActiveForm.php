@@ -30,12 +30,8 @@ class ActiveForm extends Widget
     }
 
     public function init(){
+        parent::init();
         ActiveFormAssets::registerAssets();
-        foreach ($this->_config as $key => $value){
-            if (property_exists($this, $key)){
-                $this->$key = $value;
-            }
-        }
         ob_start();
         ob_implicit_flush(false);
     }

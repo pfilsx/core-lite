@@ -15,14 +15,45 @@ abstract class Model extends BaseObject
 
     protected $rules = [];
 
+    /**
+     * @var ValidatorInterface[]
+     */
+    private $_activeValidators = [];
+
     public static function instance(){
         $className = get_called_class();
         return new $className();
     }
 
     public function init(){
-        foreach ($this->rules as $key => $value){
-            $this->createProperty($key);
+        foreach ($this->rules as $rule){
+            $fields = $rule[0];
+            if (is_array($fields)){
+                foreach ($fields as $field){
+                    if (!$this->hasProperty($field)){
+                        $this->createProperty($field);
+                    }
+                }
+            } else {
+                if (!$this->hasProperty($fields)){
+                    $this->createProperty($fields);
+                }
+            }
+        }
+        $this->initializeValidators();
+    }
+
+    protected function initializeValidators(){
+        foreach ($this->rules as $rule){
+            if (isset($rule[0]) && isset($rule[1])){
+                $ruleFields = (array) $rule[0];
+                $validator = Validator::createValidator($rule[1], ['properties' => array_slice($rule, 2)]);
+                if ($validator != null){
+                    foreach ($ruleFields as $ruleField){
+                        $this->_activeValidators[$ruleField][] = $validator;
+                    }
+                }
+            }
         }
     }
 
@@ -134,29 +165,21 @@ abstract class Model extends BaseObject
      * @return bool|string
      */
     public function validateField($fieldName){
-        if (!$this->hasProperty($fieldName)){
+        if (!$this->hasProperty($fieldName) || !array_key_exists($fieldName, $this->_activeValidators)){
             return true;
         }
-        $validateResult = true;
         $field = $this->$fieldName;
-        foreach ($this->rules as $rule){
-            if (isset($rule[0]) && isset($rule[1])){
-                $ruleFields = (array) $rule[0];
-                if (in_array($fieldName, $ruleFields)){
-                    /**
-                     * @var ValidatorInterface $validator
-                     */
-                    $validator = Validator::createValidator($rule[1], ['properties' => array_slice($rule, 2)]);
-                    if ($validator != null){
-                        $validateResult = $validator->validateValue($field);
-                        if ($validateResult !== true){
-                            return str_replace('{attribute}', $this->getAttributeLabel($fieldName), $validateResult);
-                        }
-                    }
-                }
+        $validators = $this->_activeValidators[$fieldName];
+        foreach ($validators as $validator){
+            /**
+             * @var ValidatorInterface $validator
+             */
+            $validateResult = $validator->validateValue($field);
+            if ($validateResult !== true){
+                return str_replace('{attribute}', $this->getAttributeLabel($fieldName), $validateResult);
             }
         }
-        return $validateResult;
+        return true;
     }
 
     public function ajaxValidate(){

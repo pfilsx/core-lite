@@ -17,7 +17,6 @@ class Pjax extends Widget
      * @var array the HTML attributes for the widget container tag. The following special options are recognized:
      *
      * - `tag`: string, the tag name for the container. Defaults to `div`
-     *   This option is available since version 2.0.7.
      */
     public $options = [];
     /**

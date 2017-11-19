@@ -74,7 +74,7 @@ abstract class AssetBundle extends BaseObject
         if (isset($assets[0])){
             foreach ($assets as $path){
                 if (($assetPath = App::$instance->assetManager->registerAsset($path)) != null){
-                    $view->registerJsFile($assetPath, AssetBundle::POS_HEAD);
+                    $view->registerJsFile($assetPath, AssetBundle::POS_BODY_END);
                 }
             }
         } else {

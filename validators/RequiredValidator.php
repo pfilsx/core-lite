@@ -15,7 +15,9 @@ class RequiredValidator extends BaseObject implements ValidatorInterface
     public $strict = false;
 
     public $message;
-
+    /**
+     * @inheritdoc
+     */
     public function init(){
         parent::init();
         if ($this->message === null) {
@@ -23,8 +25,7 @@ class RequiredValidator extends BaseObject implements ValidatorInterface
         }
     }
     /**
-     * @param mixed $value
-     * @return true|string
+     * @inheritdoc
      */
     function validateValue($value)
     {

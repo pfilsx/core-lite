@@ -9,6 +9,11 @@ use core\base\BaseObject;
 abstract class Validator extends BaseObject
 {
 
+    /**
+     * @param $validatorName
+     * @param array $params
+     * @return ValidatorInterface|null
+     */
     public static function createValidator($validatorName, $params = []){
         if (array_key_exists(strtolower($validatorName), static::$_validatorsList)){
             $validatorClass = static::$_validatorsList[strtolower($validatorName)];
@@ -24,5 +29,6 @@ abstract class Validator extends BaseObject
         'email' => '\core\validators\EmailValidator',
         'required' => '\core\validators\RequiredValidator',
         'string' => '\core\validators\StringValidator',
+        'mask' => '\core\validators\MaskValidator',
     ];
 }

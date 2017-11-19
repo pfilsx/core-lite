@@ -21,7 +21,9 @@ class EmailValidator extends BaseObject implements ValidatorInterface
     public $enableIDN = false;
 
     public $message;
-
+    /**
+     * @inheritdoc
+     */
     public function init(){
         parent::init();
         if ($this->enableIDN && !function_exists('idn_to_ascii')) {
@@ -33,8 +35,7 @@ class EmailValidator extends BaseObject implements ValidatorInterface
     }
 
     /**
-     * @param mixed $value
-     * @return boolean
+     * @inheritdoc
      */
     function validateValue($value)
     {

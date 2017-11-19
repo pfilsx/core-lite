@@ -8,11 +8,6 @@ use Throwable;
 
 class WarningException extends \Exception
 {
-
-//    private $_file;
-
-    private $_line;
-
     public function __construct($message = "", $code = 0, $file = null, $line = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
@@ -26,6 +21,4 @@ class WarningException extends \Exception
         $ref->setAccessible(true);
         $ref->setValue($this, $line);
     }
-
-
 }

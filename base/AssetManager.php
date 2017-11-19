@@ -75,6 +75,10 @@ class AssetManager extends BaseObject
         }
     }
 
+    public function clearBundles(){
+        $this->_bundles = [];
+    }
+
 
 
 }

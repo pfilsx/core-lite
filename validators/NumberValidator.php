@@ -31,7 +31,9 @@ class NumberValidator extends BaseObject implements ValidatorInterface
 
     public $numberPattern = '/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/';
 
-
+    /**
+     * @inheritdoc
+     */
     public function init(){
         parent::init();
         if ($this->message === null) {
@@ -51,8 +53,7 @@ class NumberValidator extends BaseObject implements ValidatorInterface
         }
     }
     /**
-     * @param mixed $value
-     * @return boolean
+     * @inheritdoc
      */
     function validateValue($value)
     {

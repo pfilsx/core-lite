@@ -60,6 +60,51 @@ class QueryBuilder extends \core\db\QueryBuilder
         return false;
     }
 
+    public function batchInsert($table, array $columns, array $rows){
+        $queryStart = 'INSERT INTO '.$this->_db->quoteTableName($table).'('.implode(', ', array_map(function($column){
+                return $this->_db->quoteColumnName($column);
+            }, $columns)).') VALUES ';
+        $counter = 0;
+        $query = $queryStart;
+        $preparedRows = [];
+        foreach ($rows as $row){
+            if (count($row) != count($columns)){
+                throw new \Exception('Number of columns in row is different from number of specified columns');
+            }
+            $vs = [];
+            foreach ($row as $value){
+                switch (gettype($value)){
+                    case 'float':
+                        $value = str_replace(',', '.', (string) $value);
+                        break;
+                    case 'boolean':
+                        $value = (int)($value);
+                        break;
+                    case 'NULL':
+                        $value = 'NULL';
+                        break;
+                    case 'string':
+                    default:
+                        $value = $this->_db->quoteValue($value);
+                }
+                $vs[] = $value;
+            }
+            $preparedRows[] = '('.implode(', ',$vs).')';
+            $counter++;
+            if ($counter >= 50){
+                $query .= implode(', ', $preparedRows);
+                $this->_db->createCommand($query)->execute();
+                $counter = 0;
+                $preparedRows = [];
+                $query = $queryStart;
+            }
+        }
+        if ($counter > 0){
+            $query .= implode(', ', $preparedRows);
+            $this->_db->createCommand($query)->execute();
+        }
+    }
+
 
     public function limit($limit)
     {
@@ -77,7 +122,7 @@ class QueryBuilder extends \core\db\QueryBuilder
 
     public function join($type, $table, $on)
     {
-        $query = $type.' '.$this->_db->quoteTableName($table).' ON '.$this->parseJoinOn($table, $on);
+        $query = $type.' '.$this->_db->quoteTableName($table).' ON '.$this->parseJoinOn($on);
         $this->_joins[] = $query;
         return $this;
     }
@@ -118,7 +163,7 @@ class QueryBuilder extends \core\db\QueryBuilder
      * @param string|array $on
      * @return string
      */
-    private function parseJoinOn($table, $on){
+    private function parseJoinOn($on){
         if (is_array($on)){
             $preparedOns = [];
             foreach ($on as $key => $value){

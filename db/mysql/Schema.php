@@ -157,6 +157,39 @@ class Schema extends \core\db\Schema
         $column->autoIncrement = stripos($info['Extra'], 'auto_increment') !== false;
         $column->comment = $info['Comment'];
         $column->dbType = $info['Type'];
+        $column->unsigned = stripos($column->dbType, 'unsigned') !== false;
+        $column->type = self::TYPE_STRING;
+        if (preg_match('/^(\w+)(?:\(([^\)]+)\))?/', $column->dbType, $matches)) {
+            $type = strtolower($matches[1]);
+            if (isset($this->typeMap[$type])) {
+                $column->type = $this->typeMap[$type];
+            }
+            if (!empty($matches[2])) {
+                if ($type === 'enum') {
+                    preg_match_all("/'[^']*'/", $matches[2], $values);
+                    foreach ($values[0] as $i => $value) {
+                        $values[$i] = trim($value, "'");
+                    }
+                    $column->enumValues = $values;
+                } else {
+                    $values = explode(',', $matches[2]);
+                    $column->size = $column->precision = (int) $values[0];
+                    if (isset($values[1])) {
+                        $column->scale = (int) $values[1];
+                    }
+                    if ($column->size === 1 && $type === 'bit') {
+                        $column->type = 'boolean';
+                    } elseif ($type === 'bit') {
+                        if ($column->size > 32) {
+                            $column->type = 'bigint';
+                        } elseif ($column->size === 32) {
+                            $column->type = 'integer';
+                        }
+                    }
+                }
+            }
+        }
+        $column->phpType = $this->getColumnPhpType($column);
         return $column;
     }
 }

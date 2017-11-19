@@ -44,6 +44,8 @@ class Connection extends BaseObject
      */
     private $_driverName;
 
+    private $_pdoClass = 'PDO';
+
     public function __construct(array $config = [])
     {
         if (!isset($config['host']) || !isset($config['username'])
@@ -92,7 +94,7 @@ class Connection extends BaseObject
 
     protected function createPdoInstance()
     {
-        return new PDO($this->dsn, $this->username, $this->password);
+        return new $this->_pdoClass($this->dsn, $this->username, $this->password);
     }
 
     protected function initConnection()

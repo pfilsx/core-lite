@@ -21,13 +21,12 @@ class Pagination extends Widget
 {
     private $_currPage;
 
-    private $_pageSize;
+    public $pageSize;
 
-    private $_pageCount;
+    public $pageCount;
 
     public function init(){
-        $this->_pageCount = isset($this->_config['pageCount']) ? $this->_config['pageCount'] : null;
-        $this->_pageSize = isset($this->_config['pageSize']) ? $this->_config['pageSize'] : null;
+        parent::init();
         $this->_currPage = isset(App::$instance->request->get['page'])
             ? (int)App::$instance->request->get['page']
             : 1;
@@ -35,14 +34,14 @@ class Pagination extends Widget
 
     public function run()
     {
-        if ($this->_currPage > $this->_pageCount){
+        if ($this->_currPage > $this->pageCount){
             $this->_currPage = 1;
         }
         ob_start();
         ob_implicit_flush(false);
         echo Html::startTag('nav');
         echo Html::startTag('ul', ['class' => 'pagination']);
-        for ($i = 0; $i < $this->_pageCount; $i++){
+        for ($i = 0; $i < $this->pageCount; $i++){
             echo Html::startTag('li', ['class' => ($this->_currPage == ($i+1) ? 'active' : '')]);
             $href = '?'.Url::prepareParams(array_merge($_REQUEST, ['page' => ($i+1)]));
             echo Html::startTag('a', ['href' => $href]);
@@ -55,17 +54,7 @@ class Pagination extends Widget
         return ob_get_clean();
     }
 
-    public function getPageCount(){
-        return $this->_pageCount;
-    }
-    public function setPageCount($value){
-        $this->_pageCount = $value;
-    }
-
     public function getCurrentPage(){
         return $this->_currPage;
-    }
-    public function getPageSize(){
-        return $this->_pageSize;
     }
 }

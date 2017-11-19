@@ -4,9 +4,11 @@
 namespace core\widgets\activeform;
 
 
+use core\base\BaseObject;
+use core\helpers\ArrayHelper;
 use core\web\Html;
 
-class ActiveField
+class ActiveField extends BaseObject
 {
 
     /**
@@ -26,6 +28,7 @@ class ActiveField
      * @var string
      */
     private $_label;
+    private $_labelOptions = [];
 
     /**
      * @var array
@@ -49,6 +52,7 @@ class ActiveField
         $this->_model = $model;
         $this->_attribute = $attribute;
         $this->_form = $form;
+        parent::__construct([]);
     }
 
     public function input($type = 'text', $options = [])
@@ -58,6 +62,8 @@ class ActiveField
                 return $this->fileInput($options);
             case 'hidden':
                 return $this->hiddenInput($options);
+            case 'checkbox':
+                return $this->checkbox($options, true);
             default:
                 $this->getFieldName();
                 $this->_elements[] = Html::input($this->getFieldName(), $type, $this->_model->{$this->_attribute},
@@ -71,23 +77,27 @@ class ActiveField
 
     public function checkbox($options = [], $enclosedByLabel = true)
     {
-        $html = Html::startTag('div', ['class' => 'crl-checkbox-group']);
-        if ($enclosedByLabel) {
-            $html .= Html::startTag('label', [
-                'for' => $this->getFieldName()
-                ]).Html::checkbox($this->getFieldName(), $this->_model->{$this->_attribute},
-                    $this->mergeOptions($options,[
-                        'data-field' => $this->_attribute
-                    ]))
-                .$this->_model->getAttributeLabel($this->_attribute)
-                .Html::endTag('label');
-        } else {
-            $html .= Html::checkbox($this->getFieldName(), $this->_model->{$this->_attribute},
-                $this->mergeOptions($options, [
-                    'data-field' => $this->_attribute
-                ]));
-        }
-        $html .= Html::endTag('div');
+//        $html = Html::startTag('div', ['class' => 'crl-checkbox-group']);
+//        if ($enclosedByLabel) {
+//            $html .= Html::startTag('label', [
+//                'for' => $this->getFieldName()
+//                ]).Html::checkbox($this->getFieldName(), $this->_model->{$this->_attribute},
+//                    $this->mergeOptions($options,[
+//                        'data-field' => $this->_attribute
+//                    ]))
+//                .$this->_model->getAttributeLabel($this->_attribute)
+//                .Html::endTag('label');
+//        } else {
+//            $html .= Html::checkbox($this->getFieldName(), $this->_model->{$this->_attribute},
+//                $this->mergeOptions($options, [
+//                    'data-field' => $this->_attribute
+//                ]));
+//        }
+        $html = Html::checkbox($this->getFieldName(), $this->_model->{$this->_attribute},
+            $this->mergeOptions($options, [
+                'data-field' => $this->_attribute
+            ]));
+//        $html .= Html::endTag('div');
         $this->_elements[] = $html;
 
         $this->_enclosedByLabel = $enclosedByLabel;
@@ -96,24 +106,27 @@ class ActiveField
 
     public function radio($options = [], $enclosedByLabel = true){
         $html = Html::startTag('div', ['class' => 'crl-radio-group']);
-        if ($enclosedByLabel) {
-            $html .= Html::startTag('label', [
-                    'for' => $this->getFieldName()
-                ]).Html::radio($this->getFieldName(), $this->_model->{$this->_attribute},
-                    $this->mergeOptions($options, [
-                        'data-field' => $this->_attribute
-                    ]))
-                .$this->_model->getAttributeLabel($this->_attribute)
-                .Html::endTag('label');
-        } else {
-            $html .= Html::radio($this->getFieldName(), $this->_model->{$this->_attribute},
-                $this->mergeOptions($options,[
-                    'data-field' => $this->_attribute
-                ]));
-        }
+//        if ($enclosedByLabel) {
+//            $html .= Html::startTag('label', [
+//                    'for' => $this->getFieldName()
+//                ]).Html::radio($this->getFieldName(), $this->_model->{$this->_attribute},
+//                    $this->mergeOptions($options, [
+//                        'data-field' => $this->_attribute
+//                    ]))
+//                .$this->_model->getAttributeLabel($this->_attribute)
+//                .Html::endTag('label');
+//        } else {
+//            $html .= Html::radio($this->getFieldName(), $this->_model->{$this->_attribute},
+//                $this->mergeOptions($options,[
+//                    'data-field' => $this->_attribute
+//                ]));
+//        }
+        $html .= Html::radio($this->getFieldName(), $this->_model->{$this->_attribute},
+            $this->mergeOptions($options,[
+                'data-field' => $this->_attribute
+            ]));
         $html .= Html::endTag('div');
         $this->_elements[] = $html;
-
         $this->_enclosedByLabel = $enclosedByLabel;
         return $this;
     }
@@ -175,19 +188,30 @@ class ActiveField
 
     public function label($text, $options = [])
     {
-        $this->_label = Html::label($text, $this->getFieldName(), $this->mergeOptions($options, []));
+        $this->_label = $text;
+        $this->_labelOptions = $options;
         return $this;
     }
 
     private function render()
     {
         $html = Html::startTag('div', ['class' => 'crl-active-form-group']);
-        if ($this->_label == null && !$this->_enclosedByLabel) {
+        if ($this->_label == null) {
             $this->label($this->_model->getAttributeLabel($this->_attribute));
-
         }
-        $html .= $this->_label . PHP_EOL;
-        $html .= implode(PHP_EOL, $this->_elements);
+        if ($this->_enclosedByLabel){
+            $html .= Html::startTag('label', ArrayHelper::merge_recursive($this->_labelOptions, [
+                'class' => 'control-label',
+                'for' => $this->getFieldName()
+            ]));
+            $html .= implode(PHP_EOL, $this->_elements);
+            $html .= $this->_label.Html::endTag('label');
+        } else {
+            $html .= Html::label($this->_label, $this->getFieldName(), ArrayHelper::merge_recursive($this->_labelOptions,[
+                'class' => 'control-label'
+            ]));
+            $html .= implode(PHP_EOL, $this->_elements);
+        }
         $html .= Html::endTag('div');
 
         return $html;

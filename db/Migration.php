@@ -61,48 +61,8 @@ abstract class Migration extends BaseObject
     }
 
     protected function batchInsert($table, array $columns, array $rows){
-        $queryStart = 'INSERT INTO '.$this->db->quoteTableName($table).'('.implode(', ', array_map(function($column){
-                return $this->db->quoteColumnName($column);
-            }, $columns)).') VALUES ';
-        $counter = 0;
-        $query = $queryStart;
-        $preparedRows = [];
-        foreach ($rows as $row){
-            if (count($row) != count($columns)){
-                throw new \Exception('Number of columns in row is different from number of specified columns');
-            }
-            $vs = [];
-            foreach ($row as $value){
-                switch (gettype($value)){
-                    case 'float':
-                        $value = str_replace(',', '.', (string) $value);
-                        break;
-                    case 'boolean':
-                        $value = (int)($value);
-                        break;
-                    case 'NULL':
-                        $value = 'NULL';
-                        break;
-                    case 'string':
-                    default:
-                        $value = $this->db->quoteValue($value);
-                }
-                $vs[] = $value;
-            }
-            $preparedRows[] = '('.implode(', ',$vs).')';
-            $counter++;
-            if ($counter >= 50){
-                $query .= implode(', ', $preparedRows);
-                $this->db->createCommand($query)->execute();
-                $counter = 0;
-                $preparedRows = [];
-                $query = $queryStart;
-            }
-        }
-        if ($counter > 0){
-            $query .= implode(', ', $preparedRows);
-            $this->db->createCommand($query)->execute();
-        }
+        $builder = $this->db->createQueryBuilder();
+        $builder->batchInsert($table, $columns, $rows);
     }
 
     protected function delete($table, $where = []){

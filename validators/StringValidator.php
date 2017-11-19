@@ -37,7 +37,9 @@ class StringValidator extends BaseObject implements ValidatorInterface
      * @var string user-defined error message used when the length of the value is not equal to [[length]].
      */
     public $notEqual;
-
+    /**
+     * @inheritdoc
+     */
     public function init(){
         parent::init();
         if (is_array($this->length)) {
@@ -73,8 +75,7 @@ class StringValidator extends BaseObject implements ValidatorInterface
     }
 
     /**
-     * @param mixed $value
-     * @return string|true
+     * @inheritdoc
      */
     function validateValue($value)
     {

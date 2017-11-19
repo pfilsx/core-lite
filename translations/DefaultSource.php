@@ -24,6 +24,7 @@ class DefaultSource extends TranslateSource
     {
         return [
             'en' => [
+                '{attribute} is invalid' => '{attribute} is invalid.',
                 '{attribute} cannot be blank' => '{attribute} cannot be blank.',
                 '{attribute} must be an integer' => '{attribute} must be an integer.',
                 '{attribute} must be a number' => '{attribute} must be a number.',
@@ -37,6 +38,7 @@ class DefaultSource extends TranslateSource
                 '{attribute} should contain {length} characters' => '{attribute} should contain {length} characters.'
             ],
             'ru' => [
+                '{attribute} is invalid' => '{attribute} не корректен.',
                 '{attribute} cannot be blank' => 'Поле {attribute} не может быть пустым.',
                 '{attribute} must be an integer' => 'Поле {attribute} долно быть целым числом.',
                 '{attribute} must be a number' => 'Поле {attribute} должно быть числом.',

@@ -116,6 +116,13 @@ abstract class QueryBuilder extends BaseObject
     public abstract function insert($table, array $fields);
 
     /**
+     * @param string $table
+     * @param array $columns
+     * @param array $rows
+     */
+    public abstract function batchInsert($table, array $columns, array $rows);
+
+    /**
      * @return QueryBuilder
      */
     public abstract function delete();

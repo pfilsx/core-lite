@@ -21,6 +21,8 @@ use core\web\HeaderCollection;
  * @property string cookieValidationKey
  * @property string userLanguage
  * @property string url
+ * @property string baseUrl
+ * @property string scriptFile
  */
 class Request extends BaseObject
 {
@@ -156,17 +158,42 @@ class Request extends BaseObject
     public function getPost(){
         return $this->_post;
     }
+    public function post($name){
+        if (isset($this->_post[$name])){
+            return $this->_post[$name];
+        }
+        return null;
+    }
     public function getGet(){
         return $this->_get;
+    }
+    public function get($name){
+        if (isset($this->_get[$name])){
+            return $this->_get[$name];
+        }
+        return null;
     }
 
     public function getFiles(){
         return $this->_files;
     }
+    public function files($name){
+        if (isset($this->_files[$name])){
+            return $this->_files[$name];
+        }
+        return null;
+    }
 
     public function getRequest(){
         return $this->_request;
     }
+    public function request($name){
+        if (isset($this->_request[$name])){
+            return $this->_request[$name];
+        }
+        return null;
+    }
+
 
     public function getIsAjax()
     {

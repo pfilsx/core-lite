@@ -13,7 +13,14 @@ class ColumnSchema extends BaseObject
     public $isPrimaryKey;
     public $autoIncrement;
     public $comment;
+    public $phpType;
     public $dbType;
+    public $type;
+    public $enumValues;
+    public $precision;
+    public $size;
+    public $scale;
+    public $unsigned;
 
     public function __construct(array $config = [])
     {

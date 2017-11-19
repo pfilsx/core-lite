@@ -8,6 +8,7 @@ use Core;
 use core\base\App;
 use core\base\BaseObject;
 use core\helpers\FileHelper;
+use core\web\Html;
 
 class View extends BaseObject
 {
@@ -25,6 +26,8 @@ class View extends BaseObject
 
     private $_content;
 
+    private $_metaTags = [];
+
     private $_jsHead = [];
 
     private $_jsBodyBegin = [];
@@ -35,6 +38,7 @@ class View extends BaseObject
     private $_cssBodyBegin = [];
     private $_cssBodyEnd = [];
 
+    const META = '<![CDATA[CRL-BLOCK-META]]>';
     const HEAD = '<![CDATA[CRL-BLOCK-HEAD]]>';
     const BODY_END = '<![CDATA[CRL-BLOCK-BODY-END]]>';
     const BODY_BEGIN = '<![CDATA[CRL-BLOCK-BODY-BEGIN]]>';
@@ -53,13 +57,9 @@ class View extends BaseObject
     {
         $this->_controller = $controller;
         $this->_viewName = str_replace('/', DIRECTORY_SEPARATOR, $view);
-        $this->_layout = $filePath = Core::getAlias($controller->layout . '.php');
+        $this->_layout = Core::getAlias($controller->layout . '.php');
         $config = App::$instance->config['routing'];
-        if (isset($config['viewsPath'])){
-            $this->_viewsPath = FileHelper::normalizePath(Core::getAlias($config['viewsPath']));
-        } else {
-            $this->_viewsPath = Core::getAlias('@app/views');
-        }
+        $this->_viewsPath = $controller->viewsPath;
         parent::__construct($config);
     }
 
@@ -114,8 +114,28 @@ class View extends BaseObject
         return null;
     }
 
+    public static function renderPartial($view, array $_params_ = []){
+        $path = FileHelper::normalizePath(Core::getAlias($view));
+        if (file_exists($path)){
+            ob_start();
+            ob_implicit_flush(false);
+            extract($_params_, EXTR_OVERWRITE);
+            require $path;
+            return ob_get_clean();
+        }
+        return null;
+    }
+
+    public function registerMetaTag($options, $key = null){
+        if ($key == null){
+            $this->_metaTags[] = Html::tag('meta', '', $options);
+        } else {
+            $this->_metaTags[$key] = Html::tag('meta', '', $options);
+        }
+    }
+
     public function registerJs($js, $position = View::POS_BODY_END){
-        $content = "<script>$js</script>";
+        $content = Html::tag('script', $js, ['type' => 'text/javascript']);
         if ($position == View::POS_HEAD){
             $this->_jsHead[] = $content;
         } else if ($position == View::POS_BODY_BEGIN) {
@@ -126,7 +146,7 @@ class View extends BaseObject
     }
     public function registerJsFile($file, $position = View::POS_BODY_END){
         $path = App::$instance->request->getBaseUrl().'/'.$file;
-        $content = "<script src='$path'></script>";
+        $content = Html::tag('script','', ['src' => $path, 'type' => 'text/javascript']);
         if ($position == View::POS_HEAD){
             $this->_jsHead[] = $content;
         } else if ($position == View::POS_BODY_BEGIN) {
@@ -137,7 +157,7 @@ class View extends BaseObject
     }
 
     public function registerCss($css, $position = View::POS_HEAD){
-        $content = "<style>$css</style>";
+        $content = Html::tag('style', $css);
         if ($position == View::POS_BODY_BEGIN){
             $this->_cssBodyBegin[] = $content;
         } else if ($position == View::POS_BODY_END){
@@ -148,7 +168,7 @@ class View extends BaseObject
     }
     public function registerCssFile($file, $position = View::POS_HEAD){
         $path = App::$instance->request->getBaseUrl().'/'.$file;
-        $content = "<link rel='stylesheet' href='$path'/>";
+        $content = Html::tag('link', '', ['rel' => 'stylesheet', 'href' => $path]);
         if ($position == View::POS_BODY_BEGIN){
             $this->_cssBodyBegin[] = $content;
         } else if ($position == View::POS_BODY_END){
@@ -160,11 +180,16 @@ class View extends BaseObject
 
     public function clear(){
         $this->_jsHead = [];
+        $this->_metaTags = [];
         $this->_jsBodyBegin = [];
         $this->_jsBodyEnd = [];
         $this->_cssHead = [];
         $this->_cssBodyBegin = [];
         $this->_cssBodyEnd = [];
+    }
+
+    public function metaTags(){
+        echo View::META;
     }
 
     public function head(){
@@ -178,11 +203,6 @@ class View extends BaseObject
         echo View::BODY_END;
     }
 
-    public function endPage(){
-        $content = ob_get_clean();
-        return $content;
-    }
-
     private function getViewPath($viewName = null){
         $viewName = ($viewName == null ? $this->_viewName : $viewName);
         $classWithNamespace = get_class($this->_controller);
@@ -193,18 +213,16 @@ class View extends BaseObject
     }
 
     private function prepareContent(){
+        $preparedMeta = implode(PHP_EOL, $this->_metaTags);
         $preparedHead = implode(PHP_EOL, $this->_cssHead).PHP_EOL.implode(PHP_EOL, $this->_jsHead);
         $preparedBodyBegin = implode(PHP_EOL, $this->_cssBodyBegin).PHP_EOL.implode(PHP_EOL, $this->_jsBodyBegin);
         $preparedBodyEnd = implode(PHP_EOL, $this->_cssBodyEnd).PHP_EOL.implode(PHP_EOL, $this->_jsBodyEnd);
-        $this->_content = str_replace([
-            View::HEAD,
-            View::BODY_BEGIN,
-            View::BODY_END
-        ], [
-            $preparedHead,
-            $preparedBodyBegin,
-            $preparedBodyEnd
-        ], $this->_content);
+        $this->_content = strtr($this->_content, [
+            View::META => $preparedMeta,
+            View::HEAD => $preparedHead,
+            View::BODY_BEGIN => $preparedBodyBegin,
+            View::BODY_END => $preparedBodyEnd
+        ]);
     }
 
 
