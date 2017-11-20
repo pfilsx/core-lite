@@ -46,13 +46,12 @@ final class Router extends BaseObject
             : ['Default', 'Index'];
         $this->_defaultController = isset($defaults[0]) ? $defaults[0] : 'Default';
         $this->_defaultAction = isset($defaults[1]) ? $defaults[1] : 'Index';
-        if (isset($this->_config['controllersPath'])){
-            $this->_controllersPath = FileHelper::normalizePath($this->_config['controllersPath']);
-            $this->_controllersNamespace = str_replace(['@app', '/', '-'], ['', '\\', '_'], $this->_config['controllersPath']);
-        } else {
-            $this->_controllersPath = '@app'.DIRECTORY_SEPARATOR.'controllers';
-            $this->_controllersNamespace = '\\app\\controllers';
-        }
+        $this->_controllersNamespace = isset($this->_config['controllersNamespace'])
+            ? $this->_config['controllersNamespace']
+            : 'app\\controllers';
+        $controllersPath = (substr($this->_controllersNamespace,0,1) != '@')
+            ? '@'.$this->_controllersNamespace : $this->_controllersNamespace;
+        $this->_controllersPath = FileHelper::normalizePath(Core::getAlias($controllersPath));
         if (isset($this->_config['rules'])){
             foreach ($this->_config['rules'] as $key => $value){
                 $this->_rules[] = new UrlRule($this, $key, $value);
