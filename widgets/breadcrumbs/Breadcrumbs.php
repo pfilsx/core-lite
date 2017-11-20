@@ -9,7 +9,7 @@ use core\web\Html;
 
 class Breadcrumbs extends Widget
 {
-    private $_elements = [];
+    protected $_elements = [];
 
     public function init(){
         $this->_elements = $this->_config;
