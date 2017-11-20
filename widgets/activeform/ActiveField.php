@@ -5,6 +5,7 @@ namespace core\widgets\activeform;
 
 
 use core\base\BaseObject;
+use core\components\Model;
 use core\helpers\ArrayHelper;
 use core\web\Html;
 
@@ -14,40 +15,40 @@ class ActiveField extends BaseObject
     /**
      * @var \core\components\Model
      */
-    private $_model;
+    protected $_model;
     /**
      * @var string
      */
-    private $_attribute;
+    protected $_attribute;
     /**
      * @var \core\widgets\activeform\ActiveForm
      */
-    private $_form;
+    protected $_form;
 
     /**
      * @var string
      */
-    private $_label;
-    private $_labelOptions = [];
+    protected $_label;
+    protected $_labelOptions = [];
 
     /**
      * @var array
      */
-    private $_elements = [];
+    protected $_elements = [];
 
     /**
      * @var bool
      */
-    private $_enclosedByLabel = false;
+    protected $_enclosedByLabel = false;
 
-    private $_fieldName;
+    protected $_fieldName;
 
 
     /**
      * ActiveField constructor.
-     * @param array $model
-     * @param $attribute
-     * @param $form
+     * @param Model $model
+     * @param string $attribute
+     * @param ActiveForm $form
      */
     public function __construct($model, $attribute, $form)
     {
@@ -67,15 +68,19 @@ class ActiveField extends BaseObject
             case 'checkbox':
                 return $this->checkbox($options, true);
             default:
-                $this->getFieldName();
-                $this->_elements[] = Html::input($this->getFieldName(), $type, $this->_model->{$this->_attribute},
-                    $this->mergeOptions($options, [
-                        'data-field' => $this->_attribute
-                    ]));
-                $this->_elements[] = Html::startTag('span', ['class' => $this->_attribute.'_help help-block']).Html::endTag('span');
-                return $this;
+                return $this->defaultInput($type, $options);
         }
     }
+
+    protected function defaultInput($type, $options = []){
+        $this->_elements[] = Html::input($this->getFieldName(), $type, $this->_model->{$this->_attribute},
+            array_merge($options, [
+                'data-field' => $this->_attribute
+            ]));
+        $this->_elements[] = Html::startTag('span', ['class' => $this->_attribute.'_help help-block']).Html::endTag('span');
+        return $this;
+    }
+
 
     public function checkbox($options = [], $enclosedByLabel = true)
     {
@@ -144,7 +149,7 @@ class ActiveField extends BaseObject
         return $this;
     }
 
-    private function render()
+    protected function render()
     {
         $html = Html::startTag('div', ['class' => 'crl-active-form-group']);
         if ($this->_label == null) {
@@ -165,22 +170,7 @@ class ActiveField extends BaseObject
         return $html;
     }
 
-    private function mergeOptions($defaults, $options){
-//        foreach ($options as $key => $value){
-//            if (array_key_exists($key, $defaults)){
-//                if (in_array(trim($key), $this->_mergeblesAttrs)){
-//                    if (gettype($defaults[$key]) == gettype($options[$key])){
-//                        $defaults[$key] = $defaults[$key].' '.$options[$key];
-//                        continue;
-//                    }
-//                }
-//            }
-//            $defaults[$key] = $options[$key];
-//        }
-        return ArrayHelper::merge_recursive($defaults, $options);
-    }
-
-    private function getFieldName(){
+    protected function getFieldName(){
         if ($this->_fieldName == null){
             $this->_fieldName = $this->_model->getAttributeName($this->_attribute);
         }
