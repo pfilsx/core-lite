@@ -10,8 +10,6 @@ use core\helpers\FileHelper;
 class AssetManager extends BaseObject
 {
 
-    private $_basicFontsPath = '@crl/assets/fonts';
-
     private $_bundles = [];
 
     public $registeredBundles = [];
@@ -22,7 +20,6 @@ class AssetManager extends BaseObject
     }
 
     public function init(){
-        $this->placeFonts();
         foreach ($this->_config as $bundle){
             if (new $bundle() instanceof AssetBundle){
                 $this->_bundles[] = $bundle;
@@ -31,16 +28,19 @@ class AssetManager extends BaseObject
     }
 
 
-    private function placeFonts(){
-        $dependPath = FileHelper::normalizePath(Core::getAlias($this->_basicFontsPath));
-        if (is_dir($dependPath)){
+    public function placeFonts($path){
+        $fontPath = FileHelper::normalizePath(Core::getAlias($path));
+        if (is_file($fontPath)){
+            $fontPath = dirname($fontPath);
+        }
+        if (is_dir($fontPath)){
             $newPath = FileHelper::normalizePath(Core::getAlias('@webroot').'\\assets\\fonts\\');
             if (!is_dir($newPath)){
                 if (!FileHelper::createDirectory($newPath)){
                     return;
                 }
             }
-            foreach (FileHelper::findFiles($dependPath) as $file){
+            foreach (FileHelper::findFiles($fontPath) as $file){
                 $newFilePath = $newPath.DIRECTORY_SEPARATOR.basename($file);
                 if (!is_file($newFilePath)){
                     copy($file, $newFilePath);

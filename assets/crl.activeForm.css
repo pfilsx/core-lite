@@ -1,0 +1,6 @@
+.crl-active-form .help-block {
+    display: none;
+}
+.crl-active-form .has-error .help-block {
+    display: block;
+}
