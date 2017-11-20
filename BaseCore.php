@@ -26,7 +26,7 @@ class BaseCore
 
         $pos = strpos($alias, '/');
         if ($pos === false){
-            $pos = strpos($alias, DIRECTORY_SEPARATOR);
+            $pos = strpos($alias, '\\');
         }
         $root = $pos === false ? $alias : substr($alias, 0, $pos);
 
