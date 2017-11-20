@@ -6,7 +6,7 @@ namespace core\widgets\pjax;
 
 use core\base\App;
 use core\base\Response;
-use core\base\Widget;
+use core\components\Widget;
 use core\helpers\ArrayHelper;
 use core\helpers\Json;
 use core\web\Html;

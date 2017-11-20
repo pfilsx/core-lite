@@ -5,7 +5,7 @@ namespace core\widgets\pagination;
 
 
 use core\base\App;
-use core\base\Widget;
+use core\components\Widget;
 use core\helpers\Url;
 use core\web\Html;
 

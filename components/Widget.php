@@ -1,8 +1,10 @@
 <?php
 
 
-namespace core\base;
+namespace core\components;
 
+
+use core\base\BaseObject;
 
 abstract class Widget extends BaseObject
 {
@@ -19,6 +21,11 @@ abstract class Widget extends BaseObject
      * @see getId()
      */
     public static $autoIdPrefix = 'w';
+
+    /**
+     * @var bool enable/disable widget assets bundles
+     */
+    public $assetsEnabled = true;
 
     public function init(){
         foreach ($this->_config as $key => $value){

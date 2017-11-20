@@ -8,6 +8,13 @@ use core\components\AssetBundle;
 
 class ActiveFormAssets extends AssetBundle
 {
+    public static function cssAssets()
+    {
+        return [
+            '@crl/assets/crl.activeForm.css' => static::POS_HEAD
+        ];
+    }
+
     public static function jsAssets()
     {
         return [

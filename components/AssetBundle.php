@@ -26,6 +26,9 @@ abstract class AssetBundle extends BaseObject
     public static function depends(){
         return [];
     }
+    public static function fonts(){
+        return [];
+    }
 
     public final static function registerAssets()
     {
@@ -33,9 +36,13 @@ abstract class AssetBundle extends BaseObject
         if ($view == null || in_array(static::className(), App::$instance->assetManager->registeredBundles)) {
             return;
         }
+        $fonts = static::fonts();
         $cssAssets = static::cssAssets();
         $jsAssets = static::jsAssets();
         $depends = static::depends();
+        if (!empty($fonts)){
+            static::_placeFonts($fonts);
+        }
         if (!empty($depends)){
             static::_registerDepends($depends);
         }
@@ -47,6 +54,11 @@ abstract class AssetBundle extends BaseObject
         }
         App::$instance->assetManager->registeredBundles[] = static::className();
     }
+
+    private static function _placeFonts($fontsPath){
+        App::$instance->assetManager->placeFonts($fontsPath);
+    }
+
     /**
      * @param View $view
      * @param array $assets

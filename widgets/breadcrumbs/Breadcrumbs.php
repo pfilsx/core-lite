@@ -4,7 +4,7 @@
 namespace core\widgets\breadcrumbs;
 
 
-use core\base\Widget;
+use core\components\Widget;
 use core\web\Html;
 
 class Breadcrumbs extends Widget
@@ -19,7 +19,7 @@ class Breadcrumbs extends Widget
     {
         ob_start();
         ob_implicit_flush(false);
-        echo Html::startTag('ol', ['class' => 'breadcrumbs']);
+        echo Html::startTag('ol', ['class' => 'crl-breadcrumbs']);
         foreach ($this->_elements as $key => $url){
             echo "<li><a href=\"$url\">$key</a></li>";
         }

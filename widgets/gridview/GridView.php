@@ -5,11 +5,9 @@ namespace core\widgets\gridview;
 
 
 use core\base\App;
-use core\base\BaseObject;
-use core\base\Widget;
+use core\components\Widget;
 use core\components\ActiveModel;
 use core\db\QueryBuilder;
-use core\helpers\Url;
 use core\providers\ActiveDataProvider;
 use core\providers\ArrayDataProvider;
 use core\providers\DataProvider;
@@ -96,8 +94,8 @@ class GridView extends Widget
         return ob_get_clean();
     }
 
-    private function printHeader(){
-        echo Html::startTag('table', ['class' => 'table table-bordered table-responsive']);
+    protected function printHeader(){
+        echo Html::startTag('table', ['class' => 'crl-grid']);
         echo Html::startTag('thead');
         echo Html::startTag('tr');
         foreach ($this->_columns as $column){
@@ -107,7 +105,7 @@ class GridView extends Widget
         echo Html::endTag('thead');
     }
 
-    private function printContent(){
+    protected function printContent(){
         echo Html::startTag('tbody');
         foreach ($this->_data as $row){
             $this->printRow($row);
@@ -115,14 +113,14 @@ class GridView extends Widget
         echo Html::endTag('tbody');
     }
 
-    private function printFooter(){
+    protected function printFooter(){
         echo Html::endTag('table');
     }
 
     /**
      * @param ActiveModel $row
      */
-    private function printRow($row){
+    protected function printRow($row){
         echo Html::startTag('tr');
         foreach ($this->_columns as $column){
             echo $column->getBody($row);
@@ -130,7 +128,7 @@ class GridView extends Widget
         echo Html::endTag('tr');
     }
 
-    private function printPagination(){
+    protected function printPagination(){
         if (!$this->_paginationEnable){
             return;
         }
