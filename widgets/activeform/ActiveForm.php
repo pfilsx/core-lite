@@ -3,7 +3,7 @@
 
 namespace core\widgets\activeform;
 
-use core\base\Widget;
+use core\components\Widget;
 use core\helpers\ArrayHelper;
 use core\web\Html;
 
@@ -31,7 +31,9 @@ class ActiveForm extends Widget
 
     public function init(){
         parent::init();
-        ActiveFormAssets::registerAssets();
+        if ($this->assetsEnabled){
+            ActiveFormAssets::registerAssets();
+        }
         ob_start();
         ob_implicit_flush(false);
     }

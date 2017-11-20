@@ -6,7 +6,11 @@ namespace core\providers;
 
 use core\base\BaseObject;
 use core\components\ActiveModel;
+use core\db\QueryBuilder;
 
+/**
+ * @property QueryBuilder query
+ */
 abstract class DataProvider extends BaseObject
 {
 
