@@ -102,22 +102,25 @@ class BaseCore
 
     public static function autoload($className)
     {
-        if (array_key_exists($className, static::$classMap)){
+        if (array_key_exists($className, static::$classMap)) {
             $classFile = static::$classMap[$className];
             if ($classFile[0] === '@') {
                 $classFile = static::getAlias($classFile);
             }
             $classFile = str_replace('/', DIRECTORY_SEPARATOR, $classFile);
-        } else {
-            if (substr($className, 0 , 3) != 'app'){
-                $className = 'app\\'.$className;
-            }
+        } else if (strpos($className, '\\') !== false) {
             $classFile = static::getAlias('@' . str_replace(['\\', '_'], [DIRECTORY_SEPARATOR, '-'], $className) . '.php');
             if ($classFile === false || !is_file($classFile)) {
-                throw new \Exception("$className does not exist");
+                return;
             }
+        } else {
+            return;
         }
-        require_once $classFile;
+        include $classFile;
+        
+        if (CRL_DEBUG && !class_exists($className, false) && !interface_exists($className, false) && !trait_exists($className, false)) {
+            throw new \Exception("Unable to find '$className' in file: $classFile. Namespace missing?");
+        }
     }
 
 

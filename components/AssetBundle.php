@@ -55,8 +55,14 @@ abstract class AssetBundle extends BaseObject
         App::$instance->assetManager->registeredBundles[] = static::className();
     }
 
+    /**
+     * @param array|string $fontsPath
+     */
     private static function _placeFonts($fontsPath){
-        App::$instance->assetManager->placeFonts($fontsPath);
+        $fontsPaths = (array)$fontsPath;
+        foreach ($fontsPaths as $path){
+            App::$instance->assetManager->placeFonts($path);
+        }
     }
 
     /**
