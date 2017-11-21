@@ -147,7 +147,7 @@ class AssetManager extends BaseObject
     public function publishFile($path){
         $path = FileHelper::normalizePath(Core::getAlias($path));
         if (is_file($path)) {
-            $assetPath = $this->destPath . basename($path);
+            $assetPath = $this->destPath . DIRECTORY_SEPARATOR . basename($path);
             if (is_file($assetPath)) {
                 if (md5_file($assetPath) !== md5_file($path)) {
                     copy($path, $assetPath);
@@ -172,6 +172,7 @@ class AssetManager extends BaseObject
                 }
             }
             if (is_dir($this->destPath)){
+                $destPath = $this->destPath.DIRECTORY_SEPARATOR.basename($path);
                 $opts = array_merge(
                     $options,
                     [
@@ -191,7 +192,7 @@ class AssetManager extends BaseObject
                 if (!isset($opts['afterCopy']) && $this->afterCopy !== null) {
                     $opts['afterCopy'] = $this->afterCopy;
                 }
-                FileHelper::copyDirectory($path, $this->destPath, $opts);
+                FileHelper::copyDirectory($path, $destPath, $opts);
             }
         }
         return false;
