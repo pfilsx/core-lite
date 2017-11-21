@@ -8,17 +8,19 @@ use core\components\AssetBundle;
 
 class MainAssets extends AssetBundle
 {
-    public static function cssAssets()
+    public $basePath = '@crl/assets';
+
+    public function cssAssets()
     {
         return [
-            '@crl/assets/crl.style.css' => static::POS_HEAD
+            'crl.style.css' => static::POS_HEAD
         ];
     }
 
-    public static function jsAssets()
+    public function jsAssets()
     {
         return [
-            '@crl/assets/crl.main.js' => static::POS_BODY_END
+            'crl.main.js' => static::POS_BODY_END
         ];
     }
 }

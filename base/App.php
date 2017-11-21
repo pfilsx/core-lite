@@ -128,7 +128,7 @@ final class App extends BaseObject
 
     private function preInit($config)
     {
-        static::$instance = $this;
+        Core::$app = static::$instance = $this;
         if (isset($config['basePath'])) {
             $this->setBasePath($config['basePath']);
         } else {
