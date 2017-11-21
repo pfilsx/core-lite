@@ -8,20 +8,22 @@ use core\components\AssetBundle;
 
 class ActiveFormAssets extends AssetBundle
 {
-    public static function cssAssets()
+    public $basePath = '@crl/assets';
+
+    public function cssAssets()
     {
         return [
-            '@crl/assets/crl.activeForm.css' => static::POS_HEAD
+            'crl.activeForm.css' => static::POS_HEAD
         ];
     }
 
-    public static function jsAssets()
+    public function jsAssets()
     {
         return [
-          '@crl/assets/crl.activeForm.js' => static::POS_BODY_END
+          'crl.activeForm.js' => static::POS_BODY_END
         ];
     }
-    public static function depends()
+    public function depends()
     {
         return [
             'core\assets\MainAssets'

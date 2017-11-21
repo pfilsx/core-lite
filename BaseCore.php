@@ -16,6 +16,8 @@ class BaseCore
         '@crl' => __DIR__
     ];
 
+    public static $app = null;
+
     public static $classMap = [];
 
     public static function getAlias($alias){

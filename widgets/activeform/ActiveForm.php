@@ -32,7 +32,7 @@ class ActiveForm extends Widget
     public function init(){
         parent::init();
         if ($this->assetsEnabled){
-            ActiveFormAssets::registerAssets();
+            ActiveFormAssets::register();
         }
         ob_start();
         ob_implicit_flush(false);
