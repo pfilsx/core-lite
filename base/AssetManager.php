@@ -31,8 +31,8 @@ class AssetManager extends BaseObject
 
     public function init()
     {
-        foreach ($this->_config as $bundle) {
-            if (new $bundle() instanceof AssetBundle) {
+        foreach ($this->_config['bundles'] as $bundle) {
+            if (is_subclass_of($bundle, AssetBundle::className())) {
                 $this->_bundles[] = $bundle;
             }
         }
@@ -45,15 +45,14 @@ class AssetManager extends BaseObject
         if (is_file($fontPath)) {
             $fontPath = dirname($fontPath);
         }
-        $this->publishDirectory($fontPath,[]);
+        $this->publishDirectory($fontPath, []);
     }
 
     public function registerBundles()
     {
         if (!empty($this->_bundles) && App::$instance->view != null) {
             foreach ($this->_bundles as $bundle) {
-                if (is_subclass_of($bundle, AssetBundle::className()))
-                    $bundle::register();
+                $bundle::register();
             }
         }
     }
@@ -144,7 +143,8 @@ class AssetManager extends BaseObject
         $this->registeredBundles[] = $bundle::className();
     }
 
-    public function publishFile($path){
+    public function publishFile($path)
+    {
         $path = FileHelper::normalizePath(Core::getAlias($path));
         if (is_file($path)) {
             $assetPath = $this->destPath . DIRECTORY_SEPARATOR . basename($path);
@@ -164,15 +164,16 @@ class AssetManager extends BaseObject
         return false;
     }
 
-    public function publishDirectory($path, $options){
+    public function publishDirectory($path, $options)
+    {
         if (is_dir($path)) {
             if (!is_dir($this->destPath)) {
                 if (!FileHelper::createDirectory($this->destPath, $this->dirMode)) {
                     return false;
                 }
             }
-            if (is_dir($this->destPath)){
-                $destPath = $this->destPath.DIRECTORY_SEPARATOR.basename($path);
+            if (is_dir($this->destPath)) {
+                $destPath = $this->destPath . DIRECTORY_SEPARATOR . basename($path);
                 $opts = array_merge(
                     $options,
                     [
