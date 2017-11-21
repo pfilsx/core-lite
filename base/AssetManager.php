@@ -14,8 +14,18 @@ class AssetManager extends BaseObject
 
     public $registeredBundles = [];
 
+    public $dirMode = 0775;
+
+    public $destPath;
+
+    public $beforeCopy;
+
+    public $fileMode = 0777;
+    private $afterCopy;
+
     function __construct($config = [])
     {
+        $this->destPath = FileHelper::normalizePath(Core::getAlias('@webroot') . '\\assets\\');
         parent::__construct($config);
     }
 
@@ -35,20 +45,7 @@ class AssetManager extends BaseObject
         if (is_file($fontPath)) {
             $fontPath = dirname($fontPath);
         }
-        if (is_dir($fontPath)) {
-            $newPath = FileHelper::normalizePath(Core::getAlias('@webroot') . '\\assets\\fonts\\');
-            if (!is_dir($newPath)) {
-                if (!FileHelper::createDirectory($newPath)) {
-                    return;
-                }
-            }
-            foreach (FileHelper::findFiles($fontPath) as $file) {
-                $newFilePath = $newPath . DIRECTORY_SEPARATOR . basename($file);
-                if (!is_file($newFilePath)) {
-                    copy($file, $newFilePath);
-                }
-            }
-        }
+        $this->publishDirectory($fontPath,[]);
     }
 
     public function registerBundles()
@@ -108,7 +105,7 @@ class AssetManager extends BaseObject
                     if (!empty($bundle->basePath)) {
                         $path = $bundle->basePath . DIRECTORY_SEPARATOR . $path;
                     }
-                    if (($assetPath = $this->registerAsset($path)) != null) {
+                    if (($assetPath = $this->publishFile($path)) !== false) {
                         $view->registerCssFile($assetPath, AssetBundle::POS_HEAD);
                     }
                 }
@@ -117,7 +114,7 @@ class AssetManager extends BaseObject
                     if (!empty($bundle->basePath)) {
                         $path = $bundle->basePath . DIRECTORY_SEPARATOR . $path;
                     }
-                    if (($assetPath = $this->registerAsset($path)) != null) {
+                    if (($assetPath = $this->publishFile($path)) !== false) {
                         $view->registerCssFile($assetPath, $position);
                     }
                 }
@@ -129,7 +126,7 @@ class AssetManager extends BaseObject
                     if (!empty($bundle->basePath)) {
                         $path = $bundle->basePath . DIRECTORY_SEPARATOR . $path;
                     }
-                    if (($assetPath = $this->registerAsset($path)) != null) {
+                    if (($assetPath = $this->publishFile($path)) !== false) {
                         $view->registerJsFile($assetPath, AssetBundle::POS_BODY_END);
                     }
                 }
@@ -138,7 +135,7 @@ class AssetManager extends BaseObject
                     if (!empty($bundle->basePath)) {
                         $path = $bundle->basePath . DIRECTORY_SEPARATOR . $path;
                     }
-                    if (($assetPath = $this->registerAsset($path)) != null) {
+                    if (($assetPath = $this->publishFile($path)) !== false) {
                         $view->registerJsFile($assetPath, $position);
                     }
                 }
@@ -147,22 +144,56 @@ class AssetManager extends BaseObject
         $this->registeredBundles[] = $bundle::className();
     }
 
-    private function registerAsset($path)
-    {
+    public function publishFile($path){
         $path = FileHelper::normalizePath(Core::getAlias($path));
         if (is_file($path)) {
-            $assetPath = FileHelper::normalizePath(Core::getAlias('@webroot') . '\\assets\\' . basename($path));
+            $assetPath = $this->destPath . basename($path);
             if (is_file($assetPath)) {
                 if (md5_file($assetPath) !== md5_file($path)) {
                     copy($path, $assetPath);
+                    @chmod($path, $this->fileMode);
                 }
             } else {
-                if (FileHelper::createDirectory(dirname($assetPath))) {
+                if (FileHelper::createDirectory(dirname($assetPath), $this->dirMode)) {
                     copy($path, $assetPath);
+                    @chmod($path, $this->fileMode);
                 }
             }
             return 'assets/' . basename($assetPath);
         }
-        return null;
+        return false;
+    }
+
+    public function publishDirectory($path, $options){
+        if (is_dir($path)) {
+            if (!is_dir($this->destPath)) {
+                if (!FileHelper::createDirectory($this->destPath, $this->dirMode)) {
+                    return false;
+                }
+            }
+            if (is_dir($this->destPath)){
+                $opts = array_merge(
+                    $options,
+                    [
+                        'dirMode' => $this->dirMode,
+                        'fileMode' => $this->fileMode,
+                    ]
+                );
+                if (!isset($opts['beforeCopy'])) {
+                    if ($this->beforeCopy !== null) {
+                        $opts['beforeCopy'] = $this->beforeCopy;
+                    } else {
+                        $opts['beforeCopy'] = function ($from, $to) {
+                            return strncmp(basename($from), '.', 1) !== 0;
+                        };
+                    }
+                }
+                if (!isset($opts['afterCopy']) && $this->afterCopy !== null) {
+                    $opts['afterCopy'] = $this->afterCopy;
+                }
+                FileHelper::copyDirectory($path, $this->destPath, $opts);
+            }
+        }
+        return false;
     }
 }
