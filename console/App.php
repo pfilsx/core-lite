@@ -34,7 +34,7 @@ final class App extends BaseObject
 
     public function run(){
         try {
-            static::$instance = $this;
+            Core::$app = static::$instance = $this;
             $this->setBasePath($this->_config['basePath']);
             if (isset($this->_config['db'])){
                 $this->_db = new Connection($this->_config['db']);
