@@ -27,13 +27,6 @@ abstract class Widget extends BaseObject
      */
     public $assetsEnabled = true;
 
-    public function init(){
-        foreach ($this->_config as $key => $value){
-            if (property_exists($this, $key)){
-                $this->$key = $value;
-            }
-        }
-    }
 
     public static function begin(array $config = []){
         $widgetClass = get_called_class();

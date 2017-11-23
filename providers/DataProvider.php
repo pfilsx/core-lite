@@ -17,14 +17,6 @@ abstract class DataProvider extends BaseObject
     protected $enableCustomSort = false;
     protected $customSortMethod = null;
 
-    public function init(){
-        foreach ($this->_config as $key => $value){
-            if ($this->hasProperty($key)){
-                $this->$key = $value;
-            }
-        }
-    }
-
     /**
      * @return array
      */

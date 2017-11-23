@@ -30,7 +30,8 @@ abstract class ActiveModel extends Model
 
     private $_tableSchema;
 
-    public function init(){
+    protected function initializeAttributes()
+    {
         $this->_tableSchema = App::$instance->db->getSchema()->getTableSchema(static::schemaTableName());
         foreach ($this->_tableSchema->columns as $key => $column){
             $this->createProperty($key);
@@ -38,7 +39,6 @@ abstract class ActiveModel extends Model
                 $this->_primaryKey = $key;
             }
         }
-        $this->initializeValidators();
     }
 
     public function beforeSave(){
