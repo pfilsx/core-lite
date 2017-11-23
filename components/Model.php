@@ -25,7 +25,14 @@ abstract class Model extends BaseObject
         return new $className();
     }
 
-    public function init(){
+    public function __construct(array $config = [])
+    {
+        $this->initializeAttributes();
+        $this->initializeValidators();
+        parent::__construct($config);
+    }
+
+    protected function initializeAttributes(){
         foreach ($this->rules as $rule){
             $fields = $rule[0];
             if (is_array($fields)){
@@ -40,7 +47,6 @@ abstract class Model extends BaseObject
                 }
             }
         }
-        $this->initializeValidators();
     }
 
     protected function initializeValidators(){
@@ -108,12 +114,14 @@ abstract class Model extends BaseObject
 
     public function canGetProperty($name, $checkVars = true)
     {
-        return method_exists($this, 'get' . ucfirst($name)) || $checkVars && property_exists($this, $name);
+        return method_exists($this, 'get' . ucfirst($name)) || $checkVars && property_exists($this, $name)
+            || array_key_exists($name, $this->user_properties);
     }
 
     public function canSetProperty($name, $checkVars = true)
     {
-        return method_exists($this, 'set' . ucfirst($name)) || $checkVars && property_exists($this, $name);
+        return method_exists($this, 'set' . ucfirst($name)) || $checkVars && property_exists($this, $name)
+            || array_key_exists($name, $this->user_properties);
     }
 
     protected function createProperty($name, $value = null){
