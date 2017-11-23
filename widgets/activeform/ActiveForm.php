@@ -17,7 +17,7 @@ class ActiveForm extends Widget
 
     public $options = [];
 
-    private $_fields;
+    protected $_fields;
 
     public function run(){
         $content = ob_get_clean();
