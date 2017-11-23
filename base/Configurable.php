@@ -13,7 +13,7 @@ abstract class Configurable
 
     public function __construct($config = [])
     {
-        if (!empty($config)){
+        if (is_array($config) && !empty($config)){
             $this->_config = ArrayHelper::merge($this->_config, $config);
         }
     }

@@ -47,7 +47,7 @@ abstract class Model extends BaseObject
         foreach ($this->rules as $rule){
             if (isset($rule[0]) && isset($rule[1])){
                 $ruleFields = (array) $rule[0];
-                $validator = Validator::createValidator($rule[1], ['properties' => array_slice($rule, 2)]);
+                $validator = Validator::createValidator($rule[1], array_slice($rule, 2));
                 if ($validator != null){
                     foreach ($ruleFields as $ruleField){
                         $this->_activeValidators[$ruleField][] = $validator;
