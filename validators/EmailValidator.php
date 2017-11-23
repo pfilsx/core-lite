@@ -25,7 +25,6 @@ class EmailValidator extends BaseObject implements ValidatorInterface
      * @inheritdoc
      */
     public function init(){
-        parent::init();
         if ($this->enableIDN && !function_exists('idn_to_ascii')) {
             throw new \Exception('In order to use IDN validation intl extension must be installed and enabled.');
         }

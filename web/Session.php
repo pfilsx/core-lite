@@ -16,7 +16,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
     public $flashParam = '__flash';
 
     public function init(){
-        parent::init();
         register_shutdown_function([$this, 'close']);
         if ($this->getIsActive()) {
             $this->updateFlashCounters();

@@ -35,7 +35,6 @@ class NumberValidator extends BaseObject implements ValidatorInterface
      * @inheritdoc
      */
     public function init(){
-        parent::init();
         if ($this->message === null) {
             $this->message = $this->integerOnly
                 ? App::$instance->translate('crl', '{attribute} must be an integer')

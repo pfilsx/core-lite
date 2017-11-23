@@ -19,7 +19,6 @@ class MaskValidator extends BaseObject implements ValidatorInterface
      * @inheritdoc
      */
     public function init(){
-        parent::init();
         if ($this->pattern == null){
             throw new \Exception('The "pattern" property must be set');
         }
