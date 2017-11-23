@@ -129,9 +129,7 @@ final class App extends BaseObject
     private function preInit($config)
     {
         Core::$app = static::$instance = $this;
-        if (isset($config['basePath'])) {
-            $this->setBasePath($config['basePath']);
-        } else {
+        if (!isset($config['basePath'])) {
             throw new \Exception('Invalid configuration. Missed required basePath in configuration');
         }
         if (!isset($config['routing']['layout'])) {
@@ -202,7 +200,7 @@ final class App extends BaseObject
         return $this->_basePath;
     }
 
-    private function setBasePath($path)
+    public function setBasePath($path)
     {
         $this->_basePath = $path;
         Core::setAlias('@app', $this->getBasePath());
