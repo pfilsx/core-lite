@@ -14,17 +14,15 @@ abstract class BaseObject extends Configurable
     public function __construct($config = [])
     {
         parent::__construct($config);
+        foreach ($this->_config as $key => $value){
+            if ($this->canSetProperty($key)){
+                $this->$key = $value;
+            }
+        }
         $this->init();
     }
 
     public function init(){
-        if (isset($this->_config['properties']) && is_array($this->config['properties'])){
-            foreach ($this->_config['properties'] as $key => $defVal){
-                if ($this->hasProperty($key) && $this->canSetProperty($key)){
-                    $this->$key = $defVal;
-                }
-            }
-        }
     }
 
     public function __get($name){

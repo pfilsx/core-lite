@@ -26,7 +26,6 @@ class Pagination extends Widget
     public $pageCount;
 
     public function init(){
-        parent::init();
         $this->_currPage = isset(App::$instance->request->get['page'])
             ? (int)App::$instance->request->get['page']
             : 1;

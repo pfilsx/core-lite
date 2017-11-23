@@ -21,9 +21,8 @@ class ActiveDataProvider extends DataProvider
 
 
     public function init(){
-        parent::init();
         if (!$this->query instanceof QueryBuilder){
-            throw new \Exception('Unsupported parameter "query". Must be a QueryBuilder instance');
+            throw new \Exception('Unsupported "query" parameter value. Must be a QueryBuilder instance');
         }
     }
 

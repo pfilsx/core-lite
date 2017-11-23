@@ -19,7 +19,6 @@ class RequiredValidator extends BaseObject implements ValidatorInterface
      * @inheritdoc
      */
     public function init(){
-        parent::init();
         if ($this->message === null) {
             $this->message = App::$instance->translate('crl', '{attribute} cannot be blank');
         }

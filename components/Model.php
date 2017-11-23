@@ -25,7 +25,14 @@ abstract class Model extends BaseObject
         return new $className();
     }
 
-    public function init(){
+    public function __construct(array $config = [])
+    {
+        $this->initializeAttributes();
+        $this->initializeValidators();
+        parent::__construct($config);
+    }
+
+    protected function initializeAttributes(){
         foreach ($this->rules as $rule){
             $fields = $rule[0];
             if (is_array($fields)){
@@ -40,14 +47,13 @@ abstract class Model extends BaseObject
                 }
             }
         }
-        $this->initializeValidators();
     }
 
     protected function initializeValidators(){
         foreach ($this->rules as $rule){
             if (isset($rule[0]) && isset($rule[1])){
                 $ruleFields = (array) $rule[0];
-                $validator = Validator::createValidator($rule[1], ['properties' => array_slice($rule, 2)]);
+                $validator = Validator::createValidator($rule[1], array_slice($rule, 2));
                 if ($validator != null){
                     foreach ($ruleFields as $ruleField){
                         $this->_activeValidators[$ruleField][] = $validator;
@@ -108,12 +114,14 @@ abstract class Model extends BaseObject
 
     public function canGetProperty($name, $checkVars = true)
     {
-        return method_exists($this, 'get' . ucfirst($name)) || $checkVars && property_exists($this, $name);
+        return method_exists($this, 'get' . ucfirst($name)) || $checkVars && property_exists($this, $name)
+            || array_key_exists($name, $this->user_properties);
     }
 
     public function canSetProperty($name, $checkVars = true)
     {
-        return method_exists($this, 'set' . ucfirst($name)) || $checkVars && property_exists($this, $name);
+        return method_exists($this, 'set' . ucfirst($name)) || $checkVars && property_exists($this, $name)
+            || array_key_exists($name, $this->user_properties);
     }
 
     protected function createProperty($name, $value = null){

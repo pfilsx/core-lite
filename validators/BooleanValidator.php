@@ -21,7 +21,6 @@ class BooleanValidator extends BaseObject implements ValidatorInterface
      */
     public function init()
     {
-        parent::init();
         if ($this->message === null) {
             $this->message = App::$instance->translate('crl', '{attribute} must be either "{true}" or "{false}"', [
                     'true' => $this->trueValue === true ? 'true' : $this->trueValue,

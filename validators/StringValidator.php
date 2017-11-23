@@ -41,7 +41,6 @@ class StringValidator extends BaseObject implements ValidatorInterface
      * @inheritdoc
      */
     public function init(){
-        parent::init();
         if (is_array($this->length)) {
             if (isset($this->length[0])) {
                 $this->min = $this->length[0];

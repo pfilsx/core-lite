@@ -14,6 +14,12 @@ class ArrayDataProvider extends DataProvider
         return $this->_data;
     }
 
+    public function init(){
+        if (!is_array($this->_data)){
+            throw new \Exception('Unsupported "data" parameter value. Must be an array');
+        }
+    }
+
     public function sort($field, $direction)
     {
         usort($this->_data, $this->customSortMethod);
