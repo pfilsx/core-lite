@@ -15,43 +15,27 @@ $('.crl-active-form-group.has-error input, .crl-active-form-group.has-error sele
 $('.crl-active-form.with-validation input, .crl-active-form.with-validation select, .crl-active-form.with-validation textarea')
     .not('[type=checkbox], [type=radio]')
     .on('blur', function () {
-        var data = {validation: true};
         var obj = $(this);
-        var fieldName = obj.attr('data-field');
-        if (!fieldName || fieldName.trim().length < 1){
-            return;
-        }
-        data['fieldName'] = fieldName.trim();
-        data[obj.attr('name')] = obj.val();
-        $.ajax({
-            method: 'post',
-            url: obj.closest('form').attr('action') || '',
-            data: data,
-            success: function (data) {
-                try {
-                    data = JSON.parse(data);
-                    if (data.message){
-                        obj.closest('.crl-active-form-group').find('.'+ fieldName +'_help').text(data.message);
-                        obj.closest('.crl-active-form-group').removeClass('has-success').addClass('has-error');
-                    } else {
-                        obj.closest('.crl-active-form-group').removeClass('has-error').addClass('has-success');
-                    }
-                } catch (e) {
-                    obj.closest('.crl-active-form-group').removeClass('has-error').addClass('has-success');
-                }
-            }
-        });
+        sendValidateAjax(obj, obj.attr('name'), obj.val());
 });
 $('.crl-active-form.with-validation input[type=checkbox], .crl-active-form.with-validation input[type=radio]').on('blur', function(){
-    var data = {validation: true};
     var obj = $(this);
     var input = obj.closest('.crl-active-form').find('input[type=hidden]');
-    var fieldName = obj.attr('data-field');
-    if (!fieldName || fieldName.trim().length < 1){
+    sendValidateAjax(obj, input.attr('name'), input.val());
+});
+$('.crl-active-form').submit(function(event){
+    if ($(this).find('.has-error').length > 0){
+        event.preventDefault();
+    }
+});
+function sendValidateAjax(obj, name, value){
+    var data = {validation: true};
+    var attributeName = obj.attr('data-attribute');
+    if (!attributeName || attributeName.trim().length < 1){
         return;
     }
-    data['fieldName'] = fieldName.trim();
-    data[input.attr('name')] = input.val();
+    data['attributeName'] = attributeName.trim();
+    data[name] = value;
     $.ajax({
         method: 'post',
         url: obj.closest('form').attr('action') || '',
@@ -60,7 +44,7 @@ $('.crl-active-form.with-validation input[type=checkbox], .crl-active-form.with-
             try {
                 data = JSON.parse(data);
                 if (data.message){
-                    obj.closest('.crl-active-form-group').find('.'+ fieldName +'_help').text(data.message);
+                    obj.closest('.crl-active-form-group').find('.'+ attributeName +'_help').text(data.message);
                     obj.closest('.crl-active-form-group').removeClass('has-success').addClass('has-error');
                 } else {
                     obj.closest('.crl-active-form-group').removeClass('has-error').addClass('has-success');
@@ -70,14 +54,5 @@ $('.crl-active-form.with-validation input[type=checkbox], .crl-active-form.with-
             }
         }
     });
-});
-$('.crl-active-form').submit(function(event){
-    if ($(this).find('.has-error').length > 0){
-        event.preventDefault();
-    }
-});
-
-function sendValidateAjax(data, action){
-    data['validation'] = true;
 
 }

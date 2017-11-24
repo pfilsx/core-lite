@@ -5,10 +5,9 @@ namespace core\validators;
 
 
 use core\base\App;
-use core\base\BaseObject;
 use core\helpers\StringHelper;
 
-class NumberValidator extends BaseObject implements ValidatorInterface
+class NumberValidator extends Validator implements ValidatorInterface
 {
     public $integerOnly = false;
 
@@ -24,8 +23,6 @@ class NumberValidator extends BaseObject implements ValidatorInterface
      * @var string user-defined error message used when the value is smaller than [[min]].
      */
     public $tooSmall;
-
-    public $message;
 
     public $integerPattern = '/^\s*[+-]?\d+\s*$/';
 

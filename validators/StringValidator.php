@@ -5,9 +5,8 @@ namespace core\validators;
 
 
 use core\base\App;
-use core\base\BaseObject;
 
-class StringValidator extends BaseObject implements ValidatorInterface
+class StringValidator extends Validator implements ValidatorInterface
 {
 
     public $length;
@@ -24,7 +23,6 @@ class StringValidator extends BaseObject implements ValidatorInterface
      */
     public $encoding;
 
-    public $message;
     /**
      * @var string user-defined error message used when the length of the value is smaller than [[min]].
      */
