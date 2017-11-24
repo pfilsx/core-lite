@@ -77,7 +77,6 @@ class ActiveField extends BaseObject
             array_merge($options, [
                 'data-attribute' => $this->_attribute
             ]));
-        $this->_elements[] = Html::startTag('span', ['class' => $this->_attribute.'_help help-block']).Html::endTag('span');
         return $this;
     }
 
@@ -151,7 +150,8 @@ class ActiveField extends BaseObject
 
     protected function render()
     {
-        $html = Html::startTag('div', ['class' => 'crl-active-form-group']);
+        $html = Html::startTag('div', ['class' => 'crl-active-form-group '
+            .($this->_model->hasError($this->_attribute) ? 'has-error' : '')]);
         if ($this->_label == null) {
             $this->label($this->_model->getAttributeLabel($this->_attribute));
         }
@@ -165,6 +165,9 @@ class ActiveField extends BaseObject
             $html .= Html::label($this->_label, $this->getFieldName(), $this->_labelOptions);
             $html .= implode(PHP_EOL, $this->_elements);
         }
+        $html .= Html::tag('span', ($this->_model->hasError($this->_attribute)
+            ? $this->_model->getErrors($this->_attribute)[0] : null),
+            ['class' => $this->_attribute.'_help help-block']);
         $html .= Html::endTag('div');
 
         return $html;

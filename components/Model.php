@@ -9,11 +9,16 @@ use core\validators\Validator;
 use core\validators\ValidatorInterface;
 
 
+/**
+ * @property bool hasErrors
+ */
 abstract class Model extends BaseObject
 {
     protected $user_properties = [];
 
     protected $rules = [];
+
+    protected $_errors = [];
 
     /**
      * @var ValidatorInterface[]
@@ -152,19 +157,30 @@ abstract class Model extends BaseObject
         )));
 
     }
+    public function getHasErrors(){
+        return !empty($this->_errors);
+    }
+    public function hasError($attribute){
+        return array_key_exists($attribute, $this->_errors);
+    }
+    public function getErrors($attribute = null){
+        if ($attribute != null)
+            return $this->_errors[$attribute];
+        return $this->_errors;
+    }
 
     /**
      * Validate all model attributes by validators specified in rules
-     * @return true|array - true for successful validations or array of validation errors
+     * @return bool - result of validation for all model attributes
      */
     public function validate(){
-        $errors = [];
+        $this->_errors = [];
         foreach ($this->user_properties as $key => $value){
             if (($valResult = $this->validateAttribute($key)) !== true){
-                $errors[] = $valResult;
+                $this->_errors[$key][] = $valResult;
             }
         }
-        return empty($errors) ? true : $errors;
+        return $this->hasErrors ? true : false;
     }
 
     /**
@@ -174,6 +190,7 @@ abstract class Model extends BaseObject
      */
     public function validateAttribute($attributeName){
         if (!$this->hasProperty($attributeName)){
+            unset($this->_errors[$attributeName]);
             return true;
         }
         /**
@@ -183,10 +200,13 @@ abstract class Model extends BaseObject
             if (in_array($attributeName, $validator->getValidatorAttributes())){
                 $validateResult = $validator->validateAttribute($attributeName);
                 if ($validateResult !== true){
-                    return strtr( $validateResult, ['{attribute}' => $this->getAttributeLabel($attributeName)]);
+                    $validateResult = strtr( $validateResult, ['{attribute}' => $this->getAttributeLabel($attributeName)]);
+                    $this->_errors[$attributeName][] = $validateResult;
+                    return $validateResult;
                 }
             }
         }
+        unset($this->_errors[$attributeName]);
         return true;
     }
 
