@@ -9,11 +9,16 @@ use core\validators\Validator;
 use core\validators\ValidatorInterface;
 
 
+/**
+ * @property bool hasErrors
+ */
 abstract class Model extends BaseObject
 {
     protected $user_properties = [];
 
     protected $rules = [];
+
+    protected $_errors = [];
 
     /**
      * @var ValidatorInterface[]
@@ -52,12 +57,10 @@ abstract class Model extends BaseObject
     protected function initializeValidators(){
         foreach ($this->rules as $rule){
             if (isset($rule[0]) && isset($rule[1])){
-                $ruleFields = (array) $rule[0];
-                $validator = Validator::createValidator($rule[1], array_slice($rule, 2));
+                $attributes = (array) $rule[0];
+                $validator = Validator::createModelValidator($this, $attributes, $rule[1], array_slice($rule, 2));
                 if ($validator != null){
-                    foreach ($ruleFields as $ruleField){
-                        $this->_activeValidators[$ruleField][] = $validator;
-                    }
+                   $this->_activeValidators[] = $validator;
                 }
             }
         }
@@ -154,44 +157,61 @@ abstract class Model extends BaseObject
         )));
 
     }
-
-    /**
-     * @return bool|array
-     */
-    public function validate(){
-        $errors = [];
-        foreach ($this->user_properties as $key => $value){
-            if (($valResult = $this->validateField($key)) !== true){
-                $errors[] = $valResult;
-            }
-        }
-        return empty($errors) ? true : $errors;
+    public function getHasErrors(){
+        return !empty($this->_errors);
+    }
+    public function hasError($attribute){
+        return array_key_exists($attribute, $this->_errors);
+    }
+    public function getErrors($attribute = null){
+        if ($attribute != null)
+            return $this->_errors[$attribute];
+        return $this->_errors;
     }
 
     /**
-     * @param string $fieldName
-     * @return bool|string
+     * Validate all model attributes by validators specified in rules
+     * @return bool - result of validation for all model attributes
      */
-    public function validateField($fieldName){
-        if (!$this->hasProperty($fieldName) || !array_key_exists($fieldName, $this->_activeValidators)){
-            return true;
-        }
-        $field = $this->$fieldName;
-        $validators = $this->_activeValidators[$fieldName];
-        foreach ($validators as $validator){
-            /**
-             * @var ValidatorInterface $validator
-             */
-            $validateResult = $validator->validateValue($field);
-            if ($validateResult !== true){
-                return str_replace('{attribute}', $this->getAttributeLabel($fieldName), $validateResult);
+    public function validate(){
+        $this->_errors = [];
+        foreach ($this->user_properties as $key => $value){
+            if (($valResult = $this->validateAttribute($key)) !== true){
+                $this->_errors[$key][] = $valResult;
             }
         }
+        return $this->hasErrors ? true : false;
+    }
+
+    /**
+     * Validate a specific attribute
+     * @param string $attributeName
+     * @return bool|string
+     */
+    public function validateAttribute($attributeName){
+        if (!$this->hasProperty($attributeName)){
+            unset($this->_errors[$attributeName]);
+            return true;
+        }
+        /**
+         * @var Validator $validator
+         */
+        foreach ($this->_activeValidators as $validator){
+            if (in_array($attributeName, $validator->getValidatorAttributes())){
+                $validateResult = $validator->validateAttribute($attributeName);
+                if ($validateResult !== true){
+                    $validateResult = strtr( $validateResult, ['{attribute}' => $this->getAttributeLabel($attributeName)]);
+                    $this->_errors[$attributeName][] = $validateResult;
+                    return $validateResult;
+                }
+            }
+        }
+        unset($this->_errors[$attributeName]);
         return true;
     }
 
     public function ajaxValidate(){
-        $result = $result = $this->validateField(App::$instance->request->post['fieldName']);
+        $result = $result = $this->validateAttribute(App::$instance->request->post['attributeName']);
         if ($result === true){
             return json_encode([]);
         } else {

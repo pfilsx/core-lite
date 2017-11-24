@@ -5,13 +5,11 @@ namespace core\validators;
 
 
 use core\base\App;
-use core\base\BaseObject;
 
-class MaskValidator extends BaseObject implements ValidatorInterface
+class MaskValidator extends Validator implements ValidatorInterface
 {
     public $pattern;
 
-    public $message;
 
     public $not;
 

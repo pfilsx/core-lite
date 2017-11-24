@@ -5,9 +5,8 @@ namespace core\validators;
 
 
 use core\base\App;
-use core\base\BaseObject;
 
-class EmailValidator extends BaseObject implements ValidatorInterface
+class EmailValidator extends Validator implements ValidatorInterface
 {
 
     public $pattern = '/^[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/';
@@ -20,7 +19,6 @@ class EmailValidator extends BaseObject implements ValidatorInterface
 
     public $enableIDN = false;
 
-    public $message;
     /**
      * @inheritdoc
      */

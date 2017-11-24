@@ -5,9 +5,8 @@ namespace core\validators;
 
 
 use core\base\App;
-use core\base\BaseObject;
 
-class BooleanValidator extends BaseObject implements ValidatorInterface
+class BooleanValidator extends Validator implements ValidatorInterface
 {
     public $trueValue = '1';
 
@@ -15,7 +14,6 @@ class BooleanValidator extends BaseObject implements ValidatorInterface
 
     public $strict = false;
 
-    public $message;
     /**
      * @inheritdoc
      */
