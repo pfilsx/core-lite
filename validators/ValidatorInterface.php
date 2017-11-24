@@ -10,4 +10,10 @@ interface ValidatorInterface {
      * @return boolean|string
      */
     function validateValue($value);
+
+    /**
+     * @param string $attribute
+     * @return boolean|string
+     */
+    function validateAttribute($attribute);
 }

@@ -134,8 +134,8 @@ class View extends BaseObject
         }
     }
 
-    public function registerJs($js, $position = View::POS_BODY_END){
-        $content = Html::tag('script', $js, ['type' => 'text/javascript']);
+    public function registerJs($js, $position = View::POS_BODY_END, $options = []){
+        $content = Html::tag('script', $js, array_merge($options, ['type' => 'text/javascript']));
         if ($position == View::POS_HEAD){
             $this->_jsHead[] = $content;
         } else if ($position == View::POS_BODY_BEGIN) {
@@ -144,9 +144,9 @@ class View extends BaseObject
             $this->_jsBodyEnd[] = $content;
         }
     }
-    public function registerJsFile($file, $position = View::POS_BODY_END){
+    public function registerJsFile($file, $position = View::POS_BODY_END, $options = []){
         $path = App::$instance->request->getBaseUrl().'/'.$file;
-        $content = Html::tag('script','', ['src' => $path, 'type' => 'text/javascript']);
+        $content = Html::tag('script','', array_merge($options, ['src' => $path, 'type' => 'text/javascript']));
         if ($position == View::POS_HEAD){
             $this->_jsHead[] = $content;
         } else if ($position == View::POS_BODY_BEGIN) {
@@ -156,8 +156,8 @@ class View extends BaseObject
         }
     }
 
-    public function registerCss($css, $position = View::POS_HEAD){
-        $content = Html::tag('style', $css);
+    public function registerCss($css, $position = View::POS_HEAD, $options = []){
+        $content = Html::tag('style', $css, $options);
         if ($position == View::POS_BODY_BEGIN){
             $this->_cssBodyBegin[] = $content;
         } else if ($position == View::POS_BODY_END){
@@ -166,9 +166,9 @@ class View extends BaseObject
             $this->_cssHead[] = $content;
         }
     }
-    public function registerCssFile($file, $position = View::POS_HEAD){
+    public function registerCssFile($file, $position = View::POS_HEAD, $options = []){
         $path = App::$instance->request->getBaseUrl().'/'.$file;
-        $content = Html::tag('link', '', ['rel' => 'stylesheet', 'href' => $path]);
+        $content = Html::tag('link', '', array_merge($options, ['rel' => 'stylesheet', 'href' => $path]));
         if ($position == View::POS_BODY_BEGIN){
             $this->_cssBodyBegin[] = $content;
         } else if ($position == View::POS_BODY_END){

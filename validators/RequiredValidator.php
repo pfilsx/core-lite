@@ -5,16 +5,14 @@ namespace core\validators;
 
 
 use core\base\App;
-use core\base\BaseObject;
 
-class RequiredValidator extends BaseObject implements ValidatorInterface
+class RequiredValidator extends Validator implements ValidatorInterface
 {
 
     public $skipOnEmpty = false;
 
     public $strict = false;
 
-    public $message;
     /**
      * @inheritdoc
      */
