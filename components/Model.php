@@ -173,7 +173,7 @@ abstract class Model extends BaseObject
      * @return bool|string
      */
     public function validateAttribute($attributeName){
-        if (!$this->hasProperty($attributeName) || !array_key_exists($attributeName, $this->_activeValidators)){
+        if (!$this->hasProperty($attributeName)){
             return true;
         }
         /**
