@@ -31,9 +31,11 @@ class AssetManager extends BaseObject
 
     public function init()
     {
-        foreach ($this->_config['bundles'] as $bundle) {
-            if (is_subclass_of($bundle, AssetBundle::className())) {
-                $this->_bundles[] = $bundle;
+        if (isset($this->_config['bundles'])){
+            foreach ($this->_config['bundles'] as $bundle) {
+                if (is_subclass_of($bundle, AssetBundle::className())) {
+                    $this->_bundles[] = $bundle;
+                }
             }
         }
     }
