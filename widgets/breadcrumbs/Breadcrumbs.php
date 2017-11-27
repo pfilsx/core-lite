@@ -9,21 +9,25 @@ use core\web\Html;
 
 class Breadcrumbs extends Widget
 {
-    protected $_elements = [];
-
-    public function init(){
-        $this->_elements = $this->_config;
-    }
+    public $items = [];
 
     public function run()
     {
         ob_start();
         ob_implicit_flush(false);
         echo Html::startTag('ol', ['class' => 'crl-breadcrumb']);
-        foreach ($this->_elements as $key => $url){
-            echo "<li><a href=\"$url\">$key</a></li>";
-        }
+        $this->renderItems();
         echo Html::endTag('ol');
         return ob_get_clean();
+    }
+
+    protected function renderItems(){
+        foreach ($this->items as $key => $url){
+            if ($url === null){
+                echo "<li class='active'>$key</li>";
+            } else {
+                echo "<li><a href=\"$url\">$key</a></li>";
+            }
+        }
     }
 }
