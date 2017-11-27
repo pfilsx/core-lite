@@ -171,7 +171,7 @@ class Response extends BaseObject
                 'class' => 'core\formatters\JsonResponseFormatter',
             ],
             self::FORMAT_JSONP => [
-                'class' => 'yii\web\JsonResponseFormatter',
+                'class' => 'core\web\JsonResponseFormatter',
                 'useJsonp' => true,
             ],
         ];
