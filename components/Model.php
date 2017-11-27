@@ -180,7 +180,7 @@ abstract class Model extends BaseObject
                 $this->_errors[$key][] = $valResult;
             }
         }
-        return $this->hasErrors ? true : false;
+        return !$this->hasErrors ? true : false;
     }
 
     /**
