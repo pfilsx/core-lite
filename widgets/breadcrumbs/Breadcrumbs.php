@@ -5,17 +5,24 @@ namespace core\widgets\breadcrumbs;
 
 
 use core\components\Widget;
+use core\helpers\ArrayHelper;
 use core\web\Html;
 
 class Breadcrumbs extends Widget
 {
     public $items = [];
 
+    public $defaultOptions = [
+        'class' => 'crl-breadcrumb'
+    ];
+
+    public $options = [];
+
     public function run()
     {
         ob_start();
         ob_implicit_flush(false);
-        echo Html::startTag('ol', ['class' => 'crl-breadcrumb']);
+        echo Html::startTag('ol', ArrayHelper::merge_recursive($this->defaultOptions, $this->options));
         $this->renderItems();
         echo Html::endTag('ol');
         return ob_get_clean();
