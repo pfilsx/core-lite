@@ -12,9 +12,6 @@ class Url
     static function toRoute($url, array $params = [])
     {
         if (is_array($url)) {
-//            $url = '/' . str_replace('/', '', $url[0])
-//                . '/' . (isset($url[1]) ? str_replace('/', '', $url[1]) : 'index')
-//                . (isset($url[2]) ? '?' . http_build_query($url[2], '', '&') : '');
             $url = '/'.implode('/', $url);
         } else if (is_string($url)) {
             $url = (substr($url,0,1) == '/' ? '' : '/').$url;
@@ -34,6 +31,7 @@ class Url
         if ($module !== null){
             $route[0] = $module;
         }
+        ksort($route);
         return static::toRoute($route, $params);
     }
 
