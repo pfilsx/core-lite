@@ -19,7 +19,7 @@ class Breadcrumbs extends Widget
     {
         ob_start();
         ob_implicit_flush(false);
-        echo Html::startTag('ol', ['class' => 'crl-breadcrumbs']);
+        echo Html::startTag('ol', ['class' => 'crl-breadcrumb']);
         foreach ($this->_elements as $key => $url){
             echo "<li><a href=\"$url\">$key</a></li>";
         }
