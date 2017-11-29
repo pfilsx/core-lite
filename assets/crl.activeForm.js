@@ -13,16 +13,10 @@ $('.crl-active-form-group.has-error input, .crl-active-form-group.has-error sele
     });
 
 $('.crl-active-form.with-validation input, .crl-active-form.with-validation select, .crl-active-form.with-validation textarea')
-    .not('[type=checkbox], [type=radio]')
     .on('blur', function () {
         var obj = $(this);
-        sendValidateAjax(obj, obj.attr('name'), obj.val());
+        obj.validate();
     });
-$('.crl-active-form.with-validation input[type=checkbox], .crl-active-form.with-validation input[type=radio]').on('blur', function () {
-    var obj = $(this);
-    var input = obj.closest('.crl-active-form-group').find('input[type=hidden]');
-    sendValidateAjax(obj, input.attr('name'), input.val());
-});
 $('.crl-active-form').submit(function (event) {
     if ($(this).find('.has-error').length > 0) {
         event.preventDefault();
@@ -31,16 +25,21 @@ $('.crl-active-form').submit(function (event) {
 
 $.fn.validate = function (validator, params, cb) {
     var obj = $(this);
+    var data = {validation: true};
+    var url = '';
+    if (obj.is('[type=checkbox]') || obj.is(['[type=radio]'])) {
+        var input = obj.closest('.crl-active-from-group').find('input[type=hidden]');
+        data['value'] = data[input.attr('name')] = input.val();
+    } else {
+        data['value'] = data[obj.attr('name')] = obj.val();
+    }
     if (validator) {
-        var data = {validator: validator};
-        if (obj.is('[type=checkbox]') || obj.is(['[type=radio]'])) {
-            data['value'] = obj.closest('.crl-active-from-group').find('input[type=hidden]').val();
-        } else {
-            data['value'] = obj.val();
-        }
+        data['validator'] = validator;
         if (params) {
             data['params'] = params;
         }
+        url = window.crl.baseUrl + '/validator';
+
         $.ajax({
             method: 'post',
             url: window.crl.baseUrl + '/validator',
@@ -57,36 +56,33 @@ $.fn.validate = function (validator, params, cb) {
                 }
             }
         });
+
     } else {
-
+        var attributeName = obj.attr('data-attribute');
+        if (!attributeName || attributeName.trim().length < 1) {
+            return;
+        }
+        data['attributeName'] = attributeName.trim();
+        url = obj.closest('form').attr('action') || '';
     }
-};
-
-function sendValidateAjax(obj, name, value) {
-    var data = {validation: true};
-    var attributeName = obj.attr('data-attribute');
-    if (!attributeName || attributeName.trim().length < 1) {
-        return;
-    }
-    data['attributeName'] = attributeName.trim();
-    data[name] = value;
     $.ajax({
         method: 'post',
-        url: obj.closest('form').attr('action') || '',
+        url: url,
+        dataType: 'json',
         data: data,
         success: function (data) {
-            try {
-                data = JSON.parse(data);
-                if (data.message) {
-                    obj.closest('.crl-active-form-group').find('.' + attributeName + '_help').text(data.message);
-                    obj.closest('.crl-active-form-group').removeClass('has-success').addClass('has-error');
-                } else {
-                    obj.closest('.crl-active-form-group').removeClass('has-error').addClass('has-success');
-                }
-            } catch (e) {
+            if (data.success) {
                 obj.closest('.crl-active-form-group').removeClass('has-error').addClass('has-success');
+            } else {
+                obj.closest('.crl-active-form-group').removeClass('has-success').addClass('has-error');
+                obj.closest('.crl-active-form-group').find('.help-block').text(data.message);
             }
+            if (cb && typeof cb === 'function') {
+                cb(data, obj);
+            }
+        },
+        error: function(){
+            obj.closest('.crl-active-form-group').removeClass('has-error').removeClass('has-success');
         }
     });
-
-}
+};

@@ -212,9 +212,9 @@ abstract class Model extends BaseObject
     public function ajaxValidate(){
         $result = $result = $this->validateAttribute(App::$instance->request->post['attributeName']);
         if ($result === true){
-            return json_encode([]);
+            return json_encode(['success' => true]);
         } else {
-            return json_encode(['message' => $result]);
+            return json_encode(['success' => false, 'message' => $result]);
         }
     }
 }
