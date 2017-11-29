@@ -48,10 +48,11 @@ class NumberValidator extends Validator implements ValidatorInterface
             ]);
         }
     }
+
     /**
      * @inheritdoc
      */
-    function validateValue($value)
+    protected function validate($value)
     {
         if (is_array($value) || is_object($value)) {
             return $this->message;

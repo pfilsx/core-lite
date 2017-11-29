@@ -34,7 +34,7 @@ class EmailValidator extends Validator implements ValidatorInterface
     /**
      * @inheritdoc
      */
-    function validateValue($value)
+    protected function validate($value)
     {
         if (!is_string($value)) {
             $valid = false;

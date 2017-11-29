@@ -199,8 +199,7 @@ abstract class Model extends BaseObject
         foreach ($this->_activeValidators as $validator){
             if (in_array($attributeName, $validator->getValidatorAttributes())){
                 $validateResult = $validator->validateAttribute($attributeName);
-                if ($validateResult !== true){
-                    $validateResult = strtr( $validateResult, ['{attribute}' => $this->getAttributeLabel($attributeName)]);
+                if ($validateResult !== true){;
                     $this->_errors[$attributeName][] = $validateResult;
                     return $validateResult;
                 }

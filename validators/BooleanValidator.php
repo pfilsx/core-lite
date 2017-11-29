@@ -30,7 +30,7 @@ class BooleanValidator extends Validator implements ValidatorInterface
     /**
      * @inheritdoc
      */
-    function validateValue($value)
+    protected function validate($value)
     {
         if ($this->strict) {
             $valid = $value === $this->trueValue || $value === $this->falseValue;

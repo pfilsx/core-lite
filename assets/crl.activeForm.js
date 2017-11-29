@@ -43,7 +43,7 @@ $.fn.validate = function (validator, params, cb) {
         }
         $.ajax({
             method: 'post',
-            url: 'validator',
+            url: window.crl.baseUrl + '/validator',
             dataType: 'json',
             data: data,
             success: function (data) {

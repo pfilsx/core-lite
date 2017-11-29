@@ -73,6 +73,7 @@ class View extends BaseObject
             try {
                 require $this->_layout;
                 $this->_content = ob_get_clean();
+                $this->registerJs('window.crl.baseUrl = \''.App::$instance->request->baseUrl.'\';');
                 $this->prepareContent();
                 return $this->_content;
             }
