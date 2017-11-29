@@ -171,7 +171,7 @@ class Response extends BaseObject
                 'class' => 'core\formatters\JsonResponseFormatter',
             ],
             self::FORMAT_JSONP => [
-                'class' => 'core\web\JsonResponseFormatter',
+                'class' => 'core\formatters\JsonResponseFormatter',
                 'useJsonp' => true,
             ],
         ];

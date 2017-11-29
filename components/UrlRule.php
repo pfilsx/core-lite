@@ -4,6 +4,7 @@
 namespace core\components;
 
 
+use core\base\App;
 use core\base\BaseObject;
 use core\base\Router;
 
@@ -52,12 +53,26 @@ class UrlRule extends BaseObject
     }
 
     public function resolve(){
+        $result = false;
         if (isset($this->_options['route'])){
             $this->_router->route = strtr($this->_options['route'], [
                 '<controller>' => $this->_router->controller,
                 '<action>' => $this->_router->action
             ]);
+            $result = true;
         }
+        if (isset($this->_options['class'])){
+            $className = $this->_options['class'];
+            if (class_exists($className) && is_subclass_of($className, 'core\components\Controller')){
+                /**
+                 * @var Controller $controller
+                 */
+                $controller = new $className();
+                return $controller->runAction($this->_router->action, App::$instance->request->request);
+
+            }
+        }
+        throw new \Exception('Invalid rule configuration. "route" or "class" parameter must be specified');
     }
 
 }

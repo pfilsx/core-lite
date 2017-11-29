@@ -57,6 +57,10 @@ final class Router extends BaseObject
                 $this->_rules[] = new UrlRule($this, $key, $value);
             }
         }
+        $this->addRules([
+            'validator' => ['route' => 'core/validator/validate', 'class' => '\core\components\CoreController'],
+            'validator/<action>' => ['route' => 'core/validator/<action>', 'class' => '\core\components\CoreController'],
+        ]);
     }
 
     /**
@@ -68,7 +72,9 @@ final class Router extends BaseObject
         $this->parseRequest();
         foreach ($this->_rules as $rule){
             if ($rule->parseRequest()){
-                $rule->resolve();
+                if (($result = $rule->resolve()) !== true){
+                    return $result;
+                }
                 break;
             }
         }
