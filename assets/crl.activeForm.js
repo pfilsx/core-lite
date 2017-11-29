@@ -28,7 +28,7 @@ $.fn.validate = function (validator, params, cb) {
     var data = {validation: true};
     var url = '';
     if (obj.is('[type=checkbox]') || obj.is(['[type=radio]'])) {
-        var input = obj.closest('.crl-active-from-group').find('input[type=hidden]');
+        var input = obj.closest('.crl-active-form-group').find('input[type=hidden]');
         data['value'] = data[input.attr('name')] = input.val();
     } else {
         data['value'] = data[obj.attr('name')] = obj.val();
