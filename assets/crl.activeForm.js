@@ -48,9 +48,9 @@ $.fn.validate = function (validator, params, cb) {
             data: data,
             success: function (data) {
                 if (data.success) {
-                    obj.closest('.crl-active-from-group').removeClass('has-error').addClass('has-success');
+                    obj.closest('.crl-active-form-group').removeClass('has-error').addClass('has-success');
                 } else {
-                    obj.closest('.crl-active-from-group').removeClass('has-success').addClass('has-error');
+                    obj.closest('.crl-active-form-group').removeClass('has-success').addClass('has-error');
                 }
                 if (cb && typeof cb === 'function') {
                     cb(data, obj);

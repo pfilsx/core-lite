@@ -73,7 +73,13 @@ class View extends BaseObject
             try {
                 require $this->_layout;
                 $this->_content = ob_get_clean();
-                $this->registerJs('window.crl.baseUrl = \''.App::$instance->request->baseUrl.'\';');
+                $this->registerJs(
+                    "window.crl.baseUrl = '".App::$instance->request->baseUrl."';
+                     $('.crl_remove').remove();
+                    ",
+                    self::POS_BODY_END, [
+                    'class' => 'crl_remove'
+                ]);
                 $this->prepareContent();
                 return $this->_content;
             }
