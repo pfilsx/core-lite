@@ -58,8 +58,8 @@ final class Router extends BaseObject
             }
         }
         $this->addRules([
-            'validator' => ['route' => 'core/validator/validate', 'class' => '\core\components\CoreController'],
-            'validator/<action>' => ['route' => 'core/validator/<action>', 'class' => '\core\components\CoreController'],
+            'validator' => ['route' => 'core/validator/validate', 'class' => 'core\components\CoreController'],
+            'validator/<action>' => ['route' => 'core/validator/<action>', 'class' => 'core\components\CoreController'],
         ]);
     }
 

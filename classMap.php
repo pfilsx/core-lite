@@ -16,6 +16,7 @@ return [
     'core\components\ActiveModel' => CRL_PATH.'/components/ActiveModel.php',
     'core\components\AssetBundle' => CRL_PATH.'/components/AssetBundle.php',
     'core\components\Controller' => CRL_PATH.'/components/Controller.php',
+    'core\components\CoreController' => CRL_PATH.'/components/CoreController.php',
     'core\components\Model' => CRL_PATH.'/components/Model.php',
     'core\components\Module' => CRL_PATH.'/components/Module.php',
     'core\components\UrlRule' => CRL_PATH.'/components/UrlRule.php',
