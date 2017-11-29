@@ -7,6 +7,7 @@ namespace core\components;
 use core\base\App;
 use core\base\BaseObject;
 use core\base\Router;
+use core\helpers\Inflector;
 
 class UrlRule extends BaseObject
 {
@@ -68,7 +69,7 @@ class UrlRule extends BaseObject
                  * @var Controller $controller
                  */
                 $controller = new $className();
-                return $controller->runAction($this->_router->action, App::$instance->request->request);
+                return $controller->runAction('action'.Inflector::id2camel($this->_router->action), App::$instance->request->request);
 
             }
         }
