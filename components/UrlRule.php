@@ -69,9 +69,12 @@ class UrlRule extends BaseObject
                  * @var Controller $controller
                  */
                 $controller = new $className();
+                $this->_router->parseRoute();
                 return $controller->runAction('action'.Inflector::id2camel($this->_router->action), App::$instance->request->request);
-
             }
+        }
+        if ($result){
+            return $result;
         }
         throw new \Exception('Invalid rule configuration. "route" or "class" parameter must be specified');
     }
