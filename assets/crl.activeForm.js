@@ -12,7 +12,9 @@ $('.crl-active-form-group.has-error input, .crl-active-form-group.has-error sele
         $(this).closest('.crl-active-form-group').removeClass('has-error');
     });
 
-$('.crl-active-form.with-validation input, .crl-active-form.with-validation select, .crl-active-form.with-validation textarea')
+$('.crl-active-form.with-validation .crl-active-form-group input, ' +
+    '.crl-active-form.with-validation .crl-active-form-group select, ' +
+    '.crl-active-form.with-validation .crl-active-form-group textarea')
     .on('blur', function () {
         var obj = $(this);
         obj.validate();
@@ -39,24 +41,6 @@ $.fn.validate = function (validator, params, cb) {
             data['params'] = params;
         }
         url = window.crl.baseUrl + '/validator';
-
-        $.ajax({
-            method: 'post',
-            url: window.crl.baseUrl + '/validator',
-            dataType: 'json',
-            data: data,
-            success: function (data) {
-                if (data.success) {
-                    obj.closest('.crl-active-form-group').removeClass('has-error').addClass('has-success');
-                } else {
-                    obj.closest('.crl-active-form-group').removeClass('has-success').addClass('has-error');
-                }
-                if (cb && typeof cb === 'function') {
-                    cb(data, obj);
-                }
-            }
-        });
-
     } else {
         var attributeName = obj.attr('data-attribute');
         if (!attributeName || attributeName.trim().length < 1) {
@@ -72,17 +56,17 @@ $.fn.validate = function (validator, params, cb) {
         data: data,
         success: function (data) {
             if (data.success) {
-                obj.closest('.crl-active-form-group').removeClass('has-error').addClass('has-success');
+                obj.closest('.crl-active-form-group, .form-group').removeClass('has-error').addClass('has-success');
             } else {
-                obj.closest('.crl-active-form-group').removeClass('has-success').addClass('has-error');
-                obj.closest('.crl-active-form-group').find('.help-block').text(data.message);
+                obj.closest('.crl-active-form-group, .form-group').removeClass('has-success').addClass('has-error');
+                obj.closest('.crl-active-form-group, .form-group').find('.help-block').text(data.message);
             }
             if (cb && typeof cb === 'function') {
                 cb(data, obj);
             }
         },
         error: function(){
-            obj.closest('.crl-active-form-group').removeClass('has-error').removeClass('has-success');
+            obj.closest('.crl-active-form-group, .form-group').removeClass('has-error').removeClass('has-success');
         }
     });
 };
