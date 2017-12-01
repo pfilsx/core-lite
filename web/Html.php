@@ -110,7 +110,6 @@ class Html
         return static::tag('input', $text, array_merge($options, ['type' => 'submit']));
     }
 
-
     public static function startTag($name, $attributes = []){
         return "<$name ".static::renderTagAttributes($attributes).'>'.PHP_EOL;
     }
