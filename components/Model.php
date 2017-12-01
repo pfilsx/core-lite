@@ -11,6 +11,7 @@ use core\validators\ValidatorInterface;
 
 /**
  * @property bool hasErrors
+ * @property array attributes
  */
 abstract class Model extends BaseObject
 {
@@ -135,6 +136,10 @@ abstract class Model extends BaseObject
     public function attributeLabels()
     {
         return [];
+    }
+
+    public final function getAttributes(){
+        return array_keys($this->user_properties);
     }
 
     public final function getAttributeLabel($name){
