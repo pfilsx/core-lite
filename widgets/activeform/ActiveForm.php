@@ -15,8 +15,6 @@ class ActiveForm extends Widget
 
     public $ajaxValidation = false;
 
-    public $options = [];
-
     protected $_fields;
 
     public function run(){

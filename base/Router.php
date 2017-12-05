@@ -16,6 +16,7 @@ use core\helpers\Inflector;
  * @property string controller
  * @property string action
  * @property string route
+ * @property string baseRoute
  * @property string module
  */
 final class Router extends BaseObject
@@ -31,6 +32,8 @@ final class Router extends BaseObject
     private $_module;
 
     private $_route;
+
+    private $_baseRoute;
 
     /**
      * @var UrlRule[]
@@ -116,6 +119,7 @@ final class Router extends BaseObject
     {
         $request = $_SERVER['REQUEST_URI'];
         $requestParts = explode('?', $request);
+        $this->_baseRoute = $requestParts[0];
         $this->_route = str_replace(App::$instance->request->getBaseUrl().'/', '',$requestParts[0]);
         $this->parseRoute();
     }
@@ -148,6 +152,9 @@ final class Router extends BaseObject
 
     public function getRoute(){
         return $this->_route;
+    }
+    public function getBaseRoute(){
+        return $this->_baseRoute;
     }
 
     public function setRoute($value){

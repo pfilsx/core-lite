@@ -83,6 +83,7 @@ return [
     'core\widgets\gridview\DataColumn' => CRL_PATH.'/widgets/gridview/DataColumn.php',
     'core\widgets\gridview\GridView' => CRL_PATH.'/widgets/gridview/GridView.php',
     'core\widgets\gridview\SerialColumn' => CRL_PATH.'/widgets/gridview/SerialColumn.php',
+    'core\widgets\menu\Menu' => CRL_PATH.'/widgets/menu/Menu.php',
     'core\widgets\pagination\Pagination' => CRL_PATH.'/widgets/pagination/Pagination.php',
     'core\widgets\pjax\Pjax' => CRL_PATH.'/widgets/pjax/Pjax.php',
     'core\widgets\pjax\PjaxAssets' => CRL_PATH.'/widgets/pjax/PjaxAssets.php',

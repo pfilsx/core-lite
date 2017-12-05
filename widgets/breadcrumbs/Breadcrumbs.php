@@ -16,8 +16,6 @@ class Breadcrumbs extends Widget
         'class' => 'crl-breadcrumb'
     ];
 
-    public $options = [];
-
     public function run()
     {
         ob_start();

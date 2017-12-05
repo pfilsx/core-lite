@@ -27,6 +27,11 @@ abstract class Widget extends BaseObject
      */
     public $assetsEnabled = true;
 
+    /**
+     * @var array the HTML attributes for the widget container tag.
+     */
+    public $options = [];
+
 
     public static function begin(array $config = []){
         $widgetClass = get_called_class();
