@@ -24,8 +24,8 @@ class Menu extends Widget
     public function init(){
         $this->_currentRoute = App::$instance->request->getBaseUrl().'/'.App::$instance->router->route;
         $this->_currentUrl = App::$instance->router->baseRoute;
-        if (isset($this->itemOptions['url'])){
-            unset($this->itemOptions['url']);
+        if (isset($this->itemOptions['href'])){
+            unset($this->itemOptions['href']);
         }
     }
 
@@ -51,7 +51,7 @@ class Menu extends Widget
                 'class' => ($this->_currentUrl == $item['url'] || $this->_currentRoute == $item['url']
                     ? 'active'
                     : ''),
-                'url' => $item['url']
+                'href' => $item['url']
             ]));
         }
         echo Html::endTag('div');
@@ -66,7 +66,7 @@ class Menu extends Widget
                 'class' => ($this->_currentUrl == $item['url'] || $this->_currentRoute == $item['url']
                     ? 'active'
                     : ''),
-                'url' => $item['url']
+                'href' => $item['url']
             ]));
         }
         echo Html::endTag('div');
