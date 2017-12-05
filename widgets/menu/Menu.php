@@ -18,8 +18,8 @@ class Menu extends Widget
 
     public $itemOptions = [];
 
-    private $_currentUrl;
-    private $_currentRoute;
+    protected $_currentUrl;
+    protected $_currentRoute;
 
     public function init(){
         $this->_currentRoute = App::$instance->request->getBaseUrl().'/'.App::$instance->router->route;
