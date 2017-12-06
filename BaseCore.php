@@ -140,8 +140,15 @@ class BaseCore
 //    }
     public static function handleFatalError(){
         $error = error_get_last();
-        $exception = new WarningException($error['message'], $error['type'], $error['file'], $error['line']); //TODO FatalError exception
-        throw $exception;
+        if (static::isFatalError($error)){
+            $exception = new WarningException($error['message'], $error['type'], $error['file'], $error['line']); //TODO FatalError exception
+            throw $exception;
+        }
+    }
+
+    public static function isFatalError($error)
+    {
+        return isset($error['type']) && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING, self::E_HHVM_FATAL_ERROR]);
     }
 
 }
