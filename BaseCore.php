@@ -125,30 +125,4 @@ class BaseCore
         }
     }
 
-
-
-    public static function handleError($code, $message, $file, $line){
-        // error was suppressed with the @-operator
-        if (0 === error_reporting()) {
-            return false;
-        }
-        throw new WarningException($message, $code, $file, $line); //TODO Error exception
-    }
-
-//    public static function handleException($exception){
-//
-//    }
-    public static function handleFatalError(){
-        $error = error_get_last();
-        if (static::isFatalError($error)){
-            $exception = new WarningException($error['message'], $error['type'], $error['file'], $error['line']); //TODO FatalError exception
-            throw $exception;
-        }
-    }
-
-    public static function isFatalError($error)
-    {
-        return isset($error['type']) && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING, self::E_HHVM_FATAL_ERROR]);
-    }
-
 }

@@ -17,8 +17,3 @@ defined('CRL_ENV') or define('CRL_ENV', 'dev');
 Core::$classMap = require(__DIR__ . '/classMap.php');
 
 spl_autoload_register(['Core', 'autoload'], true, true);
-
-ini_set('display_errors', false);
-//set_exception_handler([$this, 'handleException']);
-set_error_handler(['Core', 'handleError']);
-register_shutdown_function(['Core', 'handleFatalError']);
