@@ -127,12 +127,21 @@ class BaseCore
 
 
 
-    public static function errorHandler($errno, $errstr, $errfile, $errline, $errcontext){
+    public static function handleError($code, $message, $file, $line){
         // error was suppressed with the @-operator
         if (0 === error_reporting()) {
             return false;
         }
-        throw new WarningException($errstr, $errno, $errfile, $errline);
+        throw new WarningException($message, $code, $file, $line); //TODO Error exception
+    }
+
+//    public static function handleException($exception){
+//
+//    }
+    public static function handleFatalError(){
+        $error = error_get_last();
+        $exception = new WarningException($error['message'], $error['type'], $error['file'], $error['line']); //TODO FatalError exception
+        throw $exception;
     }
 
 }
