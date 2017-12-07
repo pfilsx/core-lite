@@ -4,28 +4,12 @@
 namespace core\base;
 
 
-use core\exceptions\WarningException;
-
 final class ExceptionManager
 {
     public $memoryReserveSize = 262144;
 
     private $_memoryReserve;
-    /**
-     * @param \Exception $exception
-     */
-    public function renderException($exception){
-        if (CRL_DEBUG === true){
-            $lines = $this->getFileLines($exception);
-            $_params_ = ['exception' => $exception, 'lines' => $lines, 'line' => $exception->getLine()-1];
-            ob_start();
-            ob_implicit_flush(false);
-            extract($_params_, EXTR_OVERWRITE);
-            require(CRL_PATH.DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.'exception.php');
-            echo ob_get_clean();
-        }
-        echo '';
-    }
+
 
     public function register(){
         ini_set('display_errors', false);
@@ -48,10 +32,10 @@ final class ExceptionManager
         if (error_reporting() & $code) {
             // load ErrorException manually here because autoloading them will not work
             // when error occurs while autoloading a class
-            if (!class_exists('core\exceptions\WarningException', false)) {
-                require_once(__DIR__ . '../exceptions/WarningException.php');
+            if (!class_exists('\core\exceptions\ErrorException', false)) {
+                require_once(__DIR__ . '../exceptions/ErrorException.php');
             }
-            $exception = new WarningException($message, $code, $file, $line);
+            $exception = new \core\exceptions\ErrorException($message, $code, $file, $line);
 
             // in case error appeared in __toString method we can't throw any exception
             $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
@@ -107,18 +91,44 @@ final class ExceptionManager
     public function handleFatalError(){
         unset($this->_memoryReserve);
 
-        if (!class_exists('core\exceptions\WarningException', false)) {
-            require_once(__DIR__ . '../exceptions/WarningException.php');
+        if (!class_exists('\core\exceptions\ErrorException', false)) {
+            require_once(__DIR__ . '../exceptions/ErrorException.php');
         }
-
         $error = error_get_last();
         if ($this->isFatalError($error)){
-            $exception = new WarningException($error['message'], $error['type'], $error['file'], $error['line']); //TODO FatalError exception
+            $exception = new \core\exceptions\ErrorException($error['message'], $error['type'], $error['file'], $error['line']);
             $this->clearOutput();
             $this->renderException($exception);
             exit(1);
         }
     }
+
+    /**
+     * @param \Exception $exception
+     */
+    public function renderException($exception){
+        if (CRL_DEBUG === true){
+            $_params_ = ['exception' => $exception];
+            ob_start();
+            ob_implicit_flush(false);
+            extract($_params_, EXTR_OVERWRITE);
+            require(CRL_PATH.DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.'exception.php');
+            echo ob_get_clean();
+        }
+        echo '';
+    }
+
+    public function renderFileLines($file, $line, $visible = false){
+        $line--;
+        $lines = $this->getFileLines($file, $line);
+        $_params_ = ['lines' => $lines, 'line' => $line, 'visible' => $visible];
+        ob_start();
+        ob_implicit_flush(false);
+        extract($_params_, EXTR_OVERWRITE);
+        require(CRL_PATH.DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.'exceptionFile.php');
+        return ob_get_clean();
+    }
+
     private function isFatalError($error)
     {
         return isset($error['type']) && in_array($error['type'], [
@@ -142,16 +152,17 @@ final class ExceptionManager
     }
 
     /**
-     * @param \Exception $exception
+     * @param $file
+     * @param $line
      * @return array
+     * @internal param \Exception $exception
      */
-    private function getFileLines($exception){
-        $filePath = $exception->getFile();
+    private function getFileLines($file, $line){
         $res = [];
-        $firstLine = $exception->getLine()-7;
-        $lastLine = $exception->getLine()+5;
-        if (is_file($filePath)){
-            $lines = file($filePath);
+        $firstLine = $line-7;
+        $lastLine = $line+5;
+        if (is_file($file)){
+            $lines = @file($file);
             for ($i = $firstLine; $i <= $lastLine; $i ++){
                 if (array_key_exists($i, $lines)){
                     $res[$i] = $lines[$i];
