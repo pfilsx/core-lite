@@ -17,7 +17,7 @@ final class ExceptionManager
     public function renderException($exception){
         if (CRL_DEBUG === true){
             $lines = $this->getFileLines($exception);
-            $_params_ = ['exception' => $exception, 'lines' => $lines];
+            $_params_ = ['exception' => $exception, 'lines' => $lines, 'line' => $exception->getLine()-1];
             ob_start();
             ob_implicit_flush(false);
             extract($_params_, EXTR_OVERWRITE);
@@ -122,13 +122,13 @@ final class ExceptionManager
     private function isFatalError($error)
     {
         return isset($error['type']) && in_array($error['type'], [
-            E_ERROR,
-            E_PARSE,
-            E_CORE_ERROR,
-            E_CORE_WARNING,
-            E_COMPILE_ERROR,
-            E_COMPILE_WARNING
-        ]);
+                E_ERROR,
+                E_PARSE,
+                E_CORE_ERROR,
+                E_CORE_WARNING,
+                E_COMPILE_ERROR,
+                E_COMPILE_WARNING
+            ]);
     }
 
     private function clearOutput()
@@ -148,13 +148,13 @@ final class ExceptionManager
     private function getFileLines($exception){
         $filePath = $exception->getFile();
         $res = [];
-        $firstLine = $exception->getLine()-5;
+        $firstLine = $exception->getLine()-7;
         $lastLine = $exception->getLine()+5;
         if (is_file($filePath)){
             $lines = file($filePath);
             for ($i = $firstLine; $i <= $lastLine; $i ++){
-                if (array_key_exists($i-1, $lines)){
-                    $res[$i] = $lines[$i -1];
+                if (array_key_exists($i, $lines)){
+                    $res[$i] = $lines[$i];
                 }
             }
         }
