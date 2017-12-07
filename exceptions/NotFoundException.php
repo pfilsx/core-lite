@@ -6,7 +6,7 @@ namespace core\exceptions;
 
 class NotFoundException extends \Exception
 {
-    public function __construct($message = "", $code = 404, $file = null, $line = 0, Throwable $previous = null)
+    public function __construct($message = "", $code = 404, $file = null, $line = null, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
 
@@ -15,8 +15,10 @@ class NotFoundException extends \Exception
             $ref->setAccessible(true);
             $ref->setValue($this, $file);
         }
-        $ref = new \ReflectionProperty('Exception', 'line');
-        $ref->setAccessible(true);
-        $ref->setValue($this, $line);
+        if ($line !== null){
+            $ref = new \ReflectionProperty('Exception', 'line');
+            $ref->setAccessible(true);
+            $ref->setValue($this, $line);
+        }
     }
 }
