@@ -28,7 +28,7 @@ class MaskValidator extends Validator implements ValidatorInterface
     /**
      * @inheritdoc
      */
-    function validateValue($value)
+    protected function validate($value)
     {
         $valid = !is_array($value) &&
             (!$this->not && preg_match($this->pattern, $value)

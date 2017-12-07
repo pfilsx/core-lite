@@ -66,7 +66,23 @@ abstract class Validator extends BaseObject implements ValidatorInterface
             return true;
         }
         $value = $this->_model->$attribute;
-        return $this->validateValue($value);
+        $result = $this->validate($value);
+        if ($result !== true){
+            $result = strtr($result, ['{attribute}' => $this->_model->getAttributeLabel($attribute)]);
+        }
+        return $result;
+    }
+    public function validateValue($value)
+    {
+        $result = $this->validate($value);
+        if ($result !== true){
+            $result = strtr($result, ['{attribute}' => '']);
+        }
+        return $result;
+    }
+
+    protected function validate($value){
+        return true;
     }
 
     /**

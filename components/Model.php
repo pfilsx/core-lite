@@ -11,6 +11,7 @@ use core\validators\ValidatorInterface;
 
 /**
  * @property bool hasErrors
+ * @property array attributes
  */
 abstract class Model extends BaseObject
 {
@@ -137,6 +138,10 @@ abstract class Model extends BaseObject
         return [];
     }
 
+    public final function getAttributes(){
+        return array_keys($this->user_properties);
+    }
+
     public final function getAttributeLabel($name){
         return isset($this->attributeLabels()[$name]) ? $this->attributeLabels()[$name] : $name;
     }
@@ -180,7 +185,7 @@ abstract class Model extends BaseObject
                 $this->_errors[$key][] = $valResult;
             }
         }
-        return $this->hasErrors ? true : false;
+        return !$this->hasErrors ? true : false;
     }
 
     /**
@@ -199,8 +204,7 @@ abstract class Model extends BaseObject
         foreach ($this->_activeValidators as $validator){
             if (in_array($attributeName, $validator->getValidatorAttributes())){
                 $validateResult = $validator->validateAttribute($attributeName);
-                if ($validateResult !== true){
-                    $validateResult = strtr( $validateResult, ['{attribute}' => $this->getAttributeLabel($attributeName)]);
+                if ($validateResult !== true){;
                     $this->_errors[$attributeName][] = $validateResult;
                     return $validateResult;
                 }
@@ -213,9 +217,9 @@ abstract class Model extends BaseObject
     public function ajaxValidate(){
         $result = $result = $this->validateAttribute(App::$instance->request->post['attributeName']);
         if ($result === true){
-            return json_encode([]);
+            return json_encode(['success' => true]);
         } else {
-            return json_encode(['message' => $result]);
+            return json_encode(['success' => false, 'message' => $result]);
         }
     }
 }

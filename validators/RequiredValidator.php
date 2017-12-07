@@ -21,10 +21,11 @@ class RequiredValidator extends Validator implements ValidatorInterface
             $this->message = App::$instance->translate('crl', '{attribute} cannot be blank');
         }
     }
+
     /**
      * @inheritdoc
      */
-    function validateValue($value)
+    protected function validate($value)
     {
         if ($this->strict && $value !== null || !$this->strict && !empty(is_string($value) ? trim($value) : $value)) {
             return true;

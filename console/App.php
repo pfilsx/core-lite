@@ -57,7 +57,7 @@ final class App extends BaseObject
         return $this->_db;
     }
 
-    private function setBasePath($path)
+    public function setBasePath($path)
     {
         Core::setAlias('@app', $path);
     }

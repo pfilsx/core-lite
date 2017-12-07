@@ -4,8 +4,10 @@
 namespace core\components;
 
 
+use core\base\App;
 use core\base\BaseObject;
 use core\base\Router;
+use core\helpers\Inflector;
 
 class UrlRule extends BaseObject
 {
@@ -52,12 +54,29 @@ class UrlRule extends BaseObject
     }
 
     public function resolve(){
+        $result = false;
         if (isset($this->_options['route'])){
             $this->_router->route = strtr($this->_options['route'], [
                 '<controller>' => $this->_router->controller,
                 '<action>' => $this->_router->action
             ]);
+            $result = true;
         }
+        if (isset($this->_options['class'])){
+            $className = $this->_options['class'];
+            if (class_exists($className) && is_subclass_of($className, 'core\components\Controller')){
+                /**
+                 * @var Controller $controller
+                 */
+                $controller = new $className();
+                $this->_router->parseRoute();
+                return $controller->runAction('action'.Inflector::id2camel($this->_router->action), App::$instance->request->request);
+            }
+        }
+        if ($result){
+            return $result;
+        }
+        throw new \Exception('Invalid rule configuration. "route" or "class" parameter must be specified');
     }
 
 }

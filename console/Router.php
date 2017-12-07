@@ -6,6 +6,8 @@ namespace core\console;
 
 use Core;
 use core\base\BaseObject;
+use core\exceptions\ErrorException;
+use core\exceptions\NotFoundException;
 
 class Router extends BaseObject
 {
@@ -35,7 +37,7 @@ class Router extends BaseObject
                         if (array_key_exists($param->name, App::$instance->request->request)) {
                             $_params_[$param->name] = App::$instance->request->request[$param->name];
                         } else if (!$param->isOptional()) {
-                            throw new \Exception("Required parameter $param->name is missed");
+                            throw new ErrorException("Required parameter $param->name is missed");
                         } else {
                             $_params_[$param->name] = $param->getDefaultValue();
                         }
@@ -49,14 +51,14 @@ class Router extends BaseObject
                 return $content;
             } else {
                 if (CRL_DEBUG === true){
-                    throw new \Exception("Action {$this->_action} does not exist in {$this->_controller}");
+                    throw new NotFoundException("Action {$this->_action} does not exist in {$this->_controller}");
                 } else {
                     return 1;
                 }
             }
         } else {
             if (CRL_DEBUG === true) {
-                throw new \Exception("Controller {$this->_controller} does not exist");
+                throw new NotFoundException("Controller {$this->_controller} does not exist");
             } else {
                 return 1;
             }

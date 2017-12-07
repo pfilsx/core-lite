@@ -14,12 +14,6 @@ use core\web\Html;
 class Pjax extends Widget
 {
     /**
-     * @var array the HTML attributes for the widget container tag. The following special options are recognized:
-     *
-     * - `tag`: string, the tag name for the container. Defaults to `div`
-     */
-    public $options = [];
-    /**
      * @var string|false the jQuery selector of the links that should trigger pjax requests.
      * If not set, all links within the enclosed content of Pjax will trigger pjax requests.
      * If set to false, no code will be registered to handle links.

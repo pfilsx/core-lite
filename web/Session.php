@@ -469,20 +469,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      *
      * You may use this method to display all the flash messages in a view file:
      *
-     * ```php
-     * <?php
-     * foreach (Yii::$app->session->getAllFlashes() as $key => $message) {
-     *     echo '<div class="alert alert-' . $key . '">' . $message . '</div>';
-     * } ?>
-     * ```
-     *
-     * With the above code you can use the [bootstrap alert][] classes such as `success`, `info`, `danger`
-     * as the flash message key to influence the color of the div.
-     *
-     * Note that if you use [[addFlash()]], `$message` will be an array, and you will have to adjust the above code.
-     *
-     * [bootstrap alert]: http://getbootstrap.com/components/#alerts
-     *
      * @param boolean $delete whether to delete the flash messages right after this method is called.
      * If false, the flash messages will be automatically deleted in the next request.
      * @return array flash messages (key => message or key => [message1, message2]).
@@ -616,7 +602,11 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      */
     public function hasFlash($key)
     {
-        return $this->getFlash($key) !== null;
+        $counters = $this->get($this->flashParam, []);
+        if (isset($counters[$key])) {
+            return true;
+        }
+        return false;
     }
 
     /**

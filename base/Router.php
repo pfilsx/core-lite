@@ -6,6 +6,7 @@ use Core;
 use core\components\Controller;
 use core\components\Module;
 use core\components\UrlRule;
+use core\exceptions\NotFoundException;
 use core\helpers\FileHelper;
 use core\helpers\Inflector;
 
@@ -16,6 +17,7 @@ use core\helpers\Inflector;
  * @property string controller
  * @property string action
  * @property string route
+ * @property string baseRoute
  * @property string module
  */
 final class Router extends BaseObject
@@ -31,6 +33,8 @@ final class Router extends BaseObject
     private $_module;
 
     private $_route;
+
+    private $_baseRoute;
 
     /**
      * @var UrlRule[]
@@ -57,6 +61,10 @@ final class Router extends BaseObject
                 $this->_rules[] = new UrlRule($this, $key, $value);
             }
         }
+        $this->addRules([
+            'validator' => ['route' => 'core/validator/validate', 'class' => 'core\components\CoreController'],
+            'validator/<action>' => ['route' => 'core/validator/<action>', 'class' => 'core\components\CoreController'],
+        ]);
     }
 
     /**
@@ -68,7 +76,9 @@ final class Router extends BaseObject
         $this->parseRequest();
         foreach ($this->_rules as $rule){
             if ($rule->parseRequest()){
-                $rule->resolve();
+                if (($result = $rule->resolve()) !== true){
+                    return $result;
+                }
                 break;
             }
         }
@@ -99,7 +109,7 @@ final class Router extends BaseObject
             return $controllerClass->runAction($action, App::$instance->request->request);
         } else {
             if (CRL_DEBUG === true) {
-                throw new \Exception("Controller {$this->_controller} does not exist");
+                throw new NotFoundException("Controller {$this->_controller} does not exist");
             } else {
                 return App::$instance->getResponse()->redirect('/');
             }
@@ -110,6 +120,7 @@ final class Router extends BaseObject
     {
         $request = $_SERVER['REQUEST_URI'];
         $requestParts = explode('?', $request);
+        $this->_baseRoute = $requestParts[0];
         $this->_route = str_replace(App::$instance->request->getBaseUrl().'/', '',$requestParts[0]);
         $this->parseRoute();
     }
@@ -142,6 +153,9 @@ final class Router extends BaseObject
 
     public function getRoute(){
         return $this->_route;
+    }
+    public function getBaseRoute(){
+        return $this->_baseRoute;
     }
 
     public function setRoute($value){

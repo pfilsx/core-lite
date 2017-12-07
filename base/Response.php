@@ -4,6 +4,7 @@
 namespace core\base;
 
 
+use core\exceptions\ErrorException;
 use core\formatters\ResponseFormatterInterface;
 use core\helpers\FileHelper;
 use core\helpers\Inflector;
@@ -171,7 +172,7 @@ class Response extends BaseObject
                 'class' => 'core\formatters\JsonResponseFormatter',
             ],
             self::FORMAT_JSONP => [
-                'class' => 'yii\web\JsonResponseFormatter',
+                'class' => 'core\formatters\JsonResponseFormatter',
                 'useJsonp' => true,
             ],
         ];
@@ -185,7 +186,7 @@ class Response extends BaseObject
         }
         $this->_statusCode = (int) $value;
         if ($this->getIsInvalid()) {
-            throw new \Exception("The HTTP status code is invalid: $value");
+            throw new ErrorException("The HTTP status code is invalid: $value");
         }
         if ($text === null) {
             $this->statusText = isset(static::$httpStatuses[$this->_statusCode]) ? static::$httpStatuses[$this->_statusCode] : '';
@@ -264,7 +265,7 @@ class Response extends BaseObject
         $request = App::$instance->request;
         if ($request->enableCookieValidation) {
             if ($request->cookieValidationKey == '') {
-                throw new \Exception(get_class($request) . '::cookieValidationKey must be configured with a secret key.');
+                throw new ErrorException(get_class($request) . '::cookieValidationKey must be configured with a secret key.');
             }
             $validationKey = $request->cookieValidationKey;
         }
@@ -325,7 +326,7 @@ class Response extends BaseObject
         $range = $this->getHttpRange($contentLength);
         if ($range === false) {
             $headers->set('Content-Range', "bytes */$contentLength");
-            throw new \Exception('RangeNotSatisfiable');
+            throw new ErrorException('RangeNotSatisfiable');
         }
         list($begin, $end) = $range;
         if ($begin != 0 || $end != $contentLength - 1) {
@@ -354,7 +355,7 @@ class Response extends BaseObject
         $range = $this->getHttpRange($fileSize);
         if ($range === false) {
             $headers->set('Content-Range', "bytes */$fileSize");
-            throw new \Exception('RangeNotSatisfiable');
+            throw new ErrorException('RangeNotSatisfiable');
         }
         list($begin, $end) = $range;
         if ($begin != 0 || $end != $fileSize - 1) {
@@ -495,22 +496,22 @@ class Response extends BaseObject
             if ($formatter instanceof ResponseFormatterInterface) {
                 $formatter->format($this);
             } else {
-                throw new \Exception("The '{$this->format}' response formatter is invalid. It must implement the ResponseFormatterInterface.");
+                throw new ErrorException("The '{$this->format}' response formatter is invalid. It must implement the ResponseFormatterInterface.");
             }
         } elseif ($this->format === self::FORMAT_RAW) {
             if ($this->data !== null) {
                 $this->content = $this->data;
             }
         } else {
-            throw new \Exception("Unsupported response format: {$this->format}");
+            throw new ErrorException("Unsupported response format: {$this->format}");
         }
         if (is_array($this->content)) {
-            throw new \Exception('Response content must not be an array.');
+            throw new ErrorException('Response content must not be an array.');
         } elseif (is_object($this->content)) {
             if (method_exists($this->content, '__toString')) {
                 $this->content = $this->content->__toString();
             } else {
-                throw new \Exception('Response content must be a string or an object implementing __toString().');
+                throw new ErrorException('Response content must be a string or an object implementing __toString().');
             }
         }
     }

@@ -7,6 +7,7 @@ namespace core\db;
 use core\base\App;
 use core\base\BaseObject;
 use core\components\ActiveModel;
+use core\exceptions\ErrorException;
 
 /**
  * Class QueryBuilder
@@ -88,7 +89,7 @@ abstract class QueryBuilder extends BaseObject
     public function __construct($db, $model = null ,array $config = [])
     {
         if (!$db instanceof Connection){
-            throw new \Exception('Error in QueryBuilder configuration');
+            throw new ErrorException('Error in QueryBuilder configuration');
         }
         $this->_db = $db;
         $this->_model = $model;
@@ -303,7 +304,7 @@ abstract class QueryBuilder extends BaseObject
             }
             return null;
         }
-        throw new \Exception($result);
+        throw new ErrorException($result);
     }
 
     /**
@@ -335,7 +336,7 @@ abstract class QueryBuilder extends BaseObject
         if (is_array($result) && count($result) > 0){
             return intval($result[0]);
         }
-        throw new \Exception($result);
+        throw new ErrorException($result);
     }
 
     /**
@@ -445,7 +446,7 @@ abstract class QueryBuilder extends BaseObject
 
     private function buildInCondition($operator, $operands, $params = []){
         if (!isset($operands[0], $operands[1])) {
-            throw new \Exception("Operator '$operator' requires two operands.");
+            throw new ErrorException("Operator '$operator' requires two operands.");
         }
         $column = $this->_db->quoteColumnName($operands[0]);
         $values = $operands[1];
@@ -474,7 +475,7 @@ abstract class QueryBuilder extends BaseObject
 
     private function simpleConditionBuilder($operator, $operands, $params = []){
         if (!isset($operands[0], $operands[1]) && $operands[1] !== null) {
-            throw new \Exception("Operator '$operator' requires two operands.");
+            throw new ErrorException("Operator '$operator' requires two operands.");
         }
         $column = $this->_db->quoteColumnName($operands[0]);
         $value = $operands[1];
@@ -490,7 +491,7 @@ abstract class QueryBuilder extends BaseObject
 
     private function buildNotCondition($operator, $operands, $params = []){
         if (count($operands) !== 1) {
-            throw new \Exception("Operator '$operator' requires exactly one operand.");
+            throw new ErrorException("Operator '$operator' requires exactly one operand.");
         }
         $operand = reset($operands);
         if (is_array($operand)) {
@@ -504,7 +505,7 @@ abstract class QueryBuilder extends BaseObject
 
     private function buildLikeCondition($operator, $operands, $params = []){
         if (!isset($operands[0], $operands[1])) {
-            throw new \Exception("Operator '$operator' requires two operands.");
+            throw new ErrorException("Operator '$operator' requires two operands.");
         }
         $this->addParams($params);
         $column = $this->_db->quoteColumnName($operands[0]);
@@ -516,7 +517,7 @@ abstract class QueryBuilder extends BaseObject
     }
     private function buildBetweenCondition($operator, $operands, $params = []){
         if (!isset($operands[0], $operands[1], $operands[2])) {
-            throw new \Exception("Operator '$operator' requires three operands.");
+            throw new ErrorException("Operator '$operator' requires three operands.");
         }
         $column = $this->_db->quoteColumnName($operands[0]);
         $value1 = $operands[1];
@@ -546,6 +547,6 @@ abstract class QueryBuilder extends BaseObject
             $this->addParams($params);
             return "$operator ($query)";
         }
-        throw new \Exception('Subquery for EXISTS operator must be a Command|QueryBuilder|string object.');
+        throw new ErrorException('Subquery for EXISTS operator must be a Command|QueryBuilder|string object.');
     }
 }

@@ -55,6 +55,7 @@ class ActiveField extends BaseObject
         $this->_model = $model;
         $this->_attribute = $attribute;
         $this->_form = $form;
+        $this->input();
         parent::__construct([]);
     }
 
@@ -73,7 +74,7 @@ class ActiveField extends BaseObject
     }
 
     protected function defaultInput($type, $options = []){
-        $this->_elements[] = Html::input($this->getFieldName(), $type, $this->_model->{$this->_attribute},
+        $this->_elements['input'] = Html::input($this->getFieldName(), $type, $this->_model->{$this->_attribute},
             array_merge($options, [
                 'data-attribute' => $this->_attribute
             ]));
@@ -87,7 +88,7 @@ class ActiveField extends BaseObject
             array_merge($options, [
                 'data-attribute' => $this->_attribute
             ]));
-        $this->_elements[] = $html;
+        $this->_elements['input'] = $html;
 
         $this->_enclosedByLabel = $enclosedByLabel;
         return $this;
@@ -98,13 +99,13 @@ class ActiveField extends BaseObject
             array_merge($options,[
                 'data-attribute' => $this->_attribute
             ]));
-        $this->_elements[] = $html;
+        $this->_elements['input'] = $html;
         $this->_enclosedByLabel = $enclosedByLabel;
         return $this;
     }
 
     public function select($items, $options = []){
-        $this->_elements[] = Html::select($this->getFieldName(), $items, $this->_model->{$this->_attribute},
+        $this->_elements['input'] = Html::select($this->getFieldName(), $items, $this->_model->{$this->_attribute},
             array_merge($options, [
                 'data-attribute' => $this->_attribute
             ]));
@@ -113,7 +114,7 @@ class ActiveField extends BaseObject
 
     public function textarea($options = [])
     {
-        $this->_elements[] = Html::textarea($this->getFieldName(), $this->_model->{$this->_attribute},
+        $this->_elements['input'] = Html::textarea($this->getFieldName(), $this->_model->{$this->_attribute},
             array_merge($options, [
                 'data-attribute' => $this->_attribute
             ]));
@@ -125,7 +126,7 @@ class ActiveField extends BaseObject
         if (!isset($this->_form->options['enctype'])) {
             $this->_form->options['enctype'] = 'multipart/form-data';
         }
-        $this->_elements[] = Html::fileInput($this->getFieldName(), null, array_merge($options, [
+        $this->_elements['input'] = Html::fileInput($this->getFieldName(), null, array_merge($options, [
             'data-attribute' => $this->_attribute
         ]));
         return $this;
@@ -133,7 +134,7 @@ class ActiveField extends BaseObject
 
     public function hiddenInput($options = [])
     {
-        $this->_elements[] = Html::hiddenInput($this->getFieldName(), $this->_model->{$this->_attribute},
+        $this->_elements['input'] = Html::hiddenInput($this->getFieldName(), $this->_model->{$this->_attribute},
             array_merge($options, [
                 'data-attribute' => $this->_attribute
             ])
@@ -159,11 +160,11 @@ class ActiveField extends BaseObject
             $html .= Html::startTag('label', ArrayHelper::merge($this->_labelOptions, [
                 'for' => $this->getFieldName()
             ]));
-            $html .= implode(PHP_EOL, $this->_elements);
+            $html .= $this->_elements['input'];
             $html .= $this->_label.Html::endTag('label');
         } else {
             $html .= Html::label($this->_label, $this->getFieldName(), $this->_labelOptions);
-            $html .= implode(PHP_EOL, $this->_elements);
+            $html .= $this->_elements['input'];
         }
         $html .= Html::tag('span', ($this->_model->hasError($this->_attribute)
             ? $this->_model->getErrors($this->_attribute)[0] : null),

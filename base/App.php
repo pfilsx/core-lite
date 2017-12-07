@@ -94,6 +94,8 @@ final class App extends BaseObject
      */
     public $view = null;
 
+    private $_exceptionManager = null;
+
 
     /**
      * @var string
@@ -102,28 +104,35 @@ final class App extends BaseObject
 
     public function __construct($config = [])
     {
-        try {
+//        try {
+            $this->registerExceptionManager();
             $this->preInit($config);
             parent::__construct($config);
             unset($config);
-        } catch (\Exception $ex) {
-            echo (new ExceptionManager())->renderException($ex);
-        }
+
+//        } catch (\Exception $ex) {
+//            echo (new ExceptionManager())->renderException($ex);
+//        }
+    }
+
+    private function registerExceptionManager(){
+        $this->_exceptionManager = new ExceptionManager();
+        $this->_exceptionManager->register();
     }
 
     public function run()
     {
-        try {
+//        try {
             $this->_response = new Response();
             $response = $this->_router->route();
             $response->send();
             return $response->exitStatus;
-        } catch (\Exception $ex) {
-            $response = new Response();
-            $response->content = (new ExceptionManager())->renderException($ex);
-            $response->send();
-            return $ex->getCode();
-        }
+//        } catch (\Exception $ex) {
+//            $response = new Response();
+//            $response->content = (new ExceptionManager())->renderException($ex);
+//            $response->send();
+//            return $ex->getCode();
+//        }
     }
 
     private function preInit($config)
