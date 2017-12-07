@@ -33,7 +33,7 @@ final class ExceptionManager
             // load ErrorException manually here because autoloading them will not work
             // when error occurs while autoloading a class
             if (!class_exists('\core\exceptions\ErrorException', false)) {
-                require_once(__DIR__ . '../exceptions/ErrorException.php');
+                require_once(__DIR__ . '/../exceptions/ErrorException.php');
             }
             $exception = new \core\exceptions\ErrorException($message, $code, $file, $line);
 
@@ -92,7 +92,7 @@ final class ExceptionManager
         unset($this->_memoryReserve);
 
         if (!class_exists('\core\exceptions\ErrorException', false)) {
-            require_once(__DIR__ . '../exceptions/ErrorException.php');
+            require_once(__DIR__ . '/../exceptions/ErrorException.php');
         }
         $error = error_get_last();
         if ($this->isFatalError($error)){
