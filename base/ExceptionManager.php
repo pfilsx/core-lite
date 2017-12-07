@@ -129,6 +129,13 @@ final class ExceptionManager
         return ob_get_clean();
     }
 
+    public function renderRequest(){
+        ob_start();
+        ob_implicit_flush(false);
+        require(CRL_PATH.DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.'exceptionRequest.php');
+        return ob_get_clean();
+    }
+
     private function isFatalError($error)
     {
         return isset($error['type']) && in_array($error['type'], [

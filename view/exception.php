@@ -193,6 +193,18 @@
         body.mousedown pre {
             pointer-events: auto;
         }
+
+        .crl-exception-request {
+            background-color: #fafafa;
+            padding-top: 20px;
+            padding-bottom: 40px;
+            margin-top: 20px;
+            margin-bottom: 1px;
+        }
+        .crl-exception-request pre {
+            left: 0;
+        }
+
     </style>
 </head>
 <body>
@@ -216,8 +228,6 @@
             </div>
             <?= $this->renderFileLines($exception->getFile(), $exception->getLine(), true) ?>
         </div>
-
-
         <?php foreach ($exception->getTrace() as $counter => $trace) { ?>
             <?php if (isset($trace['file']) && isset($trace['type']) && isset($trace['function']) && isset($trace['line'])) { ?>
                 <div class="crl-exception-block">
@@ -230,6 +240,10 @@
                     <?= $this->renderFileLines($trace['file'], $trace['line']) ?>
                 </div>
             <?php }} ?>
+
+        <div class="crl-exception-request">
+            <?= $this->renderRequest() ?>
+        </div>
     </div>
 
 </div>
