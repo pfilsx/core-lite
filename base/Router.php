@@ -6,6 +6,7 @@ use Core;
 use core\components\Controller;
 use core\components\Module;
 use core\components\UrlRule;
+use core\exceptions\NotFoundException;
 use core\helpers\FileHelper;
 use core\helpers\Inflector;
 
@@ -108,7 +109,7 @@ final class Router extends BaseObject
             return $controllerClass->runAction($action, App::$instance->request->request);
         } else {
             if (CRL_DEBUG === true) {
-                throw new \Exception("Controller {$this->_controller} does not exist");
+                throw new NotFoundException("Controller {$this->_controller} does not exist");
             } else {
                 return App::$instance->getResponse()->redirect('/');
             }

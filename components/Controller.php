@@ -7,6 +7,8 @@ use \core\base\App;
 use Core;
 use core\base\BaseObject;
 use core\base\Response;
+use core\exceptions\ErrorException;
+use core\exceptions\NotFoundException;
 use core\helpers\FileHelper;
 
 abstract class Controller extends BaseObject
@@ -65,7 +67,7 @@ abstract class Controller extends BaseObject
                         if (array_key_exists($param->name, $params)) {
                             $_params_[$param->name] = $params[$param->name];
                         } else if (!$param->isOptional()) {
-                            throw new \Exception("Required parameter $param->name is missed");
+                            throw new ErrorException("Required parameter {$param->name} is missed");
                         } else {
                             $_params_[$param->name] = $param->getDefaultValue();
                         }
@@ -86,7 +88,7 @@ abstract class Controller extends BaseObject
             } else {
                 if (CRL_DEBUG === true){
                     $controllerClass = static::className();
-                    throw new \Exception("Action {$action} does not exist in {$controllerClass}");
+                    throw new NotFoundException("Action {$action} does not exist in {$controllerClass}");
                 } else {
                     return App::$instance->getResponse()->redirect('/');
                 }
