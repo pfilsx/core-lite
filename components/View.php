@@ -70,7 +70,9 @@ class View extends BaseObject
         $config = App::$instance->config['routing'];
         $this->_viewsPath = $controller->viewsPath;
         parent::__construct($config);
-        $this->_renderer = new static::$viewRenderer();
+        if (static::$viewRenderer != null){
+            $this->_renderer = new static::$viewRenderer();
+        }
     }
 
     public function getContent(array $_params_ = []){
