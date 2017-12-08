@@ -153,12 +153,12 @@ class AssetManager extends BaseObject
             if (is_file($assetPath)) {
                 if (md5_file($assetPath) !== md5_file($path)) {
                     copy($path, $assetPath);
-                    @chmod($path, $this->fileMode);
+                    @chmod($assetPath, $this->fileMode);
                 }
             } else {
                 if (FileHelper::createDirectory(dirname($assetPath), $this->dirMode)) {
                     copy($path, $assetPath);
-                    @chmod($path, $this->fileMode);
+                    @chmod($assetPath, $this->fileMode);
                 }
             }
             return 'assets/' . basename($assetPath);
