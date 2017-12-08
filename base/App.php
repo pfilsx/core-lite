@@ -104,15 +104,10 @@ final class App extends BaseObject
 
     public function __construct($config = [])
     {
-//        try {
-            $this->registerExceptionManager();
-            $this->preInit($config);
-            parent::__construct($config);
-            unset($config);
-
-//        } catch (\Exception $ex) {
-//            echo (new ExceptionManager())->renderException($ex);
-//        }
+        $this->registerExceptionManager();
+        $this->preInit($config);
+        parent::__construct($config);
+        unset($config);
     }
 
     private function registerExceptionManager(){
@@ -122,17 +117,10 @@ final class App extends BaseObject
 
     public function run()
     {
-//        try {
-            $this->_response = new Response();
-            $response = $this->_router->route();
-            $response->send();
-            return $response->exitStatus;
-//        } catch (\Exception $ex) {
-//            $response = new Response();
-//            $response->content = (new ExceptionManager())->renderException($ex);
-//            $response->send();
-//            return $ex->getCode();
-//        }
+        $this->_response = new Response();
+        $response = $this->_router->route();
+        $response->send();
+        return $response->exitStatus;
     }
 
     private function preInit($config)
@@ -191,6 +179,12 @@ final class App extends BaseObject
                     }
                 }
             }
+        }
+        if (isset($this->_config['view']['renderer'])){
+            View::$viewRenderer = $this->_config['view']['renderer'];
+        }
+        if (isset($this->_config['view']['extension'])){
+            View::$defaultExtension = $this->_config['view']['extension'];
         }
     }
 

@@ -4,7 +4,6 @@
 namespace core;
 
 
-use core\exceptions\WarningException;
 
 class BaseCore
 {
