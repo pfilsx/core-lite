@@ -47,6 +47,7 @@ abstract class Controller extends BaseObject
         App::$instance->assetManager->registerBundles();
         return App::$instance->view->getContent($_params_);
     }
+    
     public final function renderPartial($view, $_params_ = []){
         return View::renderPartial($view, $_params_);
     }

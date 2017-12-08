@@ -4,8 +4,12 @@
 namespace core\base;
 
 
+use core\exceptions\ErrorException;
+
 abstract class BaseObject extends Configurable
 {
+    private static $_events = [];
+
     public static function className()
     {
         return get_called_class();
@@ -85,5 +89,74 @@ abstract class BaseObject extends Configurable
     public function hasMethod($name)
     {
         return method_exists($this, $name);
+    }
+
+    /**
+     * Add an event handler
+     * @param string $event - event name to handle
+     * @param callable $handler - handler
+     * @throws ErrorException - invalid args exception
+     */
+    public static final function addEventHandler($event, callable $handler){
+        if (!is_string($event)){
+            throw new ErrorException("Invalid argument passed. Event name must be a string");
+        }
+        if (!array_key_exists($event, static::$_events)){
+            static::$_events[$event] = [];
+        }
+        static::$_events[$event][] = $handler;
+    }
+    /**
+     * Remove an event handler
+     * @param string $event - event name to remove handler
+     * @param callable $handler - handler
+     * @throws ErrorException - invalid args exception
+     */
+    public static final function removeEventHandler($event, callable $handler){
+        if (!array_key_exists($event, static::$_events)){
+            return;
+        }
+        if (!is_string($event)){
+            throw new ErrorException("Invalid argument passed. Event name must be a string");
+        }
+        if (($index = array_search($handler, static::$_events[$event])) !== false){
+            unset(static::$_events[$event][$index]);
+        }
+    }
+    /**
+     * Removes all event handlers for specific event or for all events
+     * @param null||string $event - event name or null for all events
+     * @throws ErrorException - invalid args exception
+     */
+    public function removeAllEventHandlers($event = null){
+        if ($event == null){
+            static::$_events = [];
+            return;
+        }
+        if (!is_string($event)){
+            throw new ErrorException("Invalid argument passed. Event name must be a string or null");
+        }
+        unset(static::$_events[$event]);
+    }
+    /**
+     * Invoke a specific event by name
+     * @param string $event - event name to invoke
+     * @param array $args - array of arguments
+     */
+    protected function invokeEvent($event, $args = []){
+        if (!array_key_exists($event, static::$_events)){
+            return;
+        }
+        foreach (static::$_events[$event] as $handler){
+            call_user_func($handler, array_merge($args, ['callerObj' => $this]));
+        }
+    }
+
+    /**
+     * Return list of specified events for class with their handlers
+     * @return array
+     */
+    public static final function getEvents(){
+        return static::$_events;
     }
 }
