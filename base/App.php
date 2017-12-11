@@ -31,37 +31,30 @@ final class App extends BaseObject
      * @var App
      */
     public static $instance;
-
     /**
      * @var Connection
      */
     private $_db;
-
     /**
      * @var Router
      */
     private $_router;
-
     /**
      * @var string
      */
     private $_basePath;
-
     /**
      * @var AssetManager
      */
     private $_assetManager;
-
     /**
      * @var Request
      */
     private $_request;
-
     /**
      * @var Response
      */
     private $_response;
-
     /**
      * @var Security
      */
@@ -70,12 +63,10 @@ final class App extends BaseObject
      * @var Session
      */
     private $_session;
-
     /**
      * @var TranslateManager
      */
     private $_translateManager;
-
     /**
      * @var BaseUser
      */
@@ -88,20 +79,23 @@ final class App extends BaseObject
      * @var string
      */
     private $_vendorPath;
-
     /**
      * @var null|View
      */
     public $view = null;
-
+    /**
+     * @var ExceptionManager
+     */
     private $_exceptionManager = null;
-
-
     /**
      * @var string
      */
     private $_charset = 'UTF-8';
 
+    /**
+     * App constructor.
+     * @param array $config
+     */
     public function __construct($config = [])
     {
         $this->registerExceptionManager();
@@ -109,12 +103,19 @@ final class App extends BaseObject
         parent::__construct($config);
         unset($config);
     }
-
+    /**
+     * Registering exception manager for handling errors
+     */
     private function registerExceptionManager(){
         $this->_exceptionManager = new ExceptionManager();
         $this->_exceptionManager->register();
     }
-
+    /**
+     * Main function of Application.
+     * Call it for run app.
+     *  (new \core\base\App($config))->run()
+     * @return int
+     */
     public function run()
     {
         $this->_response = new Response();
@@ -122,7 +123,11 @@ final class App extends BaseObject
         $response->send();
         return $response->exitStatus;
     }
-
+    /**
+     * PreInitialize application. Setting default layout if not set and checking basePath
+     * @param $config
+     * @throws \Exception
+     */
     private function preInit($config)
     {
         Core::$app = static::$instance = $this;
@@ -133,7 +138,9 @@ final class App extends BaseObject
             $this->_config['routing']['layout'] = '@app/layouts/default';
         }
     }
-
+    /**
+    * @inheritDoc
+    */
     public function init()
     {
         $this->_security = new Security();
@@ -187,35 +194,59 @@ final class App extends BaseObject
             View::$defaultExtension = $this->_config['view']['extension'];
         }
     }
-
+    /**
+     * Get Connection instance
+     * @return Connection
+     */
     public function getDb()
     {
         return $this->_db;
     }
-
+    /**
+     * Get Router instance
+     * @return Router
+     */
     public function getRouter()
     {
         return $this->_router;
     }
-
+    /**
+     * Get basePath of application
+     * @return string
+     */
     public function getBasePath()
     {
         return $this->_basePath;
     }
-
+    /**
+     * Set basePath of application. In best way must be called only from init() of application.
+     * Change it on your own risk
+     * @param string $path
+     */
     public function setBasePath($path)
     {
         $this->_basePath = $path;
         Core::setAlias('@app', $this->getBasePath());
     }
-
+    /**
+     * Get AssetManager instance
+     * @return AssetManager
+     */
     public function getAssetManager()
     {
         return $this->_assetManager;
     }
+    /**
+     * Get Session instance
+     * @return Session
+     */
     public function getSession(){
         return $this->_session;
     }
+    /**
+     * Get full path to vendor directory
+     * @return string
+     */
     public function getVendorPath()
     {
         if ($this->_vendorPath === null) {
@@ -224,7 +255,10 @@ final class App extends BaseObject
 
         return $this->_vendorPath;
     }
-
+    /**
+     * Set full path to vendor directory
+     * @param $path - path to vendor dir
+     */
     public function setVendorPath($path)
     {
         $this->_vendorPath = Core::getAlias($path);
@@ -232,43 +266,53 @@ final class App extends BaseObject
         Core::setAlias('@bower', $this->_vendorPath . DIRECTORY_SEPARATOR . 'bower');
         Core::setAlias('@npm', $this->_vendorPath . DIRECTORY_SEPARATOR . 'npm');
     }
-
     /**
+     * Get Request instance
      * @return Request
      */
     public function getRequest()
     {
         return $this->_request;
     }
-
     /**
+     * Get Response instance
      * @return Response
      */
     public function getResponse(){
         return $this->_response;
     }
-
+    /**
+     * Get BaseUser instance
+     * @return BaseUser
+     */
     public function getUser()
     {
         return $this->_user;
     }
+    /**
+     * Set BaseUser instance
+     * @param BaseUser $value
+     */
     public function setUser($value){
         $this->_user = $value;
     }
-
+    /**
+     * Get charset of application(default UTF-8)
+     * @return string
+     */
     public function getCharset()
     {
         return $this->_charset;
     }
-
     /**
+     * Get Security instance
      * @return Security
      */
     public function getSecurity(){
         return $this->_security;
     }
-
     /**
+     * Get module by id or null if module does not exist
      * @param $id
      * @return Module|null
      */
@@ -278,12 +322,12 @@ final class App extends BaseObject
         }
         return null;
     }
-
     /**
-     * @param string $dictionary
-     * @param string $message
-     * @param array $params
-     * @return string
+     * Translate string line by specified dictionary
+     * @param string $dictionary - dictionary name
+     * @param string $message - message template
+     * @param array $params - params for replacing
+     * @return string - translated message
      */
     public function translate($dictionary, $message, $params = []){
         $placeholders = [];

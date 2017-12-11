@@ -66,6 +66,8 @@ class Request extends BaseObject
 
     private $_hostName;
 
+    public $trustedHosts = [];
+
     public $secureHeaders = [
         'X-Forwarded-For',
         'X-Forwarded-Host',

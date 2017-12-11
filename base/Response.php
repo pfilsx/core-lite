@@ -18,6 +18,9 @@ use core\web\HeaderCollection;
  */
 class Response extends BaseObject
 {
+    const EVENT_BEFORE_SEND = 'before_send';
+    const EVENT_AFTER_PREPARE = 'after_prepare';
+    const EVENT_AFTER_SEND = 'after_send';
     public $exitStatus = 0;
 
     const FORMAT_RAW = 'raw';
@@ -209,12 +212,12 @@ class Response extends BaseObject
         if ($this->isSent) {
             return;
         }
-//        $this->trigger(self::EVENT_BEFORE_SEND);
+        $this->invoke(self::EVENT_BEFORE_SEND);
         $this->prepare();
-//        $this->trigger(self::EVENT_AFTER_PREPARE);
+        $this->invoke(self::EVENT_AFTER_PREPARE);
         $this->sendHeaders();
         $this->sendContent();
-//        $this->trigger(self::EVENT_AFTER_SEND);
+        $this->invoke(self::EVENT_AFTER_SEND);
         $this->isSent = true;
     }
     public function clear()

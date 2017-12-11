@@ -15,6 +15,10 @@ use core\db\TableSchema;
  */
 abstract class ActiveModel extends Model
 {
+    const EVENT_BEFORE_SAVE = 'before_save';
+    const EVENT_AFTER_SAVE = 'after_save';
+    const EVENT_BEFORE_DELETE = 'before_delete';
+
     public static function schemaTableName()
     {
         return '';
@@ -51,6 +55,7 @@ abstract class ActiveModel extends Model
     public function save()
     {
         $this->beforeSave();
+        $this->invoke(self::EVENT_BEFORE_SAVE);
         if ($this->validate() !== true){
             return false;
         }
@@ -60,9 +65,11 @@ abstract class ActiveModel extends Model
             $result = $this->update();
         }
         $this->afterSave();
+        $this->invoke(self::EVENT_AFTER_SAVE);
         return $result;
     }
     public function delete(){
+        $this->invoke(self::EVENT_BEFORE_DELETE);
         if (!$this->isNewRecord){
             $builder = App::$instance->db->createQueryBuilder();
             $builder->delete()->from(static::schemaTableName())->where([$this->primaryKey => $this->user_properties[$this->primaryKey]]);

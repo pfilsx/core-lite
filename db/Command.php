@@ -5,6 +5,7 @@ namespace core\db;
 
 
 use core\base\BaseObject;
+use core\exceptions\ErrorException;
 
 /**
  * Class Command
@@ -23,6 +24,9 @@ class Command extends BaseObject
     private $_sql;
 
     private $_params;
+
+    const EVENT_BEFORE_EXECUTE = 'before_execute';
+    const EVENT_AFTER_EXECUTE = 'after_execute';
 
     /**
      * Command constructor.
@@ -43,8 +47,9 @@ class Command extends BaseObject
      * @throws \Exception
      */
     public function execute(){
+        $this->invoke(self::EVENT_BEFORE_EXECUTE, ['sql' => $this->_sql, 'params' => $this->_params]);
         if ($this->db->getPdo() == null){
-            throw new \Exception('Cannot execute command. Reason: No connection');
+            throw new ErrorException('Cannot execute command. Reason: No connection');
         }
         $statement = $this->db->getPdo()->prepare($this->sql);
         foreach ($this->params as $key=>$value){
@@ -54,6 +59,11 @@ class Command extends BaseObject
             $statement->bindValue($key, $value, $this->db->getSchema()->getPdoType($value));
         }
         $statement->execute();
+        $this->invoke(self::EVENT_BEFORE_EXECUTE, [
+            'sql' => $this->_sql,
+            'params' => $this->_params,
+            'statement' => clone $statement
+        ]);
         return $statement;
     }
 
@@ -75,6 +85,18 @@ class Command extends BaseObject
     public function getSql(){
         return $this->_sql;
     }
+
+    /**
+     * Returns the raw SQL by inserting parameter values into the corresponding placeholders in [[sql]].
+     * Note that the return value of this method should mainly be used for logging purpose.
+     * It is likely that this method returns an invalid SQL due to improper replacement of parameter placeholders.
+     * @return string the raw SQL with parameter values inserted into the corresponding placeholders in [[sql]].
+     */
+    public function getRawSql()
+    {
+        
+    }
+
     public function getParams(){
         return $this->_params;
     }

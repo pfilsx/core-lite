@@ -48,6 +48,9 @@ class View extends BaseObject
     const POS_BODY_BEGIN = 1;
     const POS_BODY_END = 2;
 
+    const EVENT_BEFORE_PREPARE = 'before_prepare';
+    const EVENT_AFTER_PREPARE = 'after_prepare';
+
     public static $viewRenderer = null;
     public static $defaultExtension = 'php';
 
@@ -89,7 +92,9 @@ class View extends BaseObject
                 self::POS_BODY_END, [
                 'class' => 'crl_remove'
             ]);
+            $this->invoke(self::EVENT_BEFORE_PREPARE, ['content' => &$this->_content]);
             $this->prepareContent();
+            $this->invoke(self::EVENT_AFTER_PREPARE, ['content' => &$this->_content]);
             return $this->_content;
         }
         return null;
@@ -242,7 +247,6 @@ class View extends BaseObject
         if (strncmp($view, '@', 1) === 0){
             $file =Core::getAlias($view);
         }  else {
-            // e.g. "/site/index"
             if ($this->_controller !== null) {
                 $classWithNamespace = get_class($this->_controller);
                 $className = explode('\\', $classWithNamespace);
