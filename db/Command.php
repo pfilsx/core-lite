@@ -67,7 +67,7 @@ class Command extends BaseObject
             $statement->bindValue($key, $value, $this->db->getSchema()->getPdoType($value));
         }
         $statement->execute();
-        $this->invoke(self::EVENT_BEFORE_EXECUTE, [
+        $this->invoke(self::EVENT_AFTER_EXECUTE, [
             'sql' => $this->_sql,
             'params' => $this->_params,
             'statement' => clone $statement
