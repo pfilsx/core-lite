@@ -10,9 +10,9 @@ abstract class BaseObject extends Configurable
 {
     const EVENT_AFTER_INIT = 'after_init';
 
-    private static $_events = [];
+    protected static $_events = [];
 
-    private $_instance_events = [];
+    protected $_instance_events = [];
 
     /**
      * Returns fully qualified class name
