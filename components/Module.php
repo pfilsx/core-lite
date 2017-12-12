@@ -25,8 +25,6 @@ abstract class Module extends BaseObject
 
     private $_layoutPath;
 
-    private $_id;
-
     protected $controllerMap = [];
 
     public function init()
@@ -39,12 +37,7 @@ abstract class Module extends BaseObject
         }
     }
 
-    public function getId(){
-        return $this->_id;
-    }
-    public function setId($id){
-        $this->_id = $id;
-    }
+    public abstract function getId();
 
     public abstract function initializeModule($options);
 

@@ -7,6 +7,7 @@ use Core;
 use core\components\Module;
 use core\components\View;
 use core\db\Connection;
+use core\exceptions\ErrorException;
 use core\translate\TranslateManager;
 use core\web\Session;
 
@@ -118,7 +119,7 @@ final class App extends BaseObject
      */
     public function run()
     {
-        $this->_response = new Response();
+        $this->_response = new Response(isset($this->_config['response']) ? $this->_config['response'] : []);
         $response = $this->_router->route();
         $response->send();
         return $response->exitStatus;
@@ -144,7 +145,7 @@ final class App extends BaseObject
     public function init()
     {
         $this->_security = new Security();
-        $this->_request = new Request();
+        $this->_request = new Request((isset($this->_config['request']) ? $this->_config['request'] : []));
         $this->_router = new Router(isset($this->_config['routing']) ? $this->_config['routing'] : []);
         if (isset($this->_config['db'])){
             $this->_db = new Connection($this->_config['db']);
@@ -160,29 +161,25 @@ final class App extends BaseObject
             $this->getVendorPath();
         }
         $this->_translateManager = new TranslateManager();
-        if (isset($this->_config['assets'])){
-            $this->_assetManager = new AssetManager($this->_config['assets']);
-        } else {
-            $this->_assetManager = new AssetManager();
-        }
+        $this->_assetManager = new AssetManager(isset($this->_config['assets']) ? $this->_config['assets']: []);
         $this->_session = new Session();
+
         if (isset($this->_config['auth'])){
             $instance = new $this->_config['auth']();
             if (!$instance instanceof BaseUser){
-                throw new \Exception('Invalid configuration. Auth class must be a BaseUser instance');
+                throw new ErrorException('Invalid configuration. Auth class must be a BaseUser subclass');
             }
             $this->setUser($instance);
         }
         if (isset($this->_config['modules'])){
-            foreach ($this->_config['modules'] as $id => $options){
+            foreach ($this->_config['modules'] as $options){
                 if (isset($options['class'])){
                     $className = $options['class'];
                     unset($options['class']);
                     $module = new $className();
                     if ($module instanceof Module){
-                        $module->setId($id);
                         $module->initializeModule($options);
-                        $this->_loadedModules[$id] = $module;
+                        $this->_loadedModules[$module->getId()] = $module;
                     }
                 }
             }

@@ -43,6 +43,14 @@ class Command extends BaseObject
     }
 
     /**
+     * Add params for future binding
+     * @param array $params
+     */
+    public function addParams(array $params){
+        $this->_params = array_merge($this->_params, $params);
+    }
+
+    /**
      * @return \PDOStatement
      * @throws \Exception
      */
@@ -94,7 +102,25 @@ class Command extends BaseObject
      */
     public function getRawSql()
     {
-        
+        if (empty($this->params)) {
+            return $this->_sql;
+        }
+        $params = [];
+        foreach ($this->params as $name => $value) {
+            if (is_string($name) && strncmp(':', $name, 1)) {
+                $name = ':' . $name;
+            }
+            if (is_string($value)) {
+                $params[$name] = $this->db->quoteValue($value);
+            } elseif (is_bool($value)) {
+                $params[$name] = ($value ? 'TRUE' : 'FALSE');
+            } elseif ($value === null) {
+                $params[$name] = 'NULL';
+            } elseif (!is_object($value) && !is_resource($value)) {
+                $params[$name] = $value;
+            }
+        }
+        return strtr($this->_sql, $params);
     }
 
     public function getParams(){
