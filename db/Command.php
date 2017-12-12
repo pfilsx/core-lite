@@ -69,8 +69,7 @@ class Command extends BaseObject
         $statement->execute();
         $this->invoke(self::EVENT_AFTER_EXECUTE, [
             'sql' => $this->_sql,
-            'params' => $this->_params,
-            'statement' => clone $statement
+            'params' => $this->_params
         ]);
         return $statement;
     }
