@@ -98,6 +98,7 @@ abstract class Module extends BaseObject
     {
         $controller = $this->createController(App::$instance->router->controller);
         if ($controller instanceof Controller) {
+            App::$instance->router->controllerClass = $controller;
             /* @var $controller Controller */
             $controller->viewsPath = $this->getViewPath();
             $controller->layout = $this->getLayoutPath().DIRECTORY_SEPARATOR.$controller->layout;
