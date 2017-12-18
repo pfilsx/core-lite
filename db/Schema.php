@@ -48,9 +48,9 @@ abstract class Schema extends BaseObject
 
     abstract protected function loadTableSchema($name);
 
-    public function __construct(array $config = [])
-    {
-        parent::__construct($config);
+    public function init(){
+        $this->db = $this->_config['db'];
+        $this->tableNames = $this->findTableNames();
     }
 
     /**
@@ -219,6 +219,14 @@ abstract class Schema extends BaseObject
     public function quoteSimpleColumnName($name)
     {
         return strpos($name, '"') !== false || $name === '*' ? $name : '"' . $name . '"';
+    }
+
+    /**
+     * @param string $schema
+     * @return array
+     */
+    protected function findTableNames($schema = ''){
+        return [];
     }
 
     /**

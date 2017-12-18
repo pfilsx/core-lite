@@ -425,6 +425,11 @@ class Request extends BaseObject
         return $this->getHeaders()->get('origin');
     }
 
+    public function getAbsoluteUrl()
+    {
+        return $this->getHostInfo() . $this->getUrl();
+    }
+
     public function getUrl()
     {
         if ($this->_url === null) {
