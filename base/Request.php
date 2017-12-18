@@ -14,6 +14,7 @@ use core\web\HeaderCollection;
  * @property array request
  * @property bool isPost
  * @property bool isAjax
+ * @property bool isPjax
  * @property bool isGet
  * @property array post
  * @property array get
@@ -36,6 +37,8 @@ class Request extends BaseObject
     private $_isPost = false;
 
     private $_isGet = false;
+
+    private $_method;
 
     private $_get;
 
@@ -157,6 +160,23 @@ class Request extends BaseObject
 
         return $this->_baseUrl;
     }
+
+    /**
+     * Returns request method
+     * @return string
+     */
+    public function getMethod(){
+        if ($this->_method == null){
+            $this->_method = $this->isPost ? 'POST': 'GET';
+            if ($this->isPjax){
+                $this->_method = 'PJAX/'.$this->_method;
+            } elseif ($this->isAjax){
+                $this->_method = 'AJAX/'.$this->_method;
+            }
+        }
+        return $this->_method;
+    }
+
     /**
      * Indicates whether request is POST
      * @return bool
