@@ -131,7 +131,7 @@ final class Router extends BaseObject
     {
         $request = $_SERVER['REQUEST_URI'];
         $requestParts = explode('?', $request);
-        $this->_baseRoute = $requestParts[0];
+        $this->_baseRoute = rtrim($requestParts[0], '/');
         $this->_route = str_replace(App::$instance->request->getBaseUrl().'/', '',$requestParts[0]);
         $this->parseRoute();
     }
