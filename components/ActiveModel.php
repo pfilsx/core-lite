@@ -16,9 +16,9 @@ use core\exceptions\ErrorException;
  */
 abstract class ActiveModel extends Model
 {
-    const EVENT_BEFORE_SAVE = 'before_save';
-    const EVENT_AFTER_SAVE = 'after_save';
-    const EVENT_BEFORE_DELETE = 'before_delete';
+    const EVENT_BEFORE_SAVE = 'model_before_save';
+    const EVENT_AFTER_SAVE = 'model_after_save';
+    const EVENT_BEFORE_DELETE = 'model_before_delete';
 
     public static function schemaTableName()
     {

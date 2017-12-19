@@ -19,7 +19,7 @@ abstract class Controller extends BaseObject
 
     protected $action;
 
-    const EVENT_BEFORE_ACTION = 'before_action';
+    const EVENT_BEFORE_ACTION = 'controller_before_action';
 
     function __construct()
     {

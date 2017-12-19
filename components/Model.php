@@ -21,12 +21,12 @@ abstract class Model extends BaseObject
 
     protected $_errors = [];
 
-    const EVENT_BEFORE_VALIDATE = 'before_validate';
-    const EVENT_AFTER_VALIDATE = 'after_validate';
-    const EVENT_BEFORE_VALIDATE_ATTR = 'before_validate_attr';
-    const EVENT_AFTER_VALIDATE_ATTR = 'after_validate_attr';
-    const EVENT_BEFORE_LOAD = 'before_load';
-    const EVENT_AFTER_LOAD = 'after_load';
+    const EVENT_BEFORE_VALIDATE = 'model_before_validate';
+    const EVENT_AFTER_VALIDATE = 'model_after_validate';
+    const EVENT_BEFORE_VALIDATE_ATTR = 'model_before_validate_attr';
+    const EVENT_AFTER_VALIDATE_ATTR = 'model_after_validate_attr';
+    const EVENT_BEFORE_LOAD = 'model_before_load';
+    const EVENT_AFTER_LOAD = 'model_after_load';
 
     /**
      * @var ValidatorInterface[]

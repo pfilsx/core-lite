@@ -18,9 +18,9 @@ use core\web\HeaderCollection;
  */
 class Response extends BaseObject
 {
-    const EVENT_BEFORE_SEND = 'before_send';
-    const EVENT_AFTER_PREPARE = 'after_prepare';
-    const EVENT_AFTER_SEND = 'after_send';
+    const EVENT_BEFORE_SEND = 'response_before_send';
+    const EVENT_AFTER_PREPARE = 'response_after_prepare';
+    const EVENT_AFTER_SEND = 'response_after_send';
     public $exitStatus = 0;
 
     const FORMAT_RAW = 'raw';

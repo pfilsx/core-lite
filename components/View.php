@@ -48,8 +48,8 @@ class View extends BaseObject
     const POS_BODY_BEGIN = 1;
     const POS_BODY_END = 2;
 
-    const EVENT_BEFORE_PREPARE = 'before_prepare';
-    const EVENT_AFTER_PREPARE = 'after_prepare';
+    const EVENT_BEFORE_PREPARE = 'view_before_prepare';
+    const EVENT_AFTER_PREPARE = 'view_after_prepare';
 
     public static $viewRenderer = null;
     public static $defaultExtension = 'php';

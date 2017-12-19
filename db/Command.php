@@ -25,8 +25,8 @@ class Command extends BaseObject
 
     private $_params;
 
-    const EVENT_BEFORE_EXECUTE = 'before_execute';
-    const EVENT_AFTER_EXECUTE = 'after_execute';
+    const EVENT_BEFORE_EXECUTE = 'command_before_execute';
+    const EVENT_AFTER_EXECUTE = 'command_after_execute';
 
     /**
      * Command constructor.

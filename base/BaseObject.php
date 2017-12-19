@@ -8,7 +8,7 @@ use core\exceptions\ErrorException;
 
 abstract class BaseObject extends Configurable
 {
-    const EVENT_AFTER_INIT = 'after_init';
+    const EVENT_AFTER_INIT = 'object_after_init';
 
     protected static $_events = [];
 
@@ -186,10 +186,13 @@ abstract class BaseObject extends Configurable
         if (!is_string($event)){
             throw new ErrorException("Invalid argument passed. Event name must be a string");
         }
-        if (!array_key_exists($event, static::$_events)){
-            static::$_events[$event] = [];
+        if (!isset(static::$_events[static::className()])){
+            static::$_events[static::className()] = [];
         }
-        static::$_events[$event][] = $handler;
+        if (!array_key_exists($event, static::$_events[static::className()])){
+            static::$_events[static::className()][$event] = [];
+        }
+        static::$_events[static::className()][$event][] = $handler;
     }
     /**
      * Add an event handler for specific instance
@@ -217,11 +220,14 @@ abstract class BaseObject extends Configurable
         if (!is_string($event)){
             throw new ErrorException("Invalid argument passed. Event name must be a string");
         }
-        if (!array_key_exists($event, static::$_events)){
+        if (!isset(static::$_events[static::className()])){
+            static::$_events[static::className()] = [];
+        }
+        if (!array_key_exists($event, static::$_events[static::className()])){
             return;
         }
-        if (($index = array_search($handler, static::$_events[$event])) !== false){
-            unset(static::$_events[$event][$index]);
+        if (($index = array_search($handler, static::$_events[static::className()][$event])) !== false){
+            unset(static::$_events[static::className()][$event][$index]);
         }
     }
     /**
@@ -247,14 +253,14 @@ abstract class BaseObject extends Configurable
      * @throws ErrorException - invalid args exception
      */
     public static final function removeAllEventHandlers($event = null){
-        if ($event == null){
-            static::$_events = [];
+        if ($event == null || !isset(static::$_events[static::className()])){
+            static::$_events[static::className()] = [];
             return;
         }
         if (!is_string($event)){
             throw new ErrorException("Invalid argument passed. Event name must be a string or null");
         }
-        unset(static::$_events[$event]);
+        unset(static::$_events[static::className()][$event]);
     }
     /**
      * Removes all event handlers for specific event or for all events for specific instance
@@ -283,14 +289,17 @@ abstract class BaseObject extends Configurable
         if (!is_string($event)){
             throw new ErrorException("Invalid argument passed. Event name must be a string or null");
         }
-        $classHandlers = array_key_exists($event, static::$_events);
+        if (!isset(static::$_events[static::className()])){
+            static::$_events[static::className()] = [];
+        }
+        $classHandlers = array_key_exists($event, static::$_events[static::className()]);
         $instanceHandlers = array_key_exists($event, $this->_instance_events);
         if (!$classHandlers && !$instanceHandlers){
             return;
         }
         $args = array_merge($args, ['callerObj' => $this]);
         if ($classHandlers){
-            foreach (static::$_events[$event] as $handler){
+            foreach (static::$_events[static::className()][$event] as $handler){
                 call_user_func($handler, $args);
             }
         }
@@ -306,7 +315,10 @@ abstract class BaseObject extends Configurable
      * @return array
      */
     public static final function getEvents(){
-        return static::$_events;
+        if (!isset(static::$_events[static::className()])){
+            static::$_events[static::className()] = [];
+        }
+        return static::$_events[static::className()];
     }
     /**
      * Return list of specified events for specific instance with their handlers
