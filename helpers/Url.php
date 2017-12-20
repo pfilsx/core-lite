@@ -11,13 +11,17 @@ class Url
 {
     static function toRoute($url, array $params = [])
     {
-        if (is_array($url)) {
-            $url = '/'.implode('/', $url);
-        } else if (is_string($url)) {
-            $url = (substr($url,0,1) == '/' ? '' : '/').$url;
+        $baseUrl = App::$instance->request->getBaseUrl();
+        if (is_string($url)){
+            if (substr($url, 0, strlen($baseUrl)) == $baseUrl){
+                return $url;
+            }
         }
-        return App::$instance->request->getBaseUrl().$url
-            .(!empty($params) ? '?'.static::prepareParams($params) : '');
+        $url = (array)$url;
+        if (strncmp($url[0], '/', 1) !== 0){
+            $url[0] = '/'.$url[0];
+        }
+        return $baseUrl.implode('/',$url).(!empty($params) ? '?'.static::prepareParams($params) : '');
     }
 
     static function toAction($action, array $params= []){
