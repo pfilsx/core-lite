@@ -46,7 +46,8 @@ class UrlRule extends BaseObject
         if (strtr($this->_pattern, [
                 '<module>' => $this->_router->module,
                 '<controller>' => $this->_router->controller,
-                '<action>' => $this->_router->action
+                '<action>' => $this->_router->action,
+                '<param>' => $this->_router->param
             ]) === $this->_router->route){
             return true;
         }
@@ -58,7 +59,8 @@ class UrlRule extends BaseObject
         if (isset($this->_options['route'])){
             $this->_router->route = strtr($this->_options['route'], [
                 '<controller>' => $this->_router->controller,
-                '<action>' => $this->_router->action
+                '<action>' => $this->_router->action,
+                '<param>' => $this->_router->param
             ]);
             $result = true;
         }

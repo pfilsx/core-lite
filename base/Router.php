@@ -20,6 +20,7 @@ use core\helpers\Inflector;
  * @property string baseRoute
  * @property string module
  * @property Controller controllerClass
+ * @property string param
  */
 final class Router extends BaseObject
 {
@@ -45,6 +46,8 @@ final class Router extends BaseObject
     private $_action;
 
     private $_module;
+
+    private $_param = null;
 
     private $_route;
 
@@ -141,13 +144,22 @@ final class Router extends BaseObject
     {
         $this->clearData();
         $pathParts = explode('/', $this->_route);
-        if (count($pathParts) == 3){
+        $partsCount = count($pathParts);
+        if ($partsCount == 3){
             $this->_module = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : ''));
             $this->_controller = Inflector::id2camel((!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultController));
             $this->_action = Inflector::id2camel((!empty($pathParts[2]) ? $pathParts[2] : $this->_defaultAction));
-        } else {
+        } elseif ($partsCount == 2) {
             $this->_controller = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : $this->_defaultController));
             $this->_action = Inflector::id2camel((!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultAction));
+        } elseif ($partsCount == 1){
+            $this->_controller = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : $this->_defaultController));
+            $this->_action = $this->_defaultAction;
+        } else {
+            $this->_module = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : ''));
+            $this->_controller = Inflector::id2camel((!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultController));
+            $this->_action = Inflector::id2camel((!empty($pathParts[2]) ? $pathParts[2] : $this->_defaultAction));
+            $this->_param = (!empty($pathParts[3]) ? $pathParts[3] : null);
         }
     }
 
@@ -166,6 +178,10 @@ final class Router extends BaseObject
 
     public function getModule(){
         return Inflector::camel2id($this->_module);
+    }
+
+    public function getParam(){
+        return $this->_param;
     }
 
     public function getRoute(){
