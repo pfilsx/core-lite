@@ -17,7 +17,10 @@ abstract class Configurable
             $this->_config = ArrayHelper::merge($this->_config, $config);
         }
     }
-
+    /**
+     * Get configuration params
+     * @return array
+     */
     public function getConfig(){
         return $this->_config;
     }

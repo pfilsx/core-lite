@@ -19,6 +19,8 @@ abstract class Controller extends BaseObject
 
     protected $action;
 
+    const EVENT_BEFORE_ACTION = 'controller_before_action';
+
     function __construct()
     {
         $config = App::$instance->config['routing'];
@@ -47,6 +49,7 @@ abstract class Controller extends BaseObject
         App::$instance->assetManager->registerBundles();
         return App::$instance->view->getContent($_params_);
     }
+    
     public final function renderPartial($view, $_params_ = []){
         return View::renderPartial($view, $_params_);
     }
@@ -63,6 +66,7 @@ abstract class Controller extends BaseObject
 
     public final function runAction($action, $params = []){
         if ($this->beforeAction($action, $params) !== false){
+            $this->invoke(self::EVENT_BEFORE_ACTION, ['action' => $action, 'params' => $params]);
             if (method_exists($this, $action)) {
                 $ref = new \ReflectionMethod($this, $action);
                 if (!empty($ref->getParameters())) {

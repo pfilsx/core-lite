@@ -5,6 +5,7 @@ namespace core\db;
 
 
 use core\base\BaseObject;
+use core\exceptions\ErrorException;
 
 /**
  * Class Command
@@ -24,6 +25,9 @@ class Command extends BaseObject
 
     private $_params;
 
+    const EVENT_BEFORE_EXECUTE = 'command_before_execute';
+    const EVENT_AFTER_EXECUTE = 'command_after_execute';
+
     /**
      * Command constructor.
      * @param Connection $db
@@ -39,12 +43,21 @@ class Command extends BaseObject
     }
 
     /**
+     * Add params for future binding
+     * @param array $params
+     */
+    public function addParams(array $params){
+        $this->_params = array_merge($this->_params, $params);
+    }
+
+    /**
      * @return \PDOStatement
      * @throws \Exception
      */
     public function execute(){
+        $this->invoke(self::EVENT_BEFORE_EXECUTE, ['sql' => $this->_sql, 'params' => $this->_params]);
         if ($this->db->getPdo() == null){
-            throw new \Exception('Cannot execute command. Reason: No connection');
+            throw new ErrorException('Cannot execute command. Reason: No connection');
         }
         $statement = $this->db->getPdo()->prepare($this->sql);
         foreach ($this->params as $key=>$value){
@@ -54,6 +67,10 @@ class Command extends BaseObject
             $statement->bindValue($key, $value, $this->db->getSchema()->getPdoType($value));
         }
         $statement->execute();
+        $this->invoke(self::EVENT_AFTER_EXECUTE, [
+            'sql' => $this->_sql,
+            'params' => $this->_params
+        ]);
         return $statement;
     }
 
@@ -75,6 +92,36 @@ class Command extends BaseObject
     public function getSql(){
         return $this->_sql;
     }
+
+    /**
+     * Returns the raw SQL by inserting parameter values into the corresponding placeholders in [[sql]].
+     * Note that the return value of this method should mainly be used for logging purpose.
+     * It is likely that this method returns an invalid SQL due to improper replacement of parameter placeholders.
+     * @return string the raw SQL with parameter values inserted into the corresponding placeholders in [[sql]].
+     */
+    public function getRawSql()
+    {
+        if (empty($this->params)) {
+            return $this->_sql;
+        }
+        $params = [];
+        foreach ($this->params as $name => $value) {
+            if (is_string($name) && strncmp(':', $name, 1)) {
+                $name = ':' . $name;
+            }
+            if (is_string($value)) {
+                $params[$name] = $this->db->quoteValue($value);
+            } elseif (is_bool($value)) {
+                $params[$name] = ($value ? 'TRUE' : 'FALSE');
+            } elseif ($value === null) {
+                $params[$name] = 'NULL';
+            } elseif (!is_object($value) && !is_resource($value)) {
+                $params[$name] = $value;
+            }
+        }
+        return strtr($this->_sql, $params);
+    }
+
     public function getParams(){
         return $this->_params;
     }

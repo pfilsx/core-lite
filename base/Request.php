@@ -4,6 +4,7 @@
 namespace core\base;
 
 
+use core\exceptions\ErrorException;
 use core\web\Cookie;
 use core\web\CookieCollection;
 use core\web\HeaderCollection;
@@ -13,6 +14,7 @@ use core\web\HeaderCollection;
  * @property array request
  * @property bool isPost
  * @property bool isAjax
+ * @property bool isPjax
  * @property bool isGet
  * @property array post
  * @property array get
@@ -35,6 +37,8 @@ class Request extends BaseObject
     private $_isPost = false;
 
     private $_isGet = false;
+
+    private $_method;
 
     private $_get;
 
@@ -66,6 +70,8 @@ class Request extends BaseObject
 
     private $_hostName;
 
+    public $trustedHosts = [];
+
     public $secureHeaders = [
         'X-Forwarded-For',
         'X-Forwarded-Host',
@@ -73,14 +79,7 @@ class Request extends BaseObject
         'Front-End-Https',
         'X-Rewrite-Url',
     ];
-    /**
-     * @var string[] List of headers where proxies store the real client IP.
-     * It's not advisable to put insecure headers here.
-     * The match of header names is case-insensitive.
-     * @see $trustedHosts
-     * @see $secureHeaders
-     * @since 2.0.13
-     */
+
     public $ipHeaders = [
         'X-Forwarded-For',
     ];
@@ -90,6 +89,9 @@ class Request extends BaseObject
         'Front-End-Https' => ['on'],
     ];
 
+    /**
+     * @inheritdoc
+     */
     public function init(){
         if ($_SERVER['REQUEST_METHOD'] === 'POST'){
             $this->_isPost = true;
@@ -104,7 +106,11 @@ class Request extends BaseObject
         $this->parseModels();
         $this->_request = array_merge($this->_get, $this->_post, $this->_files);
     }
-
+    /**
+     * Returns current script file
+     * @return string - current script filename
+     * @throws ErrorException
+     */
     public function getScriptFile()
     {
         if (isset($this->_scriptFile)) {
@@ -112,10 +118,14 @@ class Request extends BaseObject
         } elseif (isset($_SERVER['SCRIPT_FILENAME'])) {
             return $_SERVER['SCRIPT_FILENAME'];
         } else {
-            throw new \Exception('Unable to determine the entry script file path.');
+            throw new ErrorException('Unable to determine the entry script file path.');
         }
     }
-
+    /**
+     * Returns current script URL
+     * @return mixed|string
+     * @throws ErrorException
+     */
     public function getScriptUrl()
     {
         if ($this->_scriptUrl === null) {
@@ -132,13 +142,16 @@ class Request extends BaseObject
             } elseif (!empty($_SERVER['DOCUMENT_ROOT']) && strpos($scriptFile, $_SERVER['DOCUMENT_ROOT']) === 0) {
                 $this->_scriptUrl = str_replace('\\', '/', str_replace($_SERVER['DOCUMENT_ROOT'], '', $scriptFile));
             } else {
-                throw new \Exception('Unable to determine the entry script URL.');
+                throw new ErrorException('Unable to determine the entry script URL.');
             }
         }
 
         return $this->_scriptUrl;
     }
-
+    /**
+     * Returns base URL
+     * @return string
+     */
     public function getBaseUrl()
     {
         if ($this->_baseUrl === null) {
@@ -148,63 +161,143 @@ class Request extends BaseObject
         return $this->_baseUrl;
     }
 
+    /**
+     * Returns request method
+     * @return string
+     */
+    public function getMethod(){
+        if ($this->_method == null){
+            $this->_method = $this->isPost ? 'POST': 'GET';
+            if ($this->isPjax){
+                $this->_method = 'PJAX/'.$this->_method;
+            } elseif ($this->isAjax){
+                $this->_method = 'AJAX/'.$this->_method;
+            }
+        }
+        return $this->_method;
+    }
+
+    /**
+     * Indicates whether request is POST
+     * @return bool
+     */
     public function getIsPost(){
         return $this->_isPost;
     }
 
+    /**
+     * Indicates whether request is GET
+     * @return bool
+     */
     public function getIsGet(){
         return $this->_isGet;
     }
+
+    /**
+     * Returns post data
+     * @return mixed
+     */
     public function getPost(){
         return $this->_post;
     }
-    public function post($name){
+
+    /**
+     * Returns all post data or specific post by name
+     * @param string|null $name
+     * @return null|string|array
+     */
+    public function post($name = null){
+        if ($name == null){
+            return $this->_post;
+        }
         if (isset($this->_post[$name])){
             return $this->_post[$name];
         }
         return null;
     }
+    /**
+     * Returns get data
+     * @return mixed
+     */
     public function getGet(){
         return $this->_get;
     }
-    public function get($name){
+    /**
+     * Returns all get data or specific get by name
+     * @param string|null $name
+     * @return null|string|array
+     */
+    public function get($name = null){
+        if ($name == null){
+            return $this->_post;
+        }
         if (isset($this->_get[$name])){
             return $this->_get[$name];
         }
         return null;
     }
-
+    /**
+     * Returns files data
+     * @return mixed
+     */
     public function getFiles(){
         return $this->_files;
     }
-    public function files($name){
+    /**
+     * Returns all files data or specific file by name
+     * @param string|null $name
+     * @return null|array
+     */
+    public function files($name = null){
+        if ($name == null){
+            return $this->_files;
+        }
         if (isset($this->_files[$name])){
             return $this->_files[$name];
         }
         return null;
     }
-
+    /**
+     * Returns request data(POST + GET + FILES)
+     * @return mixed
+     */
     public function getRequest(){
         return $this->_request;
     }
-    public function request($name){
+    /**
+     * Returns all request data or specific request by name
+     * @param string|null $name
+     * @return mixed
+     */
+    public function request($name = null){
+        if ($name == null){
+            return $this->_request;
+        }
         if (isset($this->_request[$name])){
             return $this->_request[$name];
         }
         return null;
     }
-
-
+    /**
+     * Indicates whether request is AJAX
+     * @return bool
+     */
     public function getIsAjax()
     {
         return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
     }
-
+    /**
+     * Indicates whether request is PJAX
+     * @return bool
+     */
     public function getIsPjax()
     {
         return $this->getIsAjax() && $this->headers->has('X-Pjax');
     }
-
+    /**
+     * Returns headers of request
+     * @return HeaderCollection
+     */
     public function getHeaders()
     {
         if ($this->_headers === null) {
@@ -231,7 +324,10 @@ class Request extends BaseObject
         }
         return $this->_headers;
     }
-
+    /**
+     * Filter headers by request configuration
+     * @param HeaderCollection $headerCollection
+     */
     protected function filterHeaders(HeaderCollection $headerCollection)
     {
         // do not trust any of the [[secureHeaders]] by default
@@ -258,6 +354,10 @@ class Request extends BaseObject
             }
         }
     }
+    /**
+     * Returns Host information
+     * @return null|string
+     */
     public function getHostInfo()
     {
         if ($this->_hostInfo === null) {
@@ -275,13 +375,19 @@ class Request extends BaseObject
         }
         return $this->_hostInfo;
     }
-
+    /**
+     * Set host information
+     * @param $value
+     */
     public function setHostInfo($value)
     {
         $this->_hostName = null;
         $this->_hostInfo = $value === null ? null : rtrim($value, '/');
     }
-
+    /**
+     * Returns host name
+     * @return mixed
+     */
     public function getHostName()
     {
         if ($this->_hostName === null) {
@@ -289,7 +395,10 @@ class Request extends BaseObject
         }
         return $this->_hostName;
     }
-
+    /**
+     * Indicates whether connection is secure
+     * @return bool
+     */
     public function getIsSecureConnection()
     {
         if (isset($_SERVER['HTTPS']) && (strcasecmp($_SERVER['HTTPS'], 'on') === 0 || $_SERVER['HTTPS'] == 1)) {
@@ -306,7 +415,6 @@ class Request extends BaseObject
         }
         return false;
     }
-
     /**
      * Returns the server name.
      * @return string server name, null if not available
@@ -335,6 +443,11 @@ class Request extends BaseObject
     public function getOrigin()
     {
         return $this->getHeaders()->get('origin');
+    }
+
+    public function getAbsoluteUrl()
+    {
+        return $this->getHostInfo() . $this->getUrl();
     }
 
     public function getUrl()
@@ -367,33 +480,25 @@ class Request extends BaseObject
         }
         return $this->getRemoteIP();
     }
-
+    /**
+     * Returns the IP on the other end of this connection.
+     * This is always the next hop, any headers are ignored.
+     * @return string|null remote IP address, `null` if not available.
+     */
     public function getRemoteIP()
     {
         return isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null;
     }
-
+    /**
+     * Returns the host name of the other end of this connection.
+     * This is always the next hop, any headers are ignored.
+     * @return string|null remote host name, `null` if not available
+     * @see getRemoteIP()
+     */
     public function getRemoteHost()
     {
         return isset($_SERVER['REMOTE_HOST']) ? $_SERVER['REMOTE_HOST'] : null;
     }
-
-
-    /**
-     * @return string|null the username sent via HTTP authentication, null if the username is not given
-     */
-    public function getAuthUser()
-    {
-        return isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : null;
-    }
-    /**
-     * @return string|null the password sent via HTTP authentication, null if the password is not given
-     */
-    public function getAuthPassword()
-    {
-        return isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : null;
-    }
-
     private $_port;
     /**
      * Returns the port to use for insecure requests.
@@ -409,7 +514,6 @@ class Request extends BaseObject
         }
         return $this->_port;
     }
-
     /**
      * Sets the port to use for insecure requests.
      * This setter is provided in case a custom port is necessary for certain
@@ -451,7 +555,57 @@ class Request extends BaseObject
             $this->_hostInfo = null;
         }
     }
-
+    /**
+     * @return string|null the username sent via HTTP authentication, `null` if the username is not given
+     * @see getAuthCredentials() to get both username and password in one call
+     */
+    public function getAuthUser()
+    {
+        return $this->getAuthCredentials()[0];
+    }
+    /**
+     * @return string|null the password sent via HTTP authentication, `null` if the password is not given
+     * @see getAuthCredentials() to get both username and password in one call
+     */
+    public function getAuthPassword()
+    {
+        return $this->getAuthCredentials()[1];
+    }
+    /**
+     * @return array that contains exactly two elements:
+     * - 0: the username sent via HTTP authentication, `null` if the username is not given
+     * - 1: the password sent via HTTP authentication, `null` if the password is not given
+     * @see getAuthUser() to get only username
+     * @see getAuthPassword() to get only password
+     */
+    public function getAuthCredentials()
+    {
+        $username = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : null;
+        $password = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : null;
+        if ($username !== null || $password !== null) {
+            return [$username, $password];
+        }
+        /*
+         * Apache with php-cgi does not pass HTTP Basic authentication to PHP by default.
+         * To make it work, add the following line to to your .htaccess file:
+         *
+         * RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+         */
+        $auth_token = $this->getHeaders()->get('HTTP_AUTHORIZATION') ?: $this->getHeaders()->get('REDIRECT_HTTP_AUTHORIZATION');
+        if ($auth_token !== null && strpos(strtolower($auth_token), 'basic') === 0) {
+            $parts = array_map(function ($value) {
+                return strlen($value) === 0 ? null : $value;
+            }, explode(':', base64_decode(mb_substr($auth_token, 6)), 2));
+            if (count($parts) < 2) {
+                return [$parts[0], null];
+            }
+            return $parts;
+        }
+        return [null, null];
+    }
+    /**
+     * @return CookieCollection
+     */
     public function getCookies()
     {
         if ($this->_cookies === null) {
@@ -461,7 +615,10 @@ class Request extends BaseObject
         }
         return $this->_cookies;
     }
-
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
     public function getCookieValidationKey(){
         if ($this->_cookieValidationKey == null){
             if (isset(App::$instance->config['request']['cookieValidationKey'])){
@@ -472,7 +629,9 @@ class Request extends BaseObject
         }
         return $this->_cookieValidationKey;
     }
-
+    /**
+     * @return bool
+     */
     public function getEnableCookieValidation(){
 
         if ($this->_enableCookieValidation === null){
@@ -483,10 +642,16 @@ class Request extends BaseObject
         }
         return $this->_enableCookieValidation;
     }
+    /**
+     * @return mixed
+     */
     public function getUserLanguage(){
         return $this->_userLanguage;
     }
-
+    /**
+     * @return array
+     * @throws \Exception
+     */
     protected function loadCookies()
     {
         $cookies = [];
@@ -522,7 +687,10 @@ class Request extends BaseObject
         }
         return $cookies;
     }
-
+    /**
+     * @return array|mixed|string
+     * @throws \Exception
+     */
     protected function resolveRequestUri()
     {
         if ($this->headers->has('X-Rewrite-Url')) { // IIS
@@ -542,15 +710,17 @@ class Request extends BaseObject
         }
         return $requestUri;
     }
-
-
-
+    /**
+     *
+     */
     private function parseModels(){
         $this->parseVarsInArray('get');
         $this->parseVarsInArray('post');
         $this->parseVarsInArray('files');
     }
-
+    /**
+     * @param $arrayName
+     */
     private function parseVarsInArray($arrayName){
         foreach ($this->$arrayName as $key => $value){
             if (substr($key,0,3) == 'crl'){

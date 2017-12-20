@@ -6,6 +6,7 @@ namespace core\components;
 use core\base\App;
 use core\db\QueryBuilder;
 use core\db\TableSchema;
+use core\exceptions\ErrorException;
 
 
 /**
@@ -15,6 +16,10 @@ use core\db\TableSchema;
  */
 abstract class ActiveModel extends Model
 {
+    const EVENT_BEFORE_SAVE = 'model_before_save';
+    const EVENT_AFTER_SAVE = 'model_after_save';
+    const EVENT_BEFORE_DELETE = 'model_before_delete';
+
     public static function schemaTableName()
     {
         return '';
@@ -24,19 +29,18 @@ abstract class ActiveModel extends Model
         return empty($this->old_params);
     }
 
-    private $_primaryKey;
+    private static $_primaryKey;
 
     private $old_params = [];
 
-    private $_tableSchema;
+    private static $_tableSchema;
 
     protected function initializeAttributes()
     {
-        $this->_tableSchema = App::$instance->db->getSchema()->getTableSchema(static::schemaTableName());
-        foreach ($this->_tableSchema->columns as $key => $column){
+        foreach (static::getTableSchema()->columns as $key => $column){
             $this->createProperty($key);
             if ($column->isPrimaryKey){
-                $this->_primaryKey = $key;
+                static::$_primaryKey = $key;
             }
         }
     }
@@ -51,6 +55,7 @@ abstract class ActiveModel extends Model
     public function save()
     {
         $this->beforeSave();
+        $this->invoke(self::EVENT_BEFORE_SAVE);
         if ($this->validate() !== true){
             return false;
         }
@@ -60,9 +65,11 @@ abstract class ActiveModel extends Model
             $result = $this->update();
         }
         $this->afterSave();
+        $this->invoke(self::EVENT_AFTER_SAVE);
         return $result;
     }
     public function delete(){
+        $this->invoke(self::EVENT_BEFORE_DELETE);
         if (!$this->isNewRecord){
             $builder = App::$instance->db->createQueryBuilder();
             $builder->delete()->from(static::schemaTableName())->where([$this->primaryKey => $this->user_properties[$this->primaryKey]]);
@@ -92,22 +99,43 @@ abstract class ActiveModel extends Model
         return $result;
     }
 
-    public static function find(array $criteria = [])
+    public static function find($criteria = [])
     {
         $builder = App::$instance->db->createActiveQueryBuilder(static::className());
         $builder->select()->from(static::schemaTableName());
         if (!empty($criteria)){
-            $builder->where($criteria);
+            if (is_array($criteria)){
+                $builder->where($criteria);
+            } else {
+                $builder->where([static::primaryKey() => $criteria]);
+            }
         }
         return $builder;
     }
 
     public function getPrimaryKey(){
-        return $this->_primaryKey;
+        return static::$_primaryKey;
+    }
+    public static function primaryKey(){
+        if (static::$_primaryKey == null){
+           if (isset(static::getTableSchema()->primaryKey[0])){
+               static::$_primaryKey = static::getTableSchema()->primaryKey[0];
+           } else {
+               throw new ErrorException('"' . get_called_class() . '" must have a primary key.');
+           }
+        }
+        return static::$_primaryKey;
     }
 
-    public function getTableSchema(){
-        return $this->_tableSchema;
+    /**
+     * @param bool $refresh
+     * @return TableSchema
+     */
+    public static function getTableSchema($refresh = false){
+        if (static::$_tableSchema == null || $refresh){
+            static::$_tableSchema = App::$instance->db->getSchema()->getTableSchema(static::schemaTableName());
+        }
+        return static::$_tableSchema;
     }
 
     private function update()

@@ -46,12 +46,6 @@ class Schema extends \core\db\Schema
         'varbinary' => self::TYPE_BINARY,
     ];
 
-    public function init()
-    {
-        $this->db = $this->_config['db'];
-        $this->tableNames = $this->findTableNames();
-    }
-
     public function refresh(){
         parent::refresh();
         $this->tableNames = $this->findTableNames();
