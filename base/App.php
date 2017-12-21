@@ -176,9 +176,9 @@ final class App extends BaseObject
                 if (isset($options['class'])){
                     $className = $options['class'];
                     unset($options['class']);
-                    $module = new $className();
+                    $module = new $className($options);
                     if ($module instanceof Module){
-                        $module->initializeModule($options);
+                        $module->initializeModule();
                         $this->_loadedModules[$module->getId()] = $module;
                     }
                 }

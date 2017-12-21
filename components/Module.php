@@ -39,7 +39,7 @@ abstract class Module extends BaseObject
 
     public abstract function getId();
 
-    public abstract function initializeModule($options);
+    public abstract function initializeModule();
 
     public function getBasePath()
     {
