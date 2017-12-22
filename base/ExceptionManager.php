@@ -140,7 +140,7 @@ final class ExceptionManager extends BaseObject
         $response = new Response();
         $this->invoke(static::EVENT_BEFORE_RENDER, ['exception' => $exception, 'response' => $response]);
         if (CRL_DEBUG === true) {
-            $_params_ = ['exception' => $exception, 'manager' => $this];
+            $_params_ = ['exception' => $exception];
             $response->content = View::renderPartial(CRL_PATH.'/view/exception.php', $_params_);
         } else {
             $response->content = '';
@@ -156,10 +156,10 @@ final class ExceptionManager extends BaseObject
      * @param bool $visible - indicates whether block must be visible
      * @return string - rendered content
      */
-    public function renderFileLines($file, $line, $visible = false)
+    public static function renderFileLines($file, $line, $visible = false)
     {
         $line--;
-        $lines = $this->getFileLines($file, $line);
+        $lines = static::getFileLines($file, $line);
         $_params_ = ['lines' => $lines, 'line' => $line, 'visible' => $visible];
         return View::renderPartial(CRL_PATH.'/view/exceptionFile.php', $_params_);
     }
@@ -199,7 +199,7 @@ final class ExceptionManager extends BaseObject
      * @param $line - line with exception number
      * @return array - lines
      */
-    private function getFileLines($file, $line)
+    private static function getFileLines($file, $line)
     {
         $res = [];
         $firstLine = $line - 7;

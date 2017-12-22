@@ -1,7 +1,6 @@
 <?php
 /**
  * @var $exception \Exception
- * @var $manager ExceptionManager
  */
 
 use core\base\ExceptionManager;
@@ -37,7 +36,7 @@ use core\components\View;
                 <div class="crl-exception-file">in <?= $exception->getFile() ?></div>
                 <div class="crl-exception-row">at line <?= $exception->getLine() ?></div>
             </div>
-            <?= $manager->renderFileLines($exception->getFile(), $exception->getLine(), true) ?>
+            <?= ExceptionManager::renderFileLines($exception->getFile(), $exception->getLine(), true) ?>
         </div>
         <?php foreach ($exception->getTrace() as $counter => $trace) { ?>
             <?php if (isset($trace['file']) && isset($trace['type']) && isset($trace['function']) && isset($trace['line'])) { ?>
@@ -48,7 +47,7 @@ use core\components\View;
                         <div class="crl-exception-func"> <?= $trace['type'].$trace['function'].'()' ?></div>
                         <div class="crl-exception-row">at line <?= $trace['line'] ?></div>
                     </div>
-                    <?= $manager->renderFileLines($trace['file'], $trace['line']) ?>
+                    <?= ExceptionManager::renderFileLines($trace['file'], $trace['line']) ?>
                 </div>
             <?php }} ?>
 
