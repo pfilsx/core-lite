@@ -63,7 +63,7 @@ use core\base\ExceptionManager;
         <img class="crl-exception-logo" alt="Core-Lite Framework" src="<?= Core::smallLogo() ?>">
         <div class="crl-exception-version"><?= Core::version() ?></div>
     </a>
-    <div class="crl-exception-code"><?= $exception->getCode() ?></div>
+    <div class="crl-exception-code"><?= $exception->getCode() != 0 ? $exception->getCode() : 500 ?></div>
     <div class="crl-exception-debug"></div>
 </div>
 <script type="text/javascript">
