@@ -4,6 +4,8 @@
 namespace core\base;
 
 
+use core\components\View;
+
 final class ExceptionManager
 {
     /**
@@ -132,15 +134,15 @@ final class ExceptionManager
      */
     public function renderException($exception)
     {
+        $response = new Response();
         if (CRL_DEBUG === true) {
-            $_params_ = ['exception' => $exception];
-            ob_start();
-            ob_implicit_flush(false);
-            extract($_params_, EXTR_OVERWRITE);
-            require(CRL_PATH . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'exception.php');
-            echo ob_get_clean();
+            $_params_ = ['exception' => $exception, 'manager' => $this];
+            $response->content = View::renderPartial(CRL_PATH.'/view/exception.php', $_params_);
+        } else {
+            $response->content = '';
         }
-        echo '';
+        $response->setStatusCode($exception->getCode() == 0 ? 500 : $exception->getCode());
+        $response->send();
     }
     /**
      * Render lines from file with exception

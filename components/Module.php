@@ -47,7 +47,6 @@ abstract class Module extends BaseObject
             $class = new \ReflectionClass($this);
             $this->_basePath = dirname($class->getFileName());
         }
-
         return $this->_basePath;
     }
 
