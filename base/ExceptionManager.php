@@ -6,7 +6,7 @@ namespace core\base;
 
 use core\components\View;
 
-final class ExceptionManager
+final class ExceptionManager extends BaseObject
 {
     /**
      * Memory size to reserve for fatal errors handling
@@ -15,6 +15,9 @@ final class ExceptionManager
     public $memoryReserveSize = 262144;
 
     private $_memoryReserve;
+
+    const EVENT_BEFORE_RENDER = 'exception_before_render';
+    const EVENT_AFTER_RENDER = 'exception_after_render';
 
     /**
      * Register default core exception|error handlers
@@ -135,12 +138,14 @@ final class ExceptionManager
     public function renderException($exception)
     {
         $response = new Response();
+        $this->invoke(static::EVENT_BEFORE_RENDER, ['exception' => $exception, 'response' => $response]);
         if (CRL_DEBUG === true) {
             $_params_ = ['exception' => $exception, 'manager' => $this];
             $response->content = View::renderPartial(CRL_PATH.'/view/exception.php', $_params_);
         } else {
             $response->content = '';
         }
+        $this->invoke(static::EVENT_AFTER_RENDER, ['exception' => $exception, 'response' => $response]);
         $response->setStatusCode($exception->getCode() == 0 ? 500 : $exception->getCode());
         $response->send();
     }
@@ -156,22 +161,7 @@ final class ExceptionManager
         $line--;
         $lines = $this->getFileLines($file, $line);
         $_params_ = ['lines' => $lines, 'line' => $line, 'visible' => $visible];
-        ob_start();
-        ob_implicit_flush(false);
-        extract($_params_, EXTR_OVERWRITE);
-        require(CRL_PATH . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'exceptionFile.php');
-        return ob_get_clean();
-    }
-    /**
-     * Render request information
-     * @return string - rendered content
-     */
-    public function renderRequest()
-    {
-        ob_start();
-        ob_implicit_flush(false);
-        require(CRL_PATH . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'exceptionRequest.php');
-        return ob_get_clean();
+        return View::renderPartial(CRL_PATH.'/view/exceptionFile.php', $_params_);
     }
     /**
      * Indicates whether error is fatal

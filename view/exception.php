@@ -5,6 +5,7 @@
  */
 
 use core\base\ExceptionManager;
+use core\components\View;
 
 ?>
 <!doctype html>
@@ -52,7 +53,7 @@ use core\base\ExceptionManager;
             <?php }} ?>
 
         <div class="crl-exception-request">
-            <?= $manager->renderRequest() ?>
+            <?= View::renderPartial(CRL_PATH.'/view/exceptionRequest.php'); ?>
         </div>
     </div>
 
