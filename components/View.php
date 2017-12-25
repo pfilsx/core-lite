@@ -200,14 +200,23 @@ class View extends BaseObject
     }
 
     private function renderFile($file, $_params_ = [], $view = null) {
-        $this->invoke(self::EVENT_BEFORE_RENDER, ['file' => $file, 'params' => $_params_]);
+        $this->invoke(self::EVENT_BEFORE_RENDER, [
+            'file' => $file,
+            'params' => $_params_,
+            'renderer' => static::$viewRenderer != null ? static::$viewRenderer : 'PHP Renderer'
+        ]);
         if (file_exists($file)) {
             if ($this->_renderer != null){
                 $content = $this->_renderer->renderFile($this, $file, $_params_);
             } else {
                 $content = $this->renderPhpFile($file, $_params_);
             }
-            $this->invoke(self::EVENT_AFTER_RENDER, ['file' => $file, 'params' => $_params_, 'content' => $content]);
+            $this->invoke(self::EVENT_AFTER_RENDER, [
+                'file' => $file,
+                'params' => $_params_,
+                'renderer' => static::$viewRenderer != null ? static::$viewRenderer : 'PHP Renderer',
+                'content' => $content
+            ]);
             return $content;
         }
         if ($view != null){
