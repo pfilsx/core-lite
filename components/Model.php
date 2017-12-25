@@ -21,6 +21,13 @@ abstract class Model extends BaseObject
 
     protected $_errors = [];
 
+    const EVENT_BEFORE_VALIDATE = 'model_before_validate';
+    const EVENT_AFTER_VALIDATE = 'model_after_validate';
+    const EVENT_BEFORE_VALIDATE_ATTR = 'model_before_validate_attr';
+    const EVENT_AFTER_VALIDATE_ATTR = 'model_after_validate_attr';
+    const EVENT_BEFORE_LOAD = 'model_before_load';
+    const EVENT_AFTER_LOAD = 'model_after_load';
+
     /**
      * @var ValidatorInterface[]
      */
@@ -72,7 +79,7 @@ abstract class Model extends BaseObject
 
     public function load(array $data){
         $this->beforeLoad($data);
-
+        $this->invoke(self::EVENT_BEFORE_LOAD, ['data' => $data]);
         if (isset($data[$this->getModelName()])){
             $data = $data[$this->getModelName()];
         }
@@ -82,6 +89,7 @@ abstract class Model extends BaseObject
             }
         }
         $this->afterLoad($data);
+        $this->invoke(self::EVENT_AFTER_LOAD, ['data' => $data]);
         return true;
     }
 
@@ -179,12 +187,14 @@ abstract class Model extends BaseObject
      * @return bool - result of validation for all model attributes
      */
     public function validate(){
+        $this->invoke(self::EVENT_BEFORE_VALIDATE);
         $this->_errors = [];
         foreach ($this->user_properties as $key => $value){
             if (($valResult = $this->validateAttribute($key)) !== true){
                 $this->_errors[$key][] = $valResult;
             }
         }
+        $this->invoke(self::EVENT_AFTER_VALIDATE);
         return !$this->hasErrors ? true : false;
     }
 
@@ -194,6 +204,7 @@ abstract class Model extends BaseObject
      * @return bool|string
      */
     public function validateAttribute($attributeName){
+        $this->invoke(self::EVENT_BEFORE_VALIDATE_ATTR, ['attribute' => $attributeName]);
         if (!$this->hasProperty($attributeName)){
             unset($this->_errors[$attributeName]);
             return true;
@@ -206,11 +217,13 @@ abstract class Model extends BaseObject
                 $validateResult = $validator->validateAttribute($attributeName);
                 if ($validateResult !== true){;
                     $this->_errors[$attributeName][] = $validateResult;
+                    $this->invoke(self::EVENT_AFTER_VALIDATE_ATTR, ['attribute' => $attributeName]);
                     return $validateResult;
                 }
             }
         }
         unset($this->_errors[$attributeName]);
+        $this->invoke(self::EVENT_AFTER_VALIDATE_ATTR, ['attribute' => $attributeName]);
         return true;
     }
 

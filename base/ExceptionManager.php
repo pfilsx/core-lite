@@ -4,14 +4,26 @@
 namespace core\base;
 
 
-final class ExceptionManager
+use core\components\View;
+
+final class ExceptionManager extends BaseObject
 {
+    /**
+     * Memory size to reserve for fatal errors handling
+     * @var int
+     */
     public $memoryReserveSize = 262144;
 
     private $_memoryReserve;
 
+    const EVENT_BEFORE_RENDER = 'exception_before_render';
+    const EVENT_AFTER_RENDER = 'exception_after_render';
 
-    public function register(){
+    /**
+     * Register default core exception|error handlers
+     */
+    public function register()
+    {
         ini_set('display_errors', false);
         set_exception_handler([$this, 'handleException']);
         set_error_handler([$this, 'handleError']);
@@ -20,15 +32,25 @@ final class ExceptionManager
         }
         register_shutdown_function([$this, 'handleFatalError']);
     }
-
+    /**
+     * Unregister error and exception core handlers
+     */
     public function unregister()
     {
         restore_error_handler();
         restore_exception_handler();
     }
-
-
-    public function handleError($code, $message, $file, $line){
+    /**
+     * Handle errors and translate them to exception for handling
+     * @param $code - error code
+     * @param $message - error message
+     * @param $file - error file
+     * @param $line - error line
+     * @return false - if error_reporting is disabled
+     * @throws \core\exceptions\ErrorException - exception for handling
+     */
+    public function handleError($code, $message, $file, $line)
+    {
         if (error_reporting() & $code) {
             // load ErrorException manually here because autoloading them will not work
             // when error occurs while autoloading a class
@@ -53,8 +75,12 @@ final class ExceptionManager
         }
         return false;
     }
-
-    public function handleException($exception){
+    /**
+     * Handle exceptions and print them to output
+     * @param \Exception $exception
+     */
+    public function handleException($exception)
+    {
         $this->unregister();
 
         if (PHP_SAPI !== 'cli') {
@@ -68,9 +94,9 @@ final class ExceptionManager
         } catch (\Exception $e) {
             // an other exception could be thrown while displaying the exception
             $msg = "An Error occurred while handling another error:\n";
-            $msg .= (string) $e;
+            $msg .= (string)$e;
             $msg .= "\nPrevious exception:\n";
-            $msg .= (string) $exception;
+            $msg .= (string)$exception;
             if (CRL_DEBUG) {
                 if (PHP_SAPI === 'cli') {
                     echo $msg . "\n";
@@ -87,55 +113,61 @@ final class ExceptionManager
             exit(1);
         }
     }
-
-    public function handleFatalError(){
+    /**
+     * Handle fatal errors and translating them into exception for displaying
+     */
+    public function handleFatalError()
+    {
         unset($this->_memoryReserve);
 
         if (!class_exists('\core\exceptions\ErrorException', false)) {
             require_once(__DIR__ . '/../exceptions/ErrorException.php');
         }
         $error = error_get_last();
-        if ($this->isFatalError($error)){
+        if ($this->isFatalError($error)) {
             $exception = new \core\exceptions\ErrorException($error['message'], $error['type'], $error['file'], $error['line']);
             $this->clearOutput();
             $this->renderException($exception);
             exit(1);
         }
     }
-
     /**
+     * Render exception to output if CRL_DEBUG enabled
      * @param \Exception $exception
      */
-    public function renderException($exception){
-        if (CRL_DEBUG === true){
+    public function renderException($exception)
+    {
+        $response = new Response();
+        $this->invoke(static::EVENT_BEFORE_RENDER, ['exception' => $exception, 'response' => $response]);
+        if (CRL_DEBUG === true) {
             $_params_ = ['exception' => $exception];
-            ob_start();
-            ob_implicit_flush(false);
-            extract($_params_, EXTR_OVERWRITE);
-            require(CRL_PATH.DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.'exception.php');
-            echo ob_get_clean();
+            $response->content = View::renderPartial(CRL_PATH.'/view/exception.php', $_params_);
+        } else {
+            $response->content = '';
         }
-        echo '';
+        $this->invoke(static::EVENT_AFTER_RENDER, ['exception' => $exception, 'response' => $response]);
+        $response->setStatusCode($exception->getCode() == 0 ? 500 : $exception->getCode());
+        $response->send();
     }
-
-    public function renderFileLines($file, $line, $visible = false){
+    /**
+     * Render lines from file with exception
+     * @param $file - path to file
+     * @param $line - line with exception
+     * @param bool $visible - indicates whether block must be visible
+     * @return string - rendered content
+     */
+    public static function renderFileLines($file, $line, $visible = false)
+    {
         $line--;
-        $lines = $this->getFileLines($file, $line);
+        $lines = static::getFileLines($file, $line);
         $_params_ = ['lines' => $lines, 'line' => $line, 'visible' => $visible];
-        ob_start();
-        ob_implicit_flush(false);
-        extract($_params_, EXTR_OVERWRITE);
-        require(CRL_PATH.DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.'exceptionFile.php');
-        return ob_get_clean();
+        return View::renderPartial(CRL_PATH.'/view/exceptionFile.php', $_params_);
     }
-
-    public function renderRequest(){
-        ob_start();
-        ob_implicit_flush(false);
-        require(CRL_PATH.DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.'exceptionRequest.php');
-        return ob_get_clean();
-    }
-
+    /**
+     * Indicates whether error is fatal
+     * @param array $error
+     * @return bool
+     */
     private function isFatalError($error)
     {
         return isset($error['type']) && in_array($error['type'], [
@@ -148,6 +180,9 @@ final class ExceptionManager
             ]);
     }
 
+    /**
+     * Clear current output buffers
+     */
     private function clearOutput()
     {
         // the following manual level counting is to deal with zlib.output_compression set to On
@@ -159,19 +194,20 @@ final class ExceptionManager
     }
 
     /**
-     * @param $file
-     * @param $line
-     * @return array
-     * @internal param \Exception $exception
+     * Get lines from file with exception
+     * @param $file - path to file
+     * @param $line - line with exception number
+     * @return array - lines
      */
-    private function getFileLines($file, $line){
+    private static function getFileLines($file, $line)
+    {
         $res = [];
-        $firstLine = $line-7;
-        $lastLine = $line+5;
-        if (is_file($file)){
+        $firstLine = $line - 7;
+        $lastLine = $line + 5;
+        if (is_file($file)) {
             $lines = @file($file);
-            for ($i = $firstLine; $i <= $lastLine; $i ++){
-                if (array_key_exists($i, $lines)){
+            for ($i = $firstLine; $i <= $lastLine; $i++) {
+                if (array_key_exists($i, $lines)) {
                     $res[$i] = $lines[$i];
                 }
             }

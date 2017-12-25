@@ -12,23 +12,42 @@ class AssetManager extends BaseObject
 
     private $_bundles = [];
 
+    /**
+     * List of registered bundles
+     * @var array
+     */
     public $registeredBundles = [];
 
+    /**
+     * Directory access mode for assets directories
+     * @var int
+     */
     public $dirMode = 0775;
 
     public $destPath;
 
     public $beforeCopy;
-
+    /**
+     * File access mode for assets files in assets directory
+     * @var int
+     */
     public $fileMode = 0777;
-    private $afterCopy;
 
+    public $afterCopy;
+
+    /**
+     * AssetManager constructor.
+     * @param array $config
+     */
     function __construct($config = [])
     {
         $this->destPath = FileHelper::normalizePath(Core::getAlias('@webroot') . '\\assets\\');
         parent::__construct($config);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         if (isset($this->_config['bundles'])){
@@ -39,8 +58,10 @@ class AssetManager extends BaseObject
             }
         }
     }
-
-
+    /**
+     * Publish fonts directory to assets
+     * @param $path
+     */
     private function placeFonts($path)
     {
         $fontPath = FileHelper::normalizePath(Core::getAlias($path));
@@ -49,7 +70,9 @@ class AssetManager extends BaseObject
         }
         $this->publishDirectory($fontPath, []);
     }
-
+    /**
+     * Register predefined asset bundles
+     */
     public function registerBundles()
     {
         if (!empty($this->_bundles) && App::$instance->view != null) {
@@ -58,12 +81,17 @@ class AssetManager extends BaseObject
             }
         }
     }
-
+    /**
+     * Clear all predefined bundles
+     */
     public function clearBundles()
     {
         $this->_bundles = [];
     }
-
+    /**
+     * Register specified asset bundle
+     * @param $className
+     */
     public function registerBundle($className)
     {
         /**
@@ -144,7 +172,11 @@ class AssetManager extends BaseObject
         }
         $this->registeredBundles[] = $bundle::className();
     }
-
+    /**
+     * Publish file to assets directory
+     * @param $path
+     * @return bool|string
+     */
     public function publishFile($path)
     {
         $path = FileHelper::normalizePath(Core::getAlias($path));
@@ -153,19 +185,24 @@ class AssetManager extends BaseObject
             if (is_file($assetPath)) {
                 if (md5_file($assetPath) !== md5_file($path)) {
                     copy($path, $assetPath);
-                    @chmod($path, $this->fileMode);
+                    @chmod($assetPath, $this->fileMode);
                 }
             } else {
                 if (FileHelper::createDirectory(dirname($assetPath), $this->dirMode)) {
                     copy($path, $assetPath);
-                    @chmod($path, $this->fileMode);
+                    @chmod($assetPath, $this->fileMode);
                 }
             }
             return 'assets/' . basename($assetPath);
         }
         return false;
     }
-
+    /**
+     * Publish directory to web accessible place
+     * @param $path
+     * @param $options
+     * @return bool
+     */
     public function publishDirectory($path, $options)
     {
         if (is_dir($path)) {

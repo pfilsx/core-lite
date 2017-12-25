@@ -7,6 +7,8 @@ namespace core\components;
 use Core;
 use core\base\App;
 use core\base\BaseObject;
+use core\exceptions\ErrorException;
+use core\exceptions\NotFoundException;
 use core\helpers\FileHelper;
 use core\web\Html;
 
@@ -47,90 +49,77 @@ class View extends BaseObject
     const POS_BODY_BEGIN = 1;
     const POS_BODY_END = 2;
 
+    const EVENT_BEFORE_RENDER = 'view_before_render';
+    const EVENT_AFTER_RENDER = 'view_after_render';
+    const EVENT_BEFORE_PREPARE = 'view_before_prepare';
+    const EVENT_AFTER_PREPARE = 'view_after_prepare';
+
+    public static $viewRenderer = null;
+    public static $defaultExtension = 'php';
+
+    /**
+     * @var null|IViewRenderer
+     */
+    private $_renderer = null;
+
     /**
      * View constructor.
      * @param Controller $controller
      * @param string $view
      * @param array $config
      */
-    public function __construct($controller, $view, array $config = [])
+    public function __construct($controller = null, $view = null, array $config = [])
     {
-        $this->_controller = $controller;
-        $this->_viewName = str_replace('/', DIRECTORY_SEPARATOR, $view);
-        $this->_layout = Core::getAlias($controller->layout . '.php');
-        $config = App::$instance->config['routing'];
-        $this->_viewsPath = $controller->viewsPath;
+        if ($controller != null && $view != null){
+            $this->_controller = $controller;
+            $this->_viewName = str_replace('/', DIRECTORY_SEPARATOR, $view);
+            $this->_layout = Core::getAlias($controller->layout . '.php');
+            $this->_viewsPath = $controller->viewsPath;
+        }
+        $config = empty($config) ? App::$instance->config['view'] : $config;
         parent::__construct($config);
+        if (static::$viewRenderer != null){
+            $this->_renderer = new static::$viewRenderer();
+        }
     }
 
     public function getContent(array $_params_ = []){
+        if ($this->_controller == null || $this->_viewName == null){
+            throw new ErrorException('View::getContent can be called only from controller. Use View::render instead');
+        }
         if (file_exists($this->_layout)){
             $this->_params = $_params_;
-            $_obInitialLevel_ = ob_get_level();
-            ob_start();
-            ob_implicit_flush(false);
-            extract($_params_, EXTR_OVERWRITE);
-            try {
-                require $this->_layout;
-                $this->_content = ob_get_clean();
-                $this->registerJs(
-                    "window.crl.baseUrl = '".App::$instance->request->baseUrl."';
+            $this->_content = $this->renderFile($this->_layout, $_params_);
+            $this->registerJs(
+                "window.crl.baseUrl = '".App::$instance->request->baseUrl."';
                      $('.crl_remove').remove();
                     ",
-                    self::POS_BODY_END, [
-                    'class' => 'crl_remove'
-                ]);
-                $this->prepareContent();
-                return $this->_content;
-            }
-            catch (\Exception $ex){
-                while (ob_get_level() > $_obInitialLevel_) {
-                    if (!@ob_end_clean()) {
-                        ob_clean();
-                    }
-                }
-                throw $ex;
-            }
+                self::POS_BODY_END, [
+                'class' => 'crl_remove'
+            ]);
+            $this->invoke(self::EVENT_BEFORE_PREPARE, ['content' => &$this->_content]);
+            $this->prepareContent();
+            $this->invoke(self::EVENT_AFTER_PREPARE, ['content' => &$this->_content]);
+            return $this->_content;
         }
         return null;
     }
 
-    private function getViewContent(){
-        $filePath = $this->getViewPath();
-        if (file_exists($filePath)) {
-            $_params_ = $this->_params;
-            ob_start();
-            ob_implicit_flush(false);
-            extract($_params_, EXTR_OVERWRITE);
-            require($filePath);
-            return ob_get_clean();
-        }
-        return null;
+    public function getViewContent(){
+        $file = $this->getViewFile($this->_viewName);
+        return $this->renderFile($file, $this->_params, $this->_viewName);
     }
 
 
     public function render($view, array $_params_ = []){
-        $filePath = $this->getViewPath($view);
-        if (file_exists($filePath)) {
-            ob_start();
-            ob_implicit_flush(false);
-            extract($_params_, EXTR_OVERWRITE);
-            require($filePath);
-            return ob_get_clean();
-        }
-        return null;
+        $file = $this->getViewFile($view);
+        return $this->renderFile($file, $_params_, $view);
     }
 
-    public static function renderPartial($view, array $_params_ = []){
-        $path = FileHelper::normalizePath(Core::getAlias($view));
-        if (file_exists($path)){
-            ob_start();
-            ob_implicit_flush(false);
-            extract($_params_, EXTR_OVERWRITE);
-            require $path;
-            return ob_get_clean();
-        }
-        return null;
+    public static function renderPartial($viewName, array $_params_ = []){
+        $file = FileHelper::normalizePath(Core::getAlias($viewName));
+        $view = new View();
+        return $view->renderFile($file, $_params_);
     }
 
     public function registerMetaTag($options, $key = null){
@@ -210,6 +199,51 @@ class View extends BaseObject
         echo View::BODY_END;
     }
 
+    private function renderFile($file, $_params_ = [], $view = null) {
+        $this->invoke(self::EVENT_BEFORE_RENDER, [
+            'file' => $file,
+            'params' => $_params_,
+            'renderer' => static::$viewRenderer != null ? static::$viewRenderer : 'PHP Renderer'
+        ]);
+        if (file_exists($file)) {
+            if ($this->_renderer != null){
+                $content = $this->_renderer->renderFile($this, $file, $_params_);
+            } else {
+                $content = $this->renderPhpFile($file, $_params_);
+            }
+            $this->invoke(self::EVENT_AFTER_RENDER, [
+                'file' => $file,
+                'params' => $_params_,
+                'renderer' => static::$viewRenderer != null ? static::$viewRenderer : 'PHP Renderer',
+                'content' => $content
+            ]);
+            return $content;
+        }
+        if ($view != null){
+            throw new NotFoundException("Unable to locate view file for view '$view'.");
+        } else {
+            throw new NotFoundException("Unable to locate view file '$file'");
+        }
+    }
+
+    private function renderPhpFile($file, $_params_ = []){
+        $_obInitialLevel_ = ob_get_level();
+        ob_start();
+        ob_implicit_flush(false);
+        extract($_params_, EXTR_OVERWRITE);
+        try {
+            require $file;
+            return ob_get_clean();
+        }
+        catch (\Exception $ex){
+            while (ob_get_level() > $_obInitialLevel_) {
+                if (!@ob_end_clean()) {
+                    ob_clean();
+                }
+            }
+            throw $ex;
+        }
+    }
     private function getViewPath($viewName = null){
         $viewName = ($viewName == null ? $this->_viewName : $viewName);
         $classWithNamespace = get_class($this->_controller);
@@ -219,7 +253,34 @@ class View extends BaseObject
             . DIRECTORY_SEPARATOR . $viewName . '.php';
     }
 
+    private function getViewFile($view){
+        if (strncmp($view, '@', 1) === 0){
+            $file =Core::getAlias($view);
+        } elseif (is_file($view)){
+          return $view;
+        } else {
+            if ($this->_controller !== null) {
+                $classWithNamespace = get_class($this->_controller);
+                $className = explode('\\', $classWithNamespace);
+                $viewFolder = strtolower(str_replace('Controller', '', array_pop($className)));
+                $file = $this->_viewsPath . DIRECTORY_SEPARATOR . $viewFolder
+                    . DIRECTORY_SEPARATOR. ltrim($view, '/');
+            } else {
+                throw new NotFoundException("Unable to locate view file for view '$view': no active controller.");
+            }
+        }
+        if (pathinfo($file, PATHINFO_EXTENSION) !== '') {
+            return $file;
+        }
+        $path = $file . '.' . static::$defaultExtension;
+        if (static::$defaultExtension !== 'php' && !is_file($path)) {
+            $path = $file . '.php';
+        }
+        return $path;
+    }
+
     private function prepareContent(){
+        $this->invoke(self::EVENT_BEFORE_PREPARE, ['content' => &$this->_content]);
         $preparedMeta = implode(PHP_EOL, $this->_metaTags);
         $preparedHead = implode(PHP_EOL, $this->_cssHead).PHP_EOL.implode(PHP_EOL, $this->_jsHead);
         $preparedBodyBegin = implode(PHP_EOL, $this->_cssBodyBegin).PHP_EOL.implode(PHP_EOL, $this->_jsBodyBegin);
@@ -230,6 +291,7 @@ class View extends BaseObject
             View::BODY_BEGIN => $preparedBodyBegin,
             View::BODY_END => $preparedBodyEnd
         ]);
+        $this->invoke(self::EVENT_AFTER_PREPARE, ['content' => &$this->_content]);
     }
 
 

@@ -19,6 +19,8 @@ use core\helpers\Inflector;
  * @property string route
  * @property string baseRoute
  * @property string module
+ * @property Controller controllerClass
+ * @property string param
  */
 final class Router extends BaseObject
 {
@@ -28,9 +30,24 @@ final class Router extends BaseObject
 
     private $_controller;
 
+    /**
+     * @var Module
+     */
+    private $_moduleClass;
+    /**
+     * @var Controller
+     */
+    private $_controllerClass;
+    /**
+     * @var string
+     */
+    private $_actionMethod;
+
     private $_action;
 
     private $_module;
+
+    private $_param = null;
 
     private $_route;
 
@@ -86,9 +103,9 @@ final class Router extends BaseObject
         if ($this->_module == null){
             return $this->defaultResolve();
         } else {
-            $module = App::$instance->getModule($this->module);
-            $action = 'action'.$this->_action;
-            return $module->runAction($action, App::$instance->request->request);
+            $this->_moduleClass = App::$instance->getModule($this->module);
+            $this->_actionMethod = 'action'.$this->_action;
+            return $this->_moduleClass->runAction($this->_actionMethod, App::$instance->request->request);
         }
     }
 
@@ -98,15 +115,12 @@ final class Router extends BaseObject
      */
     public function defaultResolve(){
         $controller = $this->_controller.'Controller';
-        $action = 'action'.$this->_action;
+        $this->_actionMethod = 'action'.$this->_action;
         $controllerPath = Core::getAlias($this->_controllersPath).DIRECTORY_SEPARATOR.$controller.'.php';
         if (file_exists($controllerPath)) {
             $className = $this->_controllersNamespace.'\\' . $controller;
-            /**
-             * @var Controller $controllerClass
-             */
-            $controllerClass = new $className();
-            return $controllerClass->runAction($action, App::$instance->request->request);
+            $this->_controllerClass = new $className();
+            return $this->_controllerClass->runAction($this->_actionMethod, App::$instance->request->request);
         } else {
             if (CRL_DEBUG === true) {
                 throw new NotFoundException("Controller {$this->_controller} does not exist");
@@ -120,23 +134,38 @@ final class Router extends BaseObject
     {
         $request = $_SERVER['REQUEST_URI'];
         $requestParts = explode('?', $request);
-        $this->_baseRoute = $requestParts[0];
-        $this->_route = str_replace(App::$instance->request->getBaseUrl().'/', '',$requestParts[0]);
+        $this->_baseRoute = rtrim($requestParts[0], '/');
+        $this->_route = ltrim(str_replace(App::$instance->request->getBaseUrl(), '',$this->_baseRoute), '/');
         $this->parseRoute();
     }
 
 
     public function parseRoute()
     {
+        $this->clearData();
         $pathParts = explode('/', $this->_route);
-        if (count($pathParts) == 3){
+        $partsCount = count($pathParts);
+        if ($partsCount == 3){
             $this->_module = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : ''));
             $this->_controller = Inflector::id2camel((!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultController));
             $this->_action = Inflector::id2camel((!empty($pathParts[2]) ? $pathParts[2] : $this->_defaultAction));
-        } else {
+        } elseif ($partsCount == 2) {
             $this->_controller = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : $this->_defaultController));
             $this->_action = Inflector::id2camel((!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultAction));
+        } elseif ($partsCount == 1){
+            $this->_controller = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : $this->_defaultController));
+            $this->_action = $this->_defaultAction;
+        } else {
+            $this->_module = Inflector::id2camel((!empty($pathParts[0]) ? $pathParts[0] : ''));
+            $this->_controller = Inflector::id2camel((!empty($pathParts[1]) ? $pathParts[1] : $this->_defaultController));
+            $this->_action = Inflector::id2camel((!empty($pathParts[2]) ? $pathParts[2] : $this->_defaultAction));
+            $this->_param = (!empty($pathParts[3]) ? $pathParts[3] : null);
         }
+    }
+
+    private function clearData(){
+        $this->_module = $this->_controller = $this->_action
+            = $this->_moduleClass = $this->_actionMethod = $this->_controllerClass = null;
     }
 
     public function getAction(){
@@ -151,6 +180,10 @@ final class Router extends BaseObject
         return Inflector::camel2id($this->_module);
     }
 
+    public function getParam(){
+        return $this->_param;
+    }
+
     public function getRoute(){
         return $this->_route;
     }
@@ -160,6 +193,19 @@ final class Router extends BaseObject
 
     public function setRoute($value){
         $this->_route = $value;
+    }
+
+    public function getControllerClass(){
+        return $this->_controllerClass;
+    }
+    public function setControllerClass($controller){
+        $this->_controllerClass = $controller;
+    }
+    public function getActionMethod(){
+        return $this->_actionMethod;
+    }
+    public function getModuleClass(){
+        return $this->_moduleClass;
     }
 
     /**

@@ -25,8 +25,6 @@ abstract class Module extends BaseObject
 
     private $_layoutPath;
 
-    private $_id;
-
     protected $controllerMap = [];
 
     public function init()
@@ -39,14 +37,9 @@ abstract class Module extends BaseObject
         }
     }
 
-    public function getId(){
-        return $this->_id;
-    }
-    public function setId($id){
-        $this->_id = $id;
-    }
+    public abstract function getId();
 
-    public abstract function initializeModule($options);
+    public abstract function initializeModule();
 
     public function getBasePath()
     {
@@ -54,7 +47,6 @@ abstract class Module extends BaseObject
             $class = new \ReflectionClass($this);
             $this->_basePath = dirname($class->getFileName());
         }
-
         return $this->_basePath;
     }
 
@@ -105,6 +97,7 @@ abstract class Module extends BaseObject
     {
         $controller = $this->createController(App::$instance->router->controller);
         if ($controller instanceof Controller) {
+            App::$instance->router->controllerClass = $controller;
             /* @var $controller Controller */
             $controller->viewsPath = $this->getViewPath();
             $controller->layout = $this->getLayoutPath().DIRECTORY_SEPARATOR.$controller->layout;
