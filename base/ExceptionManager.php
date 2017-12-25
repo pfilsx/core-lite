@@ -146,7 +146,7 @@ final class ExceptionManager extends BaseObject
             $response->content = '';
         }
         $this->invoke(static::EVENT_AFTER_RENDER, ['exception' => $exception, 'response' => $response]);
-        $response->setStatusCode($exception->getCode() == 0 ? 500 : $exception->getCode());
+        $response->setStatusCode($exception->getCode() < 100 || $exception->getCode() > 600 ? 500 : $exception->getCode());
         $response->send();
     }
     /**
