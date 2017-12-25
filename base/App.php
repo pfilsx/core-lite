@@ -135,8 +135,8 @@ final class App extends BaseObject
         if (!isset($config['basePath'])) {
             throw new \Exception('Invalid configuration. Missed required basePath in configuration');
         }
-        if (!isset($config['routing']['layout'])) {
-            $this->_config['routing']['layout'] = '@app/layouts/default';
+        if (!isset($config['view']['layout'])) {
+            $this->_config['view']['layout'] = '@app/layouts/default';
         }
     }
     /**
