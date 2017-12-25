@@ -23,7 +23,7 @@ abstract class Controller extends BaseObject
 
     function __construct()
     {
-        $config = App::$instance->config['routing'];
+        $config = App::$instance->config['view'];
         if (empty($this->layout)){
             $this->layout = $config['layout'];
         }

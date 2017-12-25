@@ -7,6 +7,7 @@ namespace core\components;
 use Core;
 use core\base\App;
 use core\base\BaseObject;
+use core\exceptions\ErrorException;
 use core\exceptions\NotFoundException;
 use core\helpers\FileHelper;
 use core\web\Html;
@@ -83,7 +84,11 @@ class View extends BaseObject
     }
 
     public function getContent(array $_params_ = []){
+        if ($this->_controller == null || $this->_viewName == null){
+            throw new ErrorException('View::getContent can be called only from controller. Use View::render instead');
+        }
         if (file_exists($this->_layout)){
+            $this->_params = $_params_;
             $this->_content = $this->renderFile($this->_layout, $_params_);
             $this->registerJs(
                 "window.crl.baseUrl = '".App::$instance->request->baseUrl."';
@@ -111,16 +116,10 @@ class View extends BaseObject
         return $this->renderFile($file, $_params_, $view);
     }
 
-    public static function renderPartial($view, array $_params_ = []){
-        $file = FileHelper::normalizePath(Core::getAlias($view));
-        if (file_exists($file)){
-            ob_start();
-            ob_implicit_flush(false);
-            extract($_params_, EXTR_OVERWRITE);
-            require $file;
-            return ob_get_clean();
-        }
-        throw new NotFoundException("Unable to locate view file for view '$view'.");
+    public static function renderPartial($viewName, array $_params_ = []){
+        $file = FileHelper::normalizePath(Core::getAlias($viewName));
+        $view = new View();
+        return $view->renderFile($file, $_params_);
     }
 
     public function registerMetaTag($options, $key = null){
