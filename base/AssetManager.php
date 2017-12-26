@@ -180,10 +180,17 @@ class AssetManager extends BaseObject
     public function publishFile($path)
     {
         $path = FileHelper::normalizePath(Core::getAlias($path));
+        //if file already in webroot directory
+        $webrootPath = FileHelper::normalizePath(Core::getAlias('@webroot'));
+        if (substr($path, 0, strlen($webrootPath)) == $webrootPath){
+            return App::$instance->request->getBaseUrl().'/'.ltrim(str_replace([$webrootPath, '\\'],['','/'], $path), '/');
+        }
         if (is_file($path)) {
-            $assetPath = $this->destPath . DIRECTORY_SEPARATOR . basename($path);
+            $md5 = md5_file($path);
+            $baseName = basename($path);
+            $assetPath = FileHelper::normalizePath("{$this->destPath}/$md5/$baseName");
             if (is_file($assetPath)) {
-                if (md5_file($assetPath) !== md5_file($path)) {
+                if (md5_file($assetPath) !== $md5) {
                     copy($path, $assetPath);
                     @chmod($assetPath, $this->fileMode);
                 }
@@ -193,7 +200,7 @@ class AssetManager extends BaseObject
                     @chmod($assetPath, $this->fileMode);
                 }
             }
-            return 'assets/' . basename($assetPath);
+            return App::$instance->request->getBaseUrl()."/assets/$md5/$baseName";
         }
         return false;
     }

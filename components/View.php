@@ -141,8 +141,7 @@ class View extends BaseObject
         }
     }
     public function registerJsFile($file, $position = View::POS_BODY_END, $options = []){
-        $path = App::$instance->request->getBaseUrl().'/'.$file;
-        $content = Html::tag('script','', array_merge($options, ['src' => $path, 'type' => 'text/javascript']));
+        $content = Html::tag('script','', array_merge($options, ['src' => $file, 'type' => 'text/javascript']));
         if ($position == View::POS_HEAD){
             $this->_jsHead[] = $content;
         } else if ($position == View::POS_BODY_BEGIN) {
@@ -163,8 +162,7 @@ class View extends BaseObject
         }
     }
     public function registerCssFile($file, $position = View::POS_HEAD, $options = []){
-        $path = App::$instance->request->getBaseUrl().'/'.$file;
-        $content = Html::tag('link', '', array_merge($options, ['rel' => 'stylesheet', 'href' => $path]));
+        $content = Html::tag('link', '', array_merge($options, ['rel' => 'stylesheet', 'href' => $file]));
         if ($position == View::POS_BODY_BEGIN){
             $this->_cssBodyBegin[] = $content;
         } else if ($position == View::POS_BODY_END){
