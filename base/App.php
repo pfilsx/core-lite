@@ -77,6 +77,10 @@ final class App extends BaseObject
      */
     private $_loadedModules = [];
     /**
+     * @var array
+     */
+    private $_components = [];
+    /**
      * @var string
      */
     private $_vendorPath;
@@ -104,13 +108,16 @@ final class App extends BaseObject
         parent::__construct($config);
         unset($config);
     }
+
     /**
      * Registering exception manager for handling errors
      */
-    private function registerExceptionManager(){
+    private function registerExceptionManager()
+    {
         $this->_exceptionManager = new ExceptionManager();
         $this->_exceptionManager->register();
     }
+
     /**
      * Main function of Application.
      * Call it for run app.
@@ -124,6 +131,7 @@ final class App extends BaseObject
         $response->send();
         return $response->exitStatus;
     }
+
     /**
      * PreInitialize application. Setting default layout if not set and checking basePath
      * @param $config
@@ -139,58 +147,65 @@ final class App extends BaseObject
             $this->_config['view']['layout'] = '@app/layouts/default';
         }
     }
+
     /**
-    * @inheritDoc
-    */
+     * @inheritDoc
+     */
     public function init()
     {
         $this->_security = new Security();
         $this->_request = new Request((isset($this->_config['request']) ? $this->_config['request'] : []));
         $this->_router = new Router(isset($this->_config['routing']) ? $this->_config['routing'] : []);
-        if (isset($this->_config['db'])){
+        if (isset($this->_config['db'])) {
             $this->_db = new Connection($this->_config['db']);
             unset($this->_config['db']);
         }
         Core::setAlias('@web', $this->_request->baseUrl);
         Core::setAlias('@webroot', dirname($this->_request->scriptFile));
         Core::setAlias('@crl', CRL_PATH);
-        if (isset($this->_config['vendorPath'])){
+        if (isset($this->_config['vendorPath'])) {
             $this->setVendorPath($this->_config['vendorPath']);
             unset($this->_config['vendorPath']);
         } else {
             $this->getVendorPath();
         }
         $this->_translateManager = new TranslateManager();
-        $this->_assetManager = new AssetManager(isset($this->_config['assets']) ? $this->_config['assets']: []);
+        $this->_assetManager = new AssetManager(isset($this->_config['assets']) ? $this->_config['assets'] : []);
         $this->_session = new Session();
 
-        if (isset($this->_config['auth'])){
+        if (isset($this->_config['auth'])) {
             $instance = new $this->_config['auth']();
-            if (!$instance instanceof BaseUser){
+            if (!$instance instanceof BaseUser) {
                 throw new ErrorException('Invalid configuration. Auth class must be a BaseUser subclass');
             }
             $this->setUser($instance);
         }
-        if (isset($this->_config['modules'])){
-            foreach ($this->_config['modules'] as $options){
-                if (isset($options['class'])){
-                    $className = $options['class'];
-                    unset($options['class']);
-                    $module = new $className($options);
-                    if ($module instanceof Module){
-                        $module->initializeModule();
-                        $this->_loadedModules[$module->getId()] = $module;
-                    }
+        if (isset($this->_config['view']['renderer'])) {
+            View::$viewRenderer = $this->_config['view']['renderer'];
+        }
+        if (isset($this->_config['view']['extension'])) {
+            View::$defaultExtension = $this->_config['view']['extension'];
+        }
+
+        if (isset($this->_config['modules']) && is_array($this->_config['modules'])) {
+            foreach ($this->_config['modules'] as $options) {
+                $module = $this->createComponent($options);
+                if ($module != null && $module instanceof Module) {
+                    $module->initializeModule();
+                    $this->_loadedModules[$module->getId()] = $module;
                 }
             }
         }
-        if (isset($this->_config['view']['renderer'])){
-            View::$viewRenderer = $this->_config['view']['renderer'];
-        }
-        if (isset($this->_config['view']['extension'])){
-            View::$defaultExtension = $this->_config['view']['extension'];
+        if (isset($this->_config['components']) && is_array($this->_config['components'])) {
+            foreach ($this->_config['components'] as $key => $options) {
+                $component = $this->createComponent($options);
+                if ($component != null) {
+                    $this->_components[$key] = $component;
+                }
+            }
         }
     }
+
     /**
      * Get Connection instance
      * @return Connection
@@ -199,6 +214,7 @@ final class App extends BaseObject
     {
         return $this->_db;
     }
+
     /**
      * Get Router instance
      * @return Router
@@ -207,6 +223,7 @@ final class App extends BaseObject
     {
         return $this->_router;
     }
+
     /**
      * Get basePath of application
      * @return string
@@ -215,6 +232,7 @@ final class App extends BaseObject
     {
         return $this->_basePath;
     }
+
     /**
      * Set basePath of application. In best way must be called only from init() of application.
      * Change it on your own risk
@@ -225,6 +243,7 @@ final class App extends BaseObject
         $this->_basePath = $path;
         Core::setAlias('@app', $this->getBasePath());
     }
+
     /**
      * Get AssetManager instance
      * @return AssetManager
@@ -233,13 +252,16 @@ final class App extends BaseObject
     {
         return $this->_assetManager;
     }
+
     /**
      * Get Session instance
      * @return Session
      */
-    public function getSession(){
+    public function getSession()
+    {
         return $this->_session;
     }
+
     /**
      * Get full path to vendor directory
      * @return string
@@ -252,6 +274,7 @@ final class App extends BaseObject
 
         return $this->_vendorPath;
     }
+
     /**
      * Set full path to vendor directory
      * @param $path - path to vendor dir
@@ -263,6 +286,7 @@ final class App extends BaseObject
         Core::setAlias('@bower', $this->_vendorPath . DIRECTORY_SEPARATOR . 'bower');
         Core::setAlias('@npm', $this->_vendorPath . DIRECTORY_SEPARATOR . 'npm');
     }
+
     /**
      * Get Request instance
      * @return Request
@@ -271,13 +295,16 @@ final class App extends BaseObject
     {
         return $this->_request;
     }
+
     /**
      * Get Response instance
      * @return Response
      */
-    public function getResponse(){
+    public function getResponse()
+    {
         return $this->_response;
     }
+
     /**
      * Get BaseUser instance
      * @return BaseUser
@@ -286,13 +313,16 @@ final class App extends BaseObject
     {
         return $this->_user;
     }
+
     /**
      * Set BaseUser instance
      * @param BaseUser $value
      */
-    public function setUser($value){
+    public function setUser($value)
+    {
         $this->_user = $value;
     }
+
     /**
      * Get charset of application(default UTF-8)
      * @return string
@@ -301,24 +331,29 @@ final class App extends BaseObject
     {
         return $this->_charset;
     }
+
     /**
      * Get Security instance
      * @return Security
      */
-    public function getSecurity(){
+    public function getSecurity()
+    {
         return $this->_security;
     }
+
     /**
      * Get module by id or null if module does not exist
      * @param $id
      * @return Module|null
      */
-    public function getModule($id){
-        if (array_key_exists($id, $this->_loadedModules)){
+    public function getModule($id)
+    {
+        if (array_key_exists($id, $this->_loadedModules)) {
             return $this->_loadedModules[$id];
         }
         return null;
     }
+
     /**
      * Translate string line by specified dictionary
      * @param string $dictionary - dictionary name
@@ -326,14 +361,96 @@ final class App extends BaseObject
      * @param array $params - params for replacing
      * @return string - translated message
      */
-    public function translate($dictionary, $message, $params = []){
+    public function translate($dictionary, $message, $params = [])
+    {
         $placeholders = [];
-        foreach ($params as $key => $value){
-            $placeholders['{'.$key.'}'] = $value;
+        foreach ($params as $key => $value) {
+            $placeholders['{' . $key . '}'] = $value;
         }
-        if ($this->_translateManager == null){
+        if ($this->_translateManager == null) {
             return strtr($message, $placeholders);
         }
         return $this->_translateManager->translate($dictionary, $message, $placeholders, $this->request->userLanguage);
     }
+
+    //region magic
+
+    /**
+     * @inheritdoc
+     */
+    public function __get($name)
+    {
+        $getter = 'get' . ucfirst($name);
+        if (method_exists($this, $getter)) {
+            return $this->$getter();
+        } elseif (isset($this->_components[$name])) {
+            return $this->_components[$name];
+        } elseif (method_exists($this, 'set' . ucfirst($name))) {
+            throw new ErrorException('Getting write-only property: ' . get_class($this) . '::' . $name);
+        } else {
+            throw new ErrorException('Getting unknown property: ' . get_class($this) . '::' . $name);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        $setter = 'set' . ucfirst($name);
+        if (method_exists($this, $setter)) {
+            $this->$setter($value);
+        } elseif (isset($this->_components[$name])) {
+            $this->_components[$name] = $value;
+        } elseif (method_exists($this, 'get' . ucfirst($name))) {
+            throw new ErrorException('Setting read-only property: ' . get_class($this) . '::' . $name);
+        } else {
+            throw new ErrorException('Setting unknown property: ' . get_class($this) . '::' . $name);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __isset($name)
+    {
+        $getter = 'get' . ucfirst($name);
+        if (method_exists($this, $getter)) {
+            return $this->$getter() !== null;
+        } elseif (isset($this->_components[$name])) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __unset($name)
+    {
+        $setter = 'set' . ucfirst($name);
+        if (method_exists($this, $setter)) {
+            $this->$setter(null);
+        } elseif (isset($this->_components[$name])) {
+            $this->_components[$name] = null;
+        } elseif (method_exists($this, 'get' . ucfirst($name))) {
+            throw new ErrorException('Unsetting read-only property: ' . get_class($this) . '::' . $name);
+        }
+    }
+
+    //endregion
+
+    private function createComponent($options)
+    {
+        if (isset($options['class'])) {
+            $className = $options['class'];
+            unset($options['class']);
+            if (class_exists($className)) {
+                return new $className($options);
+            }
+        }
+        return null;
+    }
+
 }
