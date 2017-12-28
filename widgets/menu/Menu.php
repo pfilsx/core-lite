@@ -31,15 +31,15 @@ class Menu extends Widget
         if (isset($this->itemOptions['href'])){
             unset($this->itemOptions['href']);
         }
+        if ($this->orientation == 'horizontal'){
+            $this->_class .= " {$this->_class_horizontal}";
+        }
     }
 
     public function run()
     {
         ob_start();
         ob_implicit_flush(false);
-        if ($this->orientation == 'horizontal'){
-            $this->_class .= " {$this->_class_horizontal}";
-        }
         $this->render();
         return ob_get_clean();
     }
