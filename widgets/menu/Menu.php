@@ -21,6 +21,7 @@ class Menu extends Widget
 
     protected $_class = 'crl-menu';
     protected $_class_horizontal = 'crl-menu-horizontal';
+    protected $_class_vertical = '';
 
     protected $_currentUrl;
     protected $_currentRoute;
@@ -33,6 +34,8 @@ class Menu extends Widget
         }
         if ($this->orientation == 'horizontal'){
             $this->_class .= " {$this->_class_horizontal}";
+        } else {
+            $this->_class .= " {$this->_class_vertical}";
         }
     }
 
