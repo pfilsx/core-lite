@@ -72,7 +72,7 @@ class Menu extends Widget
             echo Html::endTag('div');
             echo Html::endTag('div');
         } else {
-            echo Html::tag('a', ArrayHelper::merge_recursive([
+            echo Html::tag('a', $item['label'],ArrayHelper::merge_recursive([
                 'class' => 'crl-menu-item',
                 'href' => $item['url']
             ], $this->itemOptions));
