@@ -50,46 +50,29 @@ class Menu extends Widget
             if (!isset($item['label']) || (!isset($item['url']) && (!isset($item['items']) || !is_array($item['items'])))){
                 throw new ErrorException('Invalid parameters passed to Menu::widget items');
             }
-            if ($this->orientation == 'horizontal'){
-                $this->renderHorizontalItem($item);
-            } else {
-                $this->renderVerticalItem($item);
-            }
+            $this->renderItem($item);
         }
         echo Html::endTag('div');
     }
 
-    protected function renderHorizontalItem($item){
+    protected function renderItem($item){
         if (isset($item['items'])){
             echo Html::startTag('div', ArrayHelper::merge_recursive(['class' => 'crl-menu-item'], $this->itemOptions));
+            echo $item['label'];
             echo Html::startTag('div', ['class' => 'crl-menu-subitems']);
             foreach ($item['items'] as $subItem){
                 echo Html::tag('a', $subItem['label'], ArrayHelper::merge_recursive([
                     'href' => $subItem['url'],
-                    'class' => 'crl-menu-subitem'
-                ], $subItem['options']));
+                    'class' => 'crl-menu-subitem'.($this->_currentUrl == $subItem['url'] ? ' active' : '')
+                ], isset($subItem['options']) ? $subItem['options'] : []));
             }
             echo Html::endTag('div');
             echo Html::endTag('div');
         } else {
             echo Html::tag('a', $item['label'],ArrayHelper::merge_recursive([
-                'class' => 'crl-menu-item',
+                'class' => 'crl-menu-item'.($this->_currentUrl == $item['url'] ? ' active' : ''),
                 'href' => $item['url']
             ], $this->itemOptions));
         }
-//        echo Html::tag('a', $item['label'], ArrayHelper::merge_recursive($this->itemOptions, [
-//            'class' => ($this->_currentUrl == $item['url'] || $this->_currentRoute == $item['url']
-//                ? 'active'
-//                : ''),
-//            'href' => $item['url']
-//        ]));
-    }
-    protected function renderVerticalItem($item){
-        echo Html::tag('a', $item['label'], ArrayHelper::merge_recursive($this->itemOptions, [
-            'class' => ($this->_currentUrl == $item['url'] || $this->_currentRoute == $item['url']
-                ? 'active'
-                : ''),
-            'href' => $item['url']
-        ]));
     }
 }
