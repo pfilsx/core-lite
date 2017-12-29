@@ -30,11 +30,11 @@ abstract class Controller extends BaseObject
     function __construct()
     {
         $config = App::$instance->config['view'];
-        if (empty($this->layout)){
+        if (empty($this->layout)) {
             $this->layout = $config['layout'];
         }
-        if (empty($this->viewPath)){
-            if (isset($config['viewsPath'])){
+        if (empty($this->viewPath)) {
+            if (isset($config['viewsPath'])) {
                 $this->viewsPath = FileHelper::normalizePath(Core::getAlias($config['viewsPath']));
             } else {
                 $this->viewsPath = Core::getAlias('@app/views');
@@ -45,8 +45,9 @@ abstract class Controller extends BaseObject
 
     public abstract function actionIndex();
 
-    public function beforeAction($action, $params = []){
-        $this->action = $action;
+    public function beforeAction($action, $params = [])
+    {
+
     }
 
     public final function render($viewName, $_params_ = [])
@@ -55,29 +56,32 @@ abstract class Controller extends BaseObject
         App::$instance->assetManager->registerBundles();
         return App::$instance->view->getContent($_params_);
     }
-    
-    public final function renderPartial($view, $_params_ = []){
+
+    public final function renderPartial($view, $_params_ = [])
+    {
         return View::renderPartial($view, $_params_);
     }
-
 
     public final function redirect($url)
     {
         return App::$instance->getResponse()->redirect($url);
     }
 
-    public final function goHome(){
+    public final function goHome()
+    {
         return $this->redirect('/');
     }
 
-    public final function runAction($action, $params = []){
+    public final function runAction($action, $params = [])
+    {
         if ($this->enableCsrfValidation
-                && App::$instance->getExceptionManager()->exception === null
-                && !App::$instance->getRequest()->validateCsrfToken()
+            && App::$instance->getExceptionManager()->exception === null
+            && !App::$instance->getRequest()->validateCsrfToken()
         ) {
             throw new ErrorException('Unable to verify your data submission.');
         }
-        if ($this->beforeAction($action, $params) !== false){
+        $this->action = $action;
+        if ($this->beforeAction($action, $params) !== false) {
             $this->invoke(self::EVENT_BEFORE_ACTION, ['action' => $action, 'params' => $params]);
             if (method_exists($this, $action)) {
                 $ref = new \ReflectionMethod($this, $action);
@@ -92,21 +96,21 @@ abstract class Controller extends BaseObject
                             $_params_[$param->name] = $param->getDefaultValue();
                         }
                     }
-                    $content = call_user_func_array([$this, $action],$_params_);
+                    $content = call_user_func_array([$this, $action], $_params_);
                 } else {
                     $content = $this->{$action}();
                 }
-                if ($content instanceof Response){
+                if ($content instanceof Response) {
                     return $content;
                 } else {
                     $response = App::$instance->response;
-                    if ($content !== null){
+                    if ($content !== null) {
                         $response->data = $content;
                     }
                     return $response;
                 }
             } else {
-                if (CRL_DEBUG === true){
+                if (CRL_DEBUG === true) {
                     $controllerClass = static::className();
                     throw new NotFoundException("Action {$action} does not exist in {$controllerClass}");
                 } else {

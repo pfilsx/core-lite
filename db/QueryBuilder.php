@@ -72,9 +72,17 @@ abstract class QueryBuilder extends BaseObject
      */
     protected $_db;
 
-    public static function create(){
-        if (isset(App::$instance->db) && App::$instance->db instanceof Connection){
-            return App::$instance->db->createQueryBuilder();
+    /**
+     * @param null|Connection $db
+     * @return QueryBuilder|null
+     */
+    public static function create($db = null){
+        if ($db == null){
+            if (isset(App::$instance->db) && App::$instance->db instanceof Connection){
+                return App::$instance->db->createQueryBuilder();
+            }
+        } elseif ($db instanceof Connection) {
+            return $db->createQueryBuilder();
         }
         return null;
     }
