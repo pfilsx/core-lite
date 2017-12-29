@@ -13,6 +13,10 @@ final class ExceptionManager extends BaseObject
      * @var int
      */
     public $memoryReserveSize = 262144;
+    /**
+     * @var null|\Exception
+     */
+    public $exception = null;
 
     private $_memoryReserve;
 
@@ -82,6 +86,7 @@ final class ExceptionManager extends BaseObject
     public function handleException($exception)
     {
         $this->unregister();
+        $this->exception = $exception;
 
         if (PHP_SAPI !== 'cli') {
             http_response_code(500);
@@ -125,9 +130,9 @@ final class ExceptionManager extends BaseObject
         }
         $error = error_get_last();
         if ($this->isFatalError($error)) {
-            $exception = new \core\exceptions\ErrorException($error['message'], $error['type'], $error['file'], $error['line']);
+            $this->exception = new \core\exceptions\ErrorException($error['message'], $error['type'], $error['file'], $error['line']);
             $this->clearOutput();
-            $this->renderException($exception);
+            $this->renderException($this->exception);
             exit(1);
         }
     }

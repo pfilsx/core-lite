@@ -90,6 +90,48 @@ class Request extends BaseObject
     ];
 
     /**
+     * The name of the HTTP header for sending CSRF token.
+     */
+    const CSRF_HEADER = 'X-CSRF-Token';
+    /**
+     * @var bool whether to enable CSRF (Cross-Site Request Forgery) validation. Defaults to true.
+     * When CSRF validation is enabled, forms submitted to an Web application must be originated
+     * from the same application. If not, a 400 HTTP exception will be raised.
+     *
+     * Note, this feature requires that the user client accepts cookie. Also, to use this feature,
+     * forms submitted via POST method must contain a hidden input whose name is specified by [[csrfParam]].
+     *
+     *
+     * @see Controller::enableCsrfValidation
+     * @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
+     */
+    public $enableCsrfValidation = true;
+    /**
+     * @var string the name of the token used to prevent CSRF. Defaults to '_csrf'.
+     * This property is used only when [[enableCsrfValidation]] is true.
+     */
+    public $csrfParam = '_csrf';
+    /**
+     * @var array the configuration for creating the CSRF [[Cookie|cookie]]. This property is used only when
+     * both [[enableCsrfValidation]] and [[enableCsrfCookie]] are true.
+     */
+    public $csrfCookie = ['httpOnly' => true];
+    /**
+     * @var bool whether to use cookie to persist CSRF token. If false, CSRF token will be stored
+     * in session under the name of [[csrfParam]]. Note that while storing CSRF tokens in session increases
+     * security, it requires starting a session for every page, which will degrade your site performance.
+     */
+    public $enableCsrfCookie = true;
+
+    /**
+     * @var string the name of the POST parameter that is used to indicate if a request is a PUT, PATCH or DELETE
+     * request tunneled through POST. Defaults to '_method'.
+     * @see getMethod()
+     * @see getBodyParams()
+     */
+    public $methodParam = '_method';
+
+    /**
      * @inheritdoc
      */
     public function init(){
@@ -732,4 +774,212 @@ class Request extends BaseObject
             }
         }
     }
+
+    private $_csrfToken;
+    /**
+    * Returns the token used to perform CSRF validation.
+    *
+    * This token is generated in a way to prevent [BREACH attacks](http://breachattack.com/). It may be passed
+    * along via a hidden field of an HTML form or an HTTP header value to support CSRF validation.
+    * @param bool $regenerate whether to regenerate CSRF token. When this parameter is true, each time
+    * this method is called, a new CSRF token will be generated and persisted (in session or cookie).
+    * @return string the token used to perform CSRF validation.
+    */
+    public function getCsrfToken($regenerate = false)
+    {
+        if ($this->_csrfToken === null || $regenerate) {
+            $token = $this->loadCsrfToken();
+            if ($regenerate || empty($token)) {
+                $token = $this->generateCsrfToken();
+            }
+            $this->_csrfToken = App::$instance->security->maskToken($token);
+        }
+        return $this->_csrfToken;
+    }
+    /**
+     * Loads the CSRF token from cookie or session.
+     * @return string the CSRF token loaded from cookie or session. Null is returned if the cookie or session
+     * does not have CSRF token.
+     */
+    protected function loadCsrfToken()
+    {
+        if ($this->enableCsrfCookie) {
+            return $this->getCookies()->getValue($this->csrfParam);
+        }
+        return App::$instance->getSession()->get($this->csrfParam);
+    }
+    /**
+     * Generates an unmasked random token used to perform CSRF validation.
+     * @return string the random token for CSRF validation.
+     */
+    protected function generateCsrfToken()
+    {
+        $token = App::$instance->getSecurity()->generateRandomString();
+        if ($this->enableCsrfCookie) {
+            $cookie = $this->createCsrfCookie($token);
+            App::$instance->getResponse()->getCookies()->add($cookie);
+        } else {
+            App::$instance->getSession()->set($this->csrfParam, $token);
+        }
+        return $token;
+    }
+    /**
+     * @return string the CSRF token sent via [[CSRF_HEADER]] by browser. Null is returned if no such header is sent.
+     */
+    public function getCsrfTokenFromHeader()
+    {
+        return $this->headers->get(static::CSRF_HEADER);
+    }
+    /**
+     * Creates a cookie with a randomly generated CSRF token.
+     * Initial values specified in [[csrfCookie]] will be applied to the generated cookie.
+     * @param string $token the CSRF token
+     * @return Cookie the generated cookie
+     * @see enableCsrfValidation
+     */
+    protected function createCsrfCookie($token)
+    {
+        $options = $this->csrfCookie;
+        return new Cookie(array_merge($options, [
+            'name' => $this->csrfParam,
+            'value' => $token,
+        ]));
+    }
+    /**
+     * Performs the CSRF validation.
+     *
+     * This method will validate the user-provided CSRF token by comparing it with the one stored in cookie or session.
+     * This method is mainly called in [[Controller::beforeAction()]].
+     *
+     * Note that the method will NOT perform CSRF validation if [[enableCsrfValidation]] is false or the HTTP method
+     * is among GET, HEAD or OPTIONS.
+     *
+     * @param string $clientSuppliedToken the user-provided CSRF token to be validated. If null, the token will be retrieved from
+     * the [[csrfParam]] POST field or HTTP header.
+     * This parameter is available since version 2.0.4.
+     * @return bool whether CSRF token is valid. If [[enableCsrfValidation]] is false, this method will return true.
+     */
+    public function validateCsrfToken($clientSuppliedToken = null)
+    {
+        $method = $this->getMethod();
+        // only validate CSRF token on non-"safe" methods https://tools.ietf.org/html/rfc2616#section-9.1.1
+        if (!$this->enableCsrfValidation || in_array($method, ['GET', 'HEAD', 'OPTIONS'], true)) {
+            return true;
+        }
+        $trueToken = $this->getCsrfToken();
+        if ($clientSuppliedToken !== null) {
+            return $this->validateCsrfTokenInternal($clientSuppliedToken, $trueToken);
+        }
+        return $this->validateCsrfTokenInternal($this->getBodyParam($this->csrfParam), $trueToken)
+            || $this->validateCsrfTokenInternal($this->getCsrfTokenFromHeader(), $trueToken);
+    }
+    /**
+     * Validates CSRF token.
+     *
+     * @param string $clientSuppliedToken The masked client-supplied token.
+     * @param string $trueToken The masked true token.
+     * @return bool
+     */
+    private function validateCsrfTokenInternal($clientSuppliedToken, $trueToken)
+    {
+        if (!is_string($clientSuppliedToken)) {
+            return false;
+        }
+        $security = App::$instance->security;
+        return $security->unmaskToken($clientSuppliedToken) === $security->unmaskToken($trueToken);
+    }
+
+    private $_bodyParams;
+
+    /**
+     * Returns the request parameters given in the request body.
+     *
+     * @return array the request parameters given in the request body.
+     * @throws ErrorException if a registered parser does not implement the [[RequestParserInterface]].
+     * @see getMethod()
+     * @see getBodyParam()
+     * @see setBodyParams()
+     */
+    public function getBodyParams()
+    {
+        if ($this->_bodyParams === null) {
+            if (isset($_POST[$this->methodParam])) {
+                $this->_bodyParams = $_POST;
+                unset($this->_bodyParams[$this->methodParam]);
+                return $this->_bodyParams;
+            }
+//            $rawContentType = $this->getContentType(); TODO parsers by content type
+//            if (($pos = strpos($rawContentType, ';')) !== false) {
+//                // e.g. text/html; charset=UTF-8
+//                $contentType = substr($rawContentType, 0, $pos);
+//            } else {
+//                $contentType = $rawContentType;
+//            }
+            if ($this->getMethod() === 'POST') {
+                // PHP has already parsed the body so we have all params in $_POST
+                $this->_bodyParams = $_POST;
+            } else {
+                $this->_bodyParams = [];
+                mb_parse_str($this->getRawBody(), $this->_bodyParams);
+            }
+        }
+        return $this->_bodyParams;
+    }
+
+    /**
+     * Sets the request body parameters.
+     * @param array $values the request body parameters (name-value pairs)
+     * @see getBodyParam()
+     * @see getBodyParams()
+     */
+    public function setBodyParams($values)
+    {
+        $this->_bodyParams = $values;
+    }
+    /**
+     * Returns the named request body parameter value.
+     * If the parameter does not exist, the second parameter passed to this method will be returned.
+     * @param string $name the parameter name
+     * @param mixed $defaultValue the default parameter value if the parameter does not exist.
+     * @return mixed the parameter value
+     * @see getBodyParams()
+     * @see setBodyParams()
+     */
+    public function getBodyParam($name, $defaultValue = null)
+    {
+        $params = $this->getBodyParams();
+        return isset($params[$name]) ? $params[$name] : $defaultValue;
+    }
+    /**
+     * Returns request content-type
+     * The Content-Type header field indicates the MIME type of the data
+     * contained in [[getRawBody()]] or, in the case of the HEAD method, the
+     * media type that would have been sent had the request been a GET.
+     * For the MIME-types the user expects in response, see [[acceptableContentTypes]].
+     * @return string request content-type. Null is returned if this information is not available.
+     * @link https://tools.ietf.org/html/rfc2616#section-14.17
+     * HTTP 1.1 header field definitions
+     */
+    public function getContentType()
+    {
+        if (isset($_SERVER['CONTENT_TYPE'])) {
+            return $_SERVER['CONTENT_TYPE'];
+        }
+        //fix bug https://bugs.php.net/bug.php?id=66606
+        return $this->headers->get('Content-Type');
+    }
+
+    private $_rawBody;
+    /**
+     * Returns the raw HTTP request body.
+     * @return string the request body
+     */
+    public function getRawBody()
+    {
+        if ($this->_rawBody === null) {
+            $this->_rawBody = file_get_contents('php://input');
+        }
+        return $this->_rawBody;
+    }
+
 }

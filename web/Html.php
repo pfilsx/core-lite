@@ -5,19 +5,29 @@ namespace core\web;
 
 
 use core\base\App;
+use core\helpers\ArrayHelper;
 
 class Html
 {
     public static function beginForm($action = null, $method = 'post', $options = []){
 
-        return static::startTag('form', array_merge([
+        $csrf = ArrayHelper::remove($options, 'csrf', true);
+        $html = static::startTag('form', array_merge([
             'action' => $action,
             'method' => $method
         ], $options));
+
+        if ($csrf){
+            $request = App::$instance->request;
+            if ($request->enableCsrfValidation && strcasecmp($method, 'post') === 0) {
+                $html .= static::hiddenInput($request->csrfParam, $request->getCsrfToken());
+            }
+        }
+        return $html;
     }
 
     public static function endForm(){
-        return '</form>'.PHP_EOL;
+        return static::endTag('form');
     }
 
     public static function fileInput($name, $value = null ,$options = []){

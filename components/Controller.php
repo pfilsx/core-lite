@@ -17,6 +17,12 @@ abstract class Controller extends BaseObject
 
     public $viewsPath;
 
+    /**
+     * @var bool whether to enable CSRF validation for the actions in this controller.
+     * CSRF validation is enabled only when both this property and [[\yii\web\Request::enableCsrfValidation]] are true.
+     */
+    public $enableCsrfValidation = true;
+
     protected $action;
 
     const EVENT_BEFORE_ACTION = 'controller_before_action';
@@ -65,6 +71,12 @@ abstract class Controller extends BaseObject
     }
 
     public final function runAction($action, $params = []){
+        if ($this->enableCsrfValidation
+                && App::$instance->getExceptionManager()->exception === null
+                && !App::$instance->getRequest()->validateCsrfToken()
+        ) {
+            throw new ErrorException('Unable to verify your data submission.');
+        }
         if ($this->beforeAction($action, $params) !== false){
             $this->invoke(self::EVENT_BEFORE_ACTION, ['action' => $action, 'params' => $params]);
             if (method_exists($this, $action)) {
