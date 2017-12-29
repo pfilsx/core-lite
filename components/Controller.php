@@ -19,7 +19,7 @@ abstract class Controller extends BaseObject
 
     /**
      * @var bool whether to enable CSRF validation for the actions in this controller.
-     * CSRF validation is enabled only when both this property and [[\yii\web\Request::enableCsrfValidation]] are true.
+     * CSRF validation is enabled only when both this property and [[\core\web\Request::enableCsrfValidation]] are true.
      */
     public $enableCsrfValidation = true;
 
