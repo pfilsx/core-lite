@@ -7,6 +7,7 @@ namespace core\components;
 use Core;
 use core\base\App;
 use core\base\BaseObject;
+use core\base\Request;
 use core\exceptions\ErrorException;
 use core\exceptions\NotFoundException;
 use core\helpers\FileHelper;
@@ -80,6 +81,11 @@ class View extends BaseObject
         parent::__construct($config);
         if (static::$viewRenderer != null){
             $this->_renderer = new static::$viewRenderer();
+        }
+        $request = App::$instance->getRequest();
+        if ($request instanceof Request && $request->enableCsrfValidation) {
+            $this->registerMetaTag(['name' => 'csrf-param', 'content' => $request->csrfParam]);
+            $this->registerMetaTag(['name' => 'csrf-token', 'content' => $request->getCsrfToken()]);
         }
     }
 
