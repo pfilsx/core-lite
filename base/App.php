@@ -355,6 +355,13 @@ final class App extends BaseObject
     }
 
     /**
+     * @return ExceptionManager
+     */
+    public function getExceptionManager(){
+        return $this->_exceptionManager;
+    }
+
+    /**
      * Translate string line by specified dictionary
      * @param string $dictionary - dictionary name
      * @param string $message - message template
