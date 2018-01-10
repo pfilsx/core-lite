@@ -3,7 +3,7 @@
 
 namespace core\components;
 
-use core\base\App;
+use core\web\App;
 use core\base\BaseObject;
 use core\validators\Validator;
 use core\validators\ValidatorInterface;
@@ -185,6 +185,7 @@ abstract class Model extends BaseObject
     /**
      * Validate all model attributes by validators specified in rules
      * @return bool - result of validation for all model attributes
+     * @throws \core\exceptions\ErrorException
      */
     public function validate(){
         $this->invoke(self::EVENT_BEFORE_VALIDATE);
@@ -202,6 +203,7 @@ abstract class Model extends BaseObject
      * Validate a specific attribute
      * @param string $attributeName
      * @return bool|string
+     * @throws \core\exceptions\ErrorException
      */
     public function validateAttribute($attributeName){
         $this->invoke(self::EVENT_BEFORE_VALIDATE_ATTR, ['attribute' => $attributeName]);

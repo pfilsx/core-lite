@@ -4,7 +4,7 @@
 namespace core\widgets\menu;
 
 
-use core\base\App;
+use core\web\App;
 use core\components\Widget;
 use core\exceptions\ErrorException;
 use core\helpers\ArrayHelper;

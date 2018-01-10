@@ -6,7 +6,6 @@ namespace core\db\mysql;
 
 use core\components\Model;
 use core\db\ColumnSchema;
-use core\db\Command;
 use core\db\TableSchema;
 
 class Schema extends \core\db\Schema

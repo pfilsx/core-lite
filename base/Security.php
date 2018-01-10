@@ -220,6 +220,7 @@ class Security extends BaseObject
      * Used to mitigate BREACH attack by randomizing how token is outputted on each request.
      * @param string $token An unmasked token.
      * @return string A masked token.
+     * @throws \Exception
      */
     public function maskToken($token)
     {

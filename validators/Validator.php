@@ -20,6 +20,7 @@ abstract class Validator extends BaseObject implements ValidatorInterface
      * @param array $config
      * @param Model|null $model
      * @param array $attributes
+     * @throws \core\exceptions\ErrorException
      */
     public function __construct(array $config = [], $model = null, array $attributes = [])
     {

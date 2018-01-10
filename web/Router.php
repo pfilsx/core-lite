@@ -1,8 +1,9 @@
 <?php
 
-namespace core\base;
+namespace core\web;
 
 use Core;
+use core\base\BaseObject;
 use core\components\Controller;
 use core\components\Module;
 use core\components\UrlRule;

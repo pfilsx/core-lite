@@ -1,17 +1,16 @@
 <?php
 
 
-namespace core\base;
+namespace core\web;
 
 
+use core\base\BaseObject;
 use core\exceptions\ErrorException;
 use core\formatters\ResponseFormatterInterface;
 use core\helpers\FileHelper;
 use core\helpers\Inflector;
 use core\helpers\StringHelper;
 use core\helpers\Url;
-use core\web\CookieCollection;
-use core\web\HeaderCollection;
 
 /**
  * @property HeaderCollection  headers

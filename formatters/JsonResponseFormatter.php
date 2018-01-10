@@ -3,7 +3,7 @@
 
 namespace core\formatters;
 
-use core\base\Response;
+use core\web\Response;
 use core\exceptions\WarningException;
 use core\helpers\Json;
 
@@ -15,8 +15,10 @@ class JsonResponseFormatter implements ResponseFormatterInterface
     public $encodeOptions = 320;
 
     public $prettyPrint = false;
+
     /**
      * @param Response $response
+     * @throws WarningException
      */
     public function format($response)
     {

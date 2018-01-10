@@ -6,6 +6,7 @@ namespace core\base;
 use Core;
 use core\components\AssetBundle;
 use core\helpers\FileHelper;
+use core\web\App;
 
 class AssetManager extends BaseObject
 {
@@ -38,6 +39,7 @@ class AssetManager extends BaseObject
     /**
      * AssetManager constructor.
      * @param array $config
+     * @throws \core\exceptions\ErrorException
      */
     function __construct($config = [])
     {
@@ -58,9 +60,11 @@ class AssetManager extends BaseObject
             }
         }
     }
+
     /**
      * Publish fonts directory to assets
      * @param $path
+     * @throws \Exception
      */
     private function placeFonts($path)
     {
@@ -88,9 +92,11 @@ class AssetManager extends BaseObject
     {
         $this->_bundles = [];
     }
+
     /**
      * Register specified asset bundle
      * @param $className
+     * @throws \Exception
      */
     public function registerBundle($className)
     {
@@ -172,10 +178,12 @@ class AssetManager extends BaseObject
         }
         $this->registeredBundles[] = $bundle::className();
     }
+
     /**
      * Publish file to assets directory
      * @param $path
      * @return bool|string
+     * @throws \Exception
      */
     public function publishFile($path)
     {
@@ -204,11 +212,13 @@ class AssetManager extends BaseObject
         }
         return false;
     }
+
     /**
      * Publish directory to web accessible place
      * @param $path
      * @param $options
      * @return bool
+     * @throws \Exception
      */
     public function publishDirectory($path, $options)
     {

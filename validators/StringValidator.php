@@ -4,7 +4,7 @@
 namespace core\validators;
 
 
-use core\base\App;
+use core\web\App;
 
 class StringValidator extends Validator implements ValidatorInterface
 {

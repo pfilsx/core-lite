@@ -3,7 +3,7 @@
 
 namespace core\components;
 
-use core\base\App;
+use core\web\App;
 use core\db\QueryBuilder;
 use core\db\TableSchema;
 use core\exceptions\ErrorException;
@@ -130,6 +130,7 @@ abstract class ActiveModel extends Model
     /**
      * @param bool $refresh
      * @return TableSchema
+     * @throws \Exception
      */
     public static function getTableSchema($refresh = false){
         if (static::$_tableSchema == null || $refresh){

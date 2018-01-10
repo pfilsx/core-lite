@@ -26,6 +26,7 @@ abstract class BaseObject extends Configurable
     /**
      * BaseObject constructor.
      * @param array $config
+     * @throws ErrorException
      */
     public function __construct($config = [])
     {

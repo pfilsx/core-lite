@@ -4,9 +4,9 @@
 namespace core\components;
 
 
-use core\base\App;
+use core\web\App;
 use core\base\BaseObject;
-use core\base\Router;
+use core\web\Router;
 use core\helpers\Inflector;
 
 class UrlRule extends BaseObject
@@ -30,6 +30,7 @@ class UrlRule extends BaseObject
      * @param Router $router
      * @param string $pattern
      * @param array $options
+     * @throws \core\exceptions\ErrorException
      */
     public function __construct($router, $pattern, array $options)
     {

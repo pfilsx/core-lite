@@ -4,7 +4,7 @@
 namespace core\db;
 
 
-use core\base\App;
+use core\web\App;
 use core\base\BaseObject;
 use core\components\ActiveModel;
 use core\exceptions\ErrorException;
@@ -317,6 +317,7 @@ abstract class QueryBuilder extends BaseObject
 
     /**
      * @return bool
+     * @throws \Exception
      */
     public function execute(){
         try {

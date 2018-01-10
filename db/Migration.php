@@ -85,20 +85,25 @@ abstract class Migration extends BaseObject
     /**
      * @param int $length
      * @return \core\db\MigrationColumnBuilder
+     * @throws \Exception
      */
     protected function string($length = 255){
         return $this->createMigrationColumnBuilder()->string($length);
     }
+
     /**
      * @param int $length
      * @return \core\db\MigrationColumnBuilder
+     * @throws \Exception
      */
     protected function integer($length = 6){
         return $this->createMigrationColumnBuilder()->integer($length);
     }
+
     /**
      * @param int $length
      * @return \core\db\MigrationColumnBuilder
+     * @throws \Exception
      */
     protected function timestamp($length = 6){
         return $this->createMigrationColumnBuilder()->timestamp($length);

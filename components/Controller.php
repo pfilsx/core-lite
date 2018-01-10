@@ -3,13 +3,13 @@
 
 namespace core\components;
 
-use \core\base\App;
 use Core;
 use core\base\BaseObject;
-use core\base\Response;
+use core\web\Response;
 use core\exceptions\ErrorException;
 use core\exceptions\NotFoundException;
 use core\helpers\FileHelper;
+use core\web\App;
 
 abstract class Controller extends BaseObject
 {

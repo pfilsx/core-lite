@@ -49,6 +49,7 @@ class ActiveField extends BaseObject
      * @param Model $model
      * @param string $attribute
      * @param ActiveForm $form
+     * @throws \core\exceptions\ErrorException
      */
     public function __construct($model, $attribute, $form)
     {

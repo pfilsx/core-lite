@@ -33,6 +33,7 @@ class Command extends BaseObject
      * @param Connection $db
      * @param $sql
      * @param array $params
+     * @throws ErrorException
      */
     public function __construct($db, $sql, $params = [])
     {
