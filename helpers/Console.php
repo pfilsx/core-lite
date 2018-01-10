@@ -434,10 +434,12 @@ class Console
         }
         return static::stdin();
     }
+
     /**
      * Prints text to STDOUT appended with a carriage return (PHP_EOL).
      *
      * @param string $string the text to print
+     * @param null $color
      * @return int|bool number of bytes printed or false on error.
      */
     public static function output($string = null, $color = null)

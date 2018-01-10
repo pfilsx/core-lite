@@ -5,9 +5,9 @@ namespace core\components;
 
 
 use Core;
-use core\base\App;
+use core\web\App;
 use core\base\BaseObject;
-use core\base\Request;
+use core\web\Request;
 use core\exceptions\ErrorException;
 use core\exceptions\NotFoundException;
 use core\helpers\FileHelper;
@@ -68,6 +68,7 @@ class View extends BaseObject
      * @param Controller $controller
      * @param string $view
      * @param array $config
+     * @throws \Exception
      */
     public function __construct($controller = null, $view = null, array $config = [])
     {
@@ -247,14 +248,6 @@ class View extends BaseObject
             }
             throw $ex;
         }
-    }
-    private function getViewPath($viewName = null){
-        $viewName = ($viewName == null ? $this->_viewName : $viewName);
-        $classWithNamespace = get_class($this->_controller);
-        $className = explode('\\', $classWithNamespace);
-        $viewFolder = strtolower(str_replace('Controller', '', array_pop($className)));
-        return $this->_viewsPath . DIRECTORY_SEPARATOR . $viewFolder
-            . DIRECTORY_SEPARATOR . $viewName . '.php';
     }
 
     private function getViewFile($view){

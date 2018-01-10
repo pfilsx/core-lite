@@ -5,7 +5,6 @@ namespace core\web;
 
 
 use Core;
-use core\base\App;
 use core\base\BaseObject;
 
 class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \Countable
@@ -360,6 +359,7 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
         $this->open();
         return isset($_SESSION[$key]) ? $_SESSION[$key] : $defaultValue;
     }
+
     /**
      * Adds a session variable.
      * If the specified name already exists, the old value will be overwritten.
@@ -432,6 +432,7 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
             unset($_SESSION[$this->flashParam]);
         }
     }
+
     /**
      * Returns a flash message.
      * @param string $key the key identifying the flash message
@@ -653,6 +654,7 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
         $this->open();
         unset($_SESSION[$offset]);
     }
+
     /**
      * Returns an iterator for traversing the session variables.
      * This method is required by the interface [[\IteratorAggregate]].

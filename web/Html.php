@@ -4,7 +4,6 @@
 namespace core\web;
 
 
-use core\base\App;
 use core\helpers\ArrayHelper;
 
 class Html

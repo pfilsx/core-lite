@@ -6,6 +6,7 @@ namespace core\console;
 
 use Core;
 use core\base\BaseObject;
+use core\components\Controller;
 use core\exceptions\ErrorException;
 use core\exceptions\NotFoundException;
 
@@ -28,6 +29,9 @@ class Router extends BaseObject
         $controllerPath = $this->_controllersPath.DIRECTORY_SEPARATOR.$this->_controller.'.php';
         if (file_exists($controllerPath)) {
             $className = $this->_controllersNamespace.'\\' . $this->_controller;
+            /**
+             * @var Controller $controller
+             */
             $controller = new $className();
             if (method_exists($controller, $this->_action)) {
                 $ref = new \ReflectionMethod($controller, $this->_action);
@@ -37,15 +41,15 @@ class Router extends BaseObject
                         if (array_key_exists($param->name, App::$instance->request->request)) {
                             $_params_[$param->name] = App::$instance->request->request[$param->name];
                         } else if (!$param->isOptional()) {
-                            throw new ErrorException("Required parameter $param->name is missed");
+                            throw new ErrorException("Required parameter {$param->name} is missed");
                         } else {
                             $_params_[$param->name] = $param->getDefaultValue();
                         }
                     }
-                    call_user_func_array([$controller, 'beforeAction'],$_params_);
+                    call_user_func_array([$controller, 'beforeAction'],[$this->_action, $_params_]);
                     $content = call_user_func_array([$controller, $this->_action],$_params_);
                 } else {
-                    $controller->beforeAction();
+                    $controller->beforeAction($this->_action);
                     $content = $controller->{$this->_action}();
                 }
                 return $content;

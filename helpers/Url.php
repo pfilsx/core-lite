@@ -4,7 +4,7 @@
 namespace core\helpers;
 
 use Core;
-use core\base\App;
+use core\web\App;
 
 
 class Url

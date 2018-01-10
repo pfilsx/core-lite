@@ -5,6 +5,8 @@ namespace core\base;
 
 
 use core\components\View;
+use core\web\App;
+use core\web\Response;
 
 final class ExceptionManager extends BaseObject
 {
@@ -136,6 +138,7 @@ final class ExceptionManager extends BaseObject
             exit(1);
         }
     }
+
     /**
      * Render exception to output if CRL_DEBUG enabled
      * @param \Exception $exception

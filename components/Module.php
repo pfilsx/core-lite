@@ -5,7 +5,7 @@ namespace core\components;
 
 
 use Core;
-use core\base\App;
+use core\web\App;
 use core\base\BaseObject;
 use core\helpers\Inflector;
 

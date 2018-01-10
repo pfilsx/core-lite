@@ -4,7 +4,7 @@
 namespace core\components;
 
 
-use core\base\App;
+use core\web\App;
 use core\validators\Validator;
 
 class CoreController extends Controller

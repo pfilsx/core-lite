@@ -16,6 +16,7 @@ class CookieCollection extends BaseObject implements \IteratorAggregate, \ArrayA
      * @var Cookie[] the cookies in this collection (indexed by the cookie names)
      */
     private $_cookies;
+
     /**
      * Constructor.
      * @param array $cookies the cookies that this collection initially contains. This should be
@@ -181,6 +182,7 @@ class CookieCollection extends BaseObject implements \IteratorAggregate, \ArrayA
     {
         return $this->get($name);
     }
+
     /**
      * Adds the cookie to the collection.
      * This method is required by the SPL interface [[\ArrayAccess]].
@@ -193,6 +195,7 @@ class CookieCollection extends BaseObject implements \IteratorAggregate, \ArrayA
     {
         $this->add($cookie);
     }
+
     /**
      * Removes the named cookie.
      * This method is required by the SPL interface [[\ArrayAccess]].

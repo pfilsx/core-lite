@@ -5,6 +5,7 @@ namespace core\components;
 
 
 use core\base\BaseObject;
+use core\web\App;
 
 abstract class Widget extends BaseObject
 {

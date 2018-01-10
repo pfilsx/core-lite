@@ -4,7 +4,7 @@
 namespace core\db;
 
 
-use core\base\App;
+use core\web\App;
 use core\base\BaseObject;
 use core\components\ActiveModel;
 use core\exceptions\ErrorException;
@@ -92,7 +92,7 @@ abstract class QueryBuilder extends BaseObject
      * @param Connection $db
      * @param ActiveModel $model
      * @param array $config
-     * @throws \Exception
+     * @throws ErrorException
      */
     public function __construct($db, $model = null ,array $config = [])
     {
@@ -292,7 +292,7 @@ abstract class QueryBuilder extends BaseObject
     }
     /**
      * @return null|ActiveModel
-     * @throws \Exception
+     * @throws ErrorException
      */
     public function queryOne(){
         $this->limit(1);
@@ -317,6 +317,7 @@ abstract class QueryBuilder extends BaseObject
 
     /**
      * @return bool
+     * @throws \Exception
      */
     public function execute(){
         try {
@@ -334,7 +335,7 @@ abstract class QueryBuilder extends BaseObject
     /**
      * @param string $column
      * @return int
-     * @throws \Exception
+     * @throws ErrorException
      */
     public function count($column = '*') {
         $this->_query = 'SELECT COUNT('.$column.')';

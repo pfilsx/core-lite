@@ -4,7 +4,7 @@
 namespace core\formatters;
 
 
-use core\base\Response;
+use core\web\Response;
 
 class HtmlResponseFormatter implements ResponseFormatterInterface
 {

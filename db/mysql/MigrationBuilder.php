@@ -5,7 +5,6 @@ namespace core\db\mysql;
 
 
 use core\db\Command;
-use core\helpers\Console;
 
 class MigrationBuilder extends \core\db\MigrationBuilder
 {

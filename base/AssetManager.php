@@ -6,6 +6,7 @@ namespace core\base;
 use Core;
 use core\components\AssetBundle;
 use core\helpers\FileHelper;
+use core\web\App;
 
 class AssetManager extends BaseObject
 {
@@ -58,6 +59,7 @@ class AssetManager extends BaseObject
             }
         }
     }
+
     /**
      * Publish fonts directory to assets
      * @param $path
@@ -88,6 +90,7 @@ class AssetManager extends BaseObject
     {
         $this->_bundles = [];
     }
+
     /**
      * Register specified asset bundle
      * @param $className
@@ -172,6 +175,7 @@ class AssetManager extends BaseObject
         }
         $this->registeredBundles[] = $bundle::className();
     }
+
     /**
      * Publish file to assets directory
      * @param $path
@@ -204,6 +208,7 @@ class AssetManager extends BaseObject
         }
         return false;
     }
+
     /**
      * Publish directory to web accessible place
      * @param $path

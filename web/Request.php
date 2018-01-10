@@ -1,13 +1,11 @@
 <?php
 
 
-namespace core\base;
+namespace core\web;
 
 
+use core\base\BaseObject;
 use core\exceptions\ErrorException;
-use core\web\Cookie;
-use core\web\CookieCollection;
-use core\web\HeaderCollection;
 
 /**
  * @property HeaderCollection headers
@@ -190,6 +188,7 @@ class Request extends BaseObject
 
         return $this->_scriptUrl;
     }
+
     /**
      * Returns base URL
      * @return string
@@ -645,6 +644,7 @@ class Request extends BaseObject
         }
         return [null, null];
     }
+
     /**
      * @return CookieCollection
      */
@@ -776,15 +776,16 @@ class Request extends BaseObject
     }
 
     private $_csrfToken;
+
     /**
-    * Returns the token used to perform CSRF validation.
-    *
-    * This token is generated in a way to prevent [BREACH attacks](http://breachattack.com/). It may be passed
-    * along via a hidden field of an HTML form or an HTTP header value to support CSRF validation.
-    * @param bool $regenerate whether to regenerate CSRF token. When this parameter is true, each time
-    * this method is called, a new CSRF token will be generated and persisted (in session or cookie).
-    * @return string the token used to perform CSRF validation.
-    */
+     * Returns the token used to perform CSRF validation.
+     *
+     * This token is generated in a way to prevent [BREACH attacks](http://breachattack.com/). It may be passed
+     * along via a hidden field of an HTML form or an HTTP header value to support CSRF validation.
+     * @param bool $regenerate whether to regenerate CSRF token. When this parameter is true, each time
+     * this method is called, a new CSRF token will be generated and persisted (in session or cookie).
+     * @return string the token used to perform CSRF validation.
+     */
     public function getCsrfToken($regenerate = false)
     {
         if ($this->_csrfToken === null || $regenerate) {
@@ -796,6 +797,7 @@ class Request extends BaseObject
         }
         return $this->_csrfToken;
     }
+
     /**
      * Loads the CSRF token from cookie or session.
      * @return string the CSRF token loaded from cookie or session. Null is returned if the cookie or session
@@ -808,6 +810,7 @@ class Request extends BaseObject
         }
         return App::$instance->getSession()->get($this->csrfParam);
     }
+
     /**
      * Generates an unmasked random token used to perform CSRF validation.
      * @return string the random token for CSRF validation.
@@ -845,6 +848,7 @@ class Request extends BaseObject
             'value' => $token,
         ]));
     }
+
     /**
      * Performs the CSRF validation.
      *
@@ -895,7 +899,6 @@ class Request extends BaseObject
      * Returns the request parameters given in the request body.
      *
      * @return array the request parameters given in the request body.
-     * @throws ErrorException if a registered parser does not implement the [[RequestParserInterface]].
      * @see getMethod()
      * @see getBodyParam()
      * @see setBodyParams()

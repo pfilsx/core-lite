@@ -4,8 +4,6 @@
 namespace core\widgets\gridview;
 
 
-use core\components\ActiveModel;
-use core\db\QueryBuilder;
 use core\helpers\Url;
 use core\providers\DataProvider;
 use core\web\Html;

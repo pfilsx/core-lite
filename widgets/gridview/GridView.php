@@ -4,7 +4,7 @@
 namespace core\widgets\gridview;
 
 
-use core\base\App;
+use core\web\App;
 use core\components\Widget;
 use core\components\ActiveModel;
 use core\db\QueryBuilder;
