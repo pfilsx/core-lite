@@ -3,7 +3,7 @@
 
 namespace core\components;
 
-use core\base\App;
+use core\web\App;
 use core\db\QueryBuilder;
 use core\db\TableSchema;
 use core\exceptions\ErrorException;

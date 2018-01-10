@@ -4,8 +4,8 @@
 namespace core\widgets\pjax;
 
 
-use core\base\App;
-use core\base\Response;
+use core\web\App;
+use core\web\Response;
 use core\components\Widget;
 use core\helpers\ArrayHelper;
 use core\helpers\Json;

@@ -4,7 +4,7 @@
 namespace core\formatters;
 
 
-use core\base\Response;
+use core\web\Response;
 use core\helpers\StringHelper;
 use DOMDocument;
 use DOMElement;

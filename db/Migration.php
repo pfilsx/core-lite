@@ -89,6 +89,7 @@ abstract class Migration extends BaseObject
     protected function string($length = 255){
         return $this->createMigrationColumnBuilder()->string($length);
     }
+
     /**
      * @param int $length
      * @return \core\db\MigrationColumnBuilder
@@ -96,6 +97,7 @@ abstract class Migration extends BaseObject
     protected function integer($length = 6){
         return $this->createMigrationColumnBuilder()->integer($length);
     }
+
     /**
      * @param int $length
      * @return \core\db\MigrationColumnBuilder

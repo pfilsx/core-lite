@@ -3,7 +3,7 @@
 
 namespace core\components;
 
-use core\base\App;
+use core\web\App;
 use core\base\BaseObject;
 use core\validators\Validator;
 use core\validators\ValidatorInterface;

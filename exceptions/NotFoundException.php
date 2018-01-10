@@ -6,7 +6,7 @@ namespace core\exceptions;
 
 class NotFoundException extends \Exception
 {
-    public function __construct($message = "", $code = 404, $file = null, $line = null, Throwable $previous = null)
+    public function __construct($message = "", $code = 404, $file = null, $line = null, \Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
 

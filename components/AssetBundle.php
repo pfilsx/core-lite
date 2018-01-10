@@ -2,8 +2,7 @@
 
 namespace core\components;
 
-use core\base\App;
-use core\base\AssetManager;
+use core\web\App;
 use core\base\BaseObject;
 
 abstract class AssetBundle extends BaseObject

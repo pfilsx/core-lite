@@ -1,8 +1,9 @@
 <?php
 
-namespace core\base;
+namespace core\web;
 
 use Core;
+use core\base\BaseObject;
 use core\components\Controller;
 use core\components\Module;
 use core\components\UrlRule;
@@ -86,7 +87,6 @@ final class Router extends BaseObject
 
     /**
      * @return Response
-     * @throws \Exception
      */
     public function route()
     {
@@ -111,7 +111,7 @@ final class Router extends BaseObject
 
     /**
      * @return Response
-     * @throws \Exception
+     * @throws NotFoundException
      */
     public function defaultResolve(){
         $controller = $this->_controller.'Controller';

@@ -4,7 +4,7 @@
 namespace core\db;
 
 
-use core\base\App;
+use core\web\App;
 use core\base\BaseObject;
 use core\components\ActiveModel;
 use core\exceptions\ErrorException;
@@ -72,9 +72,17 @@ abstract class QueryBuilder extends BaseObject
      */
     protected $_db;
 
-    public static function create(){
-        if (isset(App::$instance->db) && App::$instance->db instanceof Connection){
-            return App::$instance->db->createQueryBuilder();
+    /**
+     * @param null|Connection $db
+     * @return QueryBuilder|null
+     */
+    public static function create($db = null){
+        if ($db == null){
+            if (isset(App::$instance->db) && App::$instance->db instanceof Connection){
+                return App::$instance->db->createQueryBuilder();
+            }
+        } elseif ($db instanceof Connection) {
+            return $db->createQueryBuilder();
         }
         return null;
     }
@@ -84,7 +92,7 @@ abstract class QueryBuilder extends BaseObject
      * @param Connection $db
      * @param ActiveModel $model
      * @param array $config
-     * @throws \Exception
+     * @throws ErrorException
      */
     public function __construct($db, $model = null ,array $config = [])
     {
@@ -284,7 +292,7 @@ abstract class QueryBuilder extends BaseObject
     }
     /**
      * @return null|ActiveModel
-     * @throws \Exception
+     * @throws ErrorException
      */
     public function queryOne(){
         $this->limit(1);
@@ -309,6 +317,7 @@ abstract class QueryBuilder extends BaseObject
 
     /**
      * @return bool
+     * @throws \Exception
      */
     public function execute(){
         try {
@@ -326,7 +335,7 @@ abstract class QueryBuilder extends BaseObject
     /**
      * @param string $column
      * @return int
-     * @throws \Exception
+     * @throws ErrorException
      */
     public function count($column = '*') {
         $this->_query = 'SELECT COUNT('.$column.')';
