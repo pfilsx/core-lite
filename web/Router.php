@@ -87,7 +87,6 @@ final class Router extends BaseObject
 
     /**
      * @return Response
-     * @throws \Exception
      */
     public function route()
     {
@@ -112,7 +111,7 @@ final class Router extends BaseObject
 
     /**
      * @return Response
-     * @throws \Exception
+     * @throws NotFoundException
      */
     public function defaultResolve(){
         $controller = $this->_controller.'Controller';

@@ -192,7 +192,6 @@ class Request extends BaseObject
     /**
      * Returns base URL
      * @return string
-     * @throws ErrorException
      */
     public function getBaseUrl()
     {
@@ -648,7 +647,6 @@ class Request extends BaseObject
 
     /**
      * @return CookieCollection
-     * @throws \Exception
      */
     public function getCookies()
     {
@@ -787,7 +785,6 @@ class Request extends BaseObject
      * @param bool $regenerate whether to regenerate CSRF token. When this parameter is true, each time
      * this method is called, a new CSRF token will be generated and persisted (in session or cookie).
      * @return string the token used to perform CSRF validation.
-     * @throws \Exception
      */
     public function getCsrfToken($regenerate = false)
     {
@@ -805,7 +802,6 @@ class Request extends BaseObject
      * Loads the CSRF token from cookie or session.
      * @return string the CSRF token loaded from cookie or session. Null is returned if the cookie or session
      * does not have CSRF token.
-     * @throws \Exception
      */
     protected function loadCsrfToken()
     {
@@ -818,7 +814,6 @@ class Request extends BaseObject
     /**
      * Generates an unmasked random token used to perform CSRF validation.
      * @return string the random token for CSRF validation.
-     * @throws \Exception
      */
     protected function generateCsrfToken()
     {
@@ -867,7 +862,6 @@ class Request extends BaseObject
      * the [[csrfParam]] POST field or HTTP header.
      * This parameter is available since version 2.0.4.
      * @return bool whether CSRF token is valid. If [[enableCsrfValidation]] is false, this method will return true.
-     * @throws \Exception
      */
     public function validateCsrfToken($clientSuppliedToken = null)
     {

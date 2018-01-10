@@ -330,7 +330,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
     /**
      * Returns the number of items in the session.
      * @return integer the number of session variables
-     * @throws \Exception
      */
     public function getCount()
     {
@@ -342,7 +341,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * Returns the number of items in the session.
      * This method is required by [[\Countable]] interface.
      * @return integer number of items in the session.
-     * @throws \Exception
      */
     public function count()
     {
@@ -355,7 +353,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * @param string $key the session variable name
      * @param mixed $defaultValue the default value to be returned when the session variable does not exist.
      * @return mixed the session variable value, or $defaultValue if the session variable does not exist.
-     * @throws \Exception
      */
     public function get($key, $defaultValue = null)
     {
@@ -368,7 +365,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * If the specified name already exists, the old value will be overwritten.
      * @param string $key session variable name
      * @param mixed $value session variable value
-     * @throws \Exception
      */
     public function set($key, $value)
     {
@@ -380,7 +376,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * Removes a session variable.
      * @param string $key the name of the session variable to be removed
      * @return mixed the removed value, null if no such session variable.
-     * @throws \Exception
      */
     public function remove($key)
     {
@@ -409,7 +404,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
     /**
      * @param mixed $key session variable name
      * @return boolean whether there is the named session variable
-     * @throws \Exception
      */
     public function has($key)
     {
@@ -451,7 +445,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * @see hasFlash()
      * @see getAllFlashes()
      * @see removeFlash()
-     * @throws \Exception
      */
     public function getFlash($key, $defaultValue = null, $delete = false)
     {
@@ -485,7 +478,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * @see getFlash()
      * @see hasFlash()
      * @see removeFlash()
-     * @throws \Exception
      */
     public function getAllFlashes($delete = false)
     {
@@ -526,7 +518,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * @see getFlash()
      * @see addFlash()
      * @see removeFlash()
-     * @throws \Exception
      */
     public function setFlash($key, $value = true, $removeAfterAccess = true)
     {
@@ -548,7 +539,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * @see getFlash()
      * @see setFlash()
      * @see removeFlash()
-     * @throws \Exception
      */
     public function addFlash($key, $value = true, $removeAfterAccess = true)
     {
@@ -576,7 +566,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * @see setFlash()
      * @see addFlash()
      * @see removeAllFlashes()
-     * @throws \Exception
      */
     public function removeFlash($key)
     {
@@ -611,7 +600,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * Returns a value indicating whether there are flash messages associated with the specified key.
      * @param string $key key identifying the flash message type
      * @return boolean whether any flash messages exist under specified key
-     * @throws \Exception
      */
     public function hasFlash($key)
     {
@@ -626,7 +614,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * This method is required by the interface [[\ArrayAccess]].
      * @param mixed $offset the offset to check on
      * @return boolean
-     * @throws \Exception
      */
     public function offsetExists($offset)
     {
@@ -639,7 +626,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * This method is required by the interface [[\ArrayAccess]].
      * @param integer $offset the offset to retrieve element.
      * @return mixed the element at the offset, null if no element is found at the offset
-     * @throws \Exception
      */
     public function offsetGet($offset)
     {
@@ -652,7 +638,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * This method is required by the interface [[\ArrayAccess]].
      * @param integer $offset the offset to set element
      * @param mixed $item the element value
-     * @throws \Exception
      */
     public function offsetSet($offset, $item)
     {
@@ -663,7 +648,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
     /**
      * This method is required by the interface [[\ArrayAccess]].
      * @param mixed $offset the offset to unset element
-     * @throws \Exception
      */
     public function offsetUnset($offset)
     {
@@ -675,7 +659,6 @@ class Session extends BaseObject implements \IteratorAggregate, \ArrayAccess, \C
      * Returns an iterator for traversing the session variables.
      * This method is required by the interface [[\IteratorAggregate]].
      * @return SessionIterator an iterator for traversing the session variables.
-     * @throws \Exception
      */
     public function getIterator()
     {

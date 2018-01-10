@@ -22,7 +22,6 @@ class CookieCollection extends BaseObject implements \IteratorAggregate, \ArrayA
      * @param array $cookies the cookies that this collection initially contains. This should be
      * an array of name-value pairs.
      * @param array $config name-value pairs that will be used to initialize the object properties
-     * @throws \core\exceptions\ErrorException
      */
     public function __construct($cookies = [], $config = [])
     {
@@ -191,7 +190,6 @@ class CookieCollection extends BaseObject implements \IteratorAggregate, \ArrayA
      * This is equivalent to [[add()]].
      * @param string $name the cookie name
      * @param Cookie $cookie the cookie to be added
-     * @throws \Exception
      */
     public function offsetSet($name, $cookie)
     {
@@ -204,7 +202,6 @@ class CookieCollection extends BaseObject implements \IteratorAggregate, \ArrayA
      * It is implicitly called when you use something like `unset($collection[$name])`.
      * This is equivalent to [[remove()]].
      * @param string $name the cookie name
-     * @throws \Exception
      */
     public function offsetUnset($name)
     {

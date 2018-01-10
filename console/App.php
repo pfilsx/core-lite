@@ -32,7 +32,6 @@ final class App extends BaseApp
      * Call it for run app.
      *  (new \core\console\App($config))->run()
      * @return int
-     * @throws \Exception
      */
     public function run(){
         try {

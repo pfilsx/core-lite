@@ -142,7 +142,6 @@ final class ExceptionManager extends BaseObject
     /**
      * Render exception to output if CRL_DEBUG enabled
      * @param \Exception $exception
-     * @throws \core\exceptions\ErrorException
      */
     public function renderException($exception)
     {

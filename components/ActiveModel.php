@@ -130,7 +130,6 @@ abstract class ActiveModel extends Model
     /**
      * @param bool $refresh
      * @return TableSchema
-     * @throws \Exception
      */
     public static function getTableSchema($refresh = false){
         if (static::$_tableSchema == null || $refresh){

@@ -44,15 +44,10 @@ final class App extends BaseApp
      * @var ExceptionManager
      */
     private $_exceptionManager = null;
-    /**
-     * @var string
-     */
-    private $_charset = 'UTF-8';
 
     /**
      * App constructor.
      * @param array $config
-     * @throws \Exception
      */
     public function __construct($config = [])
     {
@@ -74,7 +69,6 @@ final class App extends BaseApp
      * Call it for run app.
      *  (new \core\web\App($config))->run()
      * @return int
-     * @throws \Exception
      */
     public function run()
     {
@@ -87,7 +81,6 @@ final class App extends BaseApp
     /**
      * PreInitialize application. Setting default layout if not set and checking basePath
      * @param $config
-     * @throws \Exception
      */
     protected function preInit($config)
     {

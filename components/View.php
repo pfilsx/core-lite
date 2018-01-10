@@ -68,7 +68,6 @@ class View extends BaseObject
      * @param Controller $controller
      * @param string $view
      * @param array $config
-     * @throws ErrorException
      * @throws \Exception
      */
     public function __construct($controller = null, $view = null, array $config = [])
