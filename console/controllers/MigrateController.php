@@ -6,6 +6,7 @@ namespace core\console\controllers;
 use Core;
 use core\base\BaseObject;
 use core\components\Controller;
+use core\components\View;
 use core\console\App;
 use core\db\Command;
 use core\db\Connection;
@@ -54,12 +55,17 @@ class MigrateController extends Controller
         }
         $migrationName = 'm' . date('ymd') . '_' . time() . '_' . $name;
         $migrationPath = $this->_migrationsPath . DIRECTORY_SEPARATOR . $migrationName . '.php';
-        if (Console::confirm("Create new migration $migrationName.php?", true)) {
+        $migrationFullName = (isset(App::$instance->request->args['migrationPath'])
+                ? App::$instance->request->args['migrationPath'].'/' : '') .$migrationName;
+        if (Console::confirm("Create new migration $migrationFullName.php?", true)) {
             $handle = fopen($migrationPath, 'w');
             if ($handle !== false) {
                 //TODO View::renderPartial();
-                $template = file_get_contents(FileHelper::normalizePath(Core::getAlias('@crl/view/migration.tpl')));
-                $template = str_replace('{classname}', $migrationName, $template);
+                $template = View::renderPartial(FileHelper::normalizePath(Core::getAlias('@crl/view/migration.php')),[
+                   'classname' => $migrationName
+                ]);
+                //$template = file_get_contents(FileHelper::normalizePath(Core::getAlias('@crl/view/migration.tpl')));
+                //$template = str_replace('{classname}', $migrationName, $template);
                 fwrite($handle, $template);
                 fclose($handle);
                 Console::output("Migration $migrationName created.", Console::FG_GREEN);

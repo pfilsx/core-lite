@@ -1,8 +1,10 @@
 <?php
+echo "<?php\n";
+?>
 
 use core\db\Migration;
 
-class {classname} extends Migration
+class <?= $classname ?> extends Migration
 {
     public function up()
     {
