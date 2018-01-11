@@ -8,6 +8,9 @@ use core\base\BaseObject;
 
 /**
  * @property array args
+ * @property array request
+ * @property string route
+ * @property string userLanguage
  */
 class Request extends BaseObject
 {
@@ -48,5 +51,9 @@ class Request extends BaseObject
 
     public function getRoute(){
         return $this->_route;
+    }
+
+    public function getUserLanguage(){
+        return 'en';
     }
 }

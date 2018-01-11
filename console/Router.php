@@ -12,6 +12,10 @@ use core\exceptions\ErrorException;
 use core\exceptions\NotFoundException;
 use core\web\Response;
 
+/**
+ * Class Router
+ * @package core\console
+ */
 class Router extends BaseRouter
 {
 
