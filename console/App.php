@@ -9,6 +9,7 @@ use core\base\BaseApp;
 use core\base\BaseObject;
 use core\db\Connection;
 use core\helpers\Console;
+use core\web\Response;
 
 
 defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
@@ -25,6 +26,7 @@ final class App extends BaseApp
     public function init(){
         $this->_request = new Request();
         $this->_router = new Router();
+        $this->_response = new Response();
         parent::init();
     }
     /**
@@ -38,6 +40,7 @@ final class App extends BaseApp
             return $this->_router->route();
         } catch (\Exception $ex) {
             Console::output($ex->getMessage());
+            Console::output('Stack trace:');
             Console::output($ex->getTraceAsString());
         }
         return 1;

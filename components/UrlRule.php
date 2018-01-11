@@ -4,6 +4,8 @@
 namespace core\components;
 
 
+use Core;
+use core\base\BaseRouter;
 use core\web\App;
 use core\base\BaseObject;
 use core\web\Router;
@@ -27,7 +29,7 @@ class UrlRule extends BaseObject
 
     /**
      * UrlRule constructor.
-     * @param Router $router
+     * @param BaseRouter $router
      * @param string $pattern
      * @param array $options
      */
@@ -72,7 +74,7 @@ class UrlRule extends BaseObject
                  */
                 $controller = new $className();
                 $this->_router->parseRoute();
-                return $controller->runAction('action'.Inflector::id2camel($this->_router->action), App::$instance->request->request);
+                return $controller->runAction('action'.Inflector::id2camel($this->_router->action), Core::$app->request->request);
             }
         }
         if ($result){

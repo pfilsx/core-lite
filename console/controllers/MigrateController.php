@@ -5,6 +5,7 @@ namespace core\console\controllers;
 
 use Core;
 use core\base\BaseObject;
+use core\components\Controller;
 use core\console\App;
 use core\db\Command;
 use core\db\Connection;
@@ -13,7 +14,7 @@ use core\db\QueryBuilder;
 use core\helpers\Console;
 use core\helpers\FileHelper;
 
-class MigrateController extends BaseObject
+class MigrateController extends Controller
 {
     private $_migrationsPath;
 
@@ -22,7 +23,7 @@ class MigrateController extends BaseObject
      */
     private $db;
 
-    public function beforeAction()
+    public function beforeAction($action, $params = [])
     {
         Console::output('<== Core-Lite Migration Tool ==>' . PHP_EOL);
     }
@@ -225,15 +226,10 @@ class MigrateController extends BaseObject
      */
     private function applyMigration($migration)
     {
-        try {
-            if ($migration->up() === false) {
-                return false;
-            }
-            return true;
-        } catch (\Exception $ex) {
-            $this->printException($ex);
+        if ($migration->up() === false) {
             return false;
         }
+        return true;
     }
 
     /**
@@ -242,15 +238,10 @@ class MigrateController extends BaseObject
      */
     private function revertMigration($migration)
     {
-        try {
-            if ($migration->down() === false) {
-                return false;
-            }
-            return true;
-        } catch (\Exception $ex) {
-            $this->printException($ex);
+        if ($migration->down() === false) {
             return false;
         }
+        return true;
     }
 
     /**
@@ -270,16 +261,6 @@ class MigrateController extends BaseObject
             . ' = :migration_name';
         $command = $this->db->createCommand($query, ['migration_name' => $migrationName]);
         $command->execute();
-    }
-
-    /**
-     * @param \Exception $ex
-     */
-    private function printException($ex)
-    {
-        Console::output($ex->getMessage());
-        Console::output('Stack trace:');
-        Console::output($ex->getTraceAsString());
     }
 
 }

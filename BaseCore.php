@@ -5,6 +5,8 @@ namespace core;
 
 
 
+use core\base\BaseApp;
+
 class BaseCore
 {
     public static $aliases = [
@@ -15,6 +17,9 @@ class BaseCore
         '@crl' => __DIR__
     ];
 
+    /**
+     * @var BaseApp
+     */
     public static $app = null;
 
     public static $classMap = [];
