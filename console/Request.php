@@ -41,7 +41,7 @@ class Request extends BaseObject
     public function getArgs(){
         return $this->_args;
     }
-    
+
     public function getRequest(){
         return $this->_args;
     }

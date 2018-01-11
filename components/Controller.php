@@ -76,7 +76,7 @@ abstract class Controller extends BaseObject
 
     public final function runAction($action, $params = [])
     {
-        if (Core::$app instanceof \core\console\App || ($this->enableCsrfValidation
+        if (Core::$app instanceof App && ($this->enableCsrfValidation
             && App::$instance->getExceptionManager()->exception === null
             && !App::$instance->getRequest()->validateCsrfToken()
         )) {
