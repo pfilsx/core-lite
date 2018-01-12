@@ -5,6 +5,7 @@ namespace core\console\controllers;
 
 
 use Core;
+use core\components\AssetBundle;
 use core\components\Controller;
 use core\console\App;
 use core\exceptions\ErrorException;
@@ -96,8 +97,14 @@ class AssetController extends Controller
         }
         $configFile = FileHelper::normalizePath(Core::getAlias('@app').'/'.App::$instance->request->args[0]);
         $bundleFile = FileHelper::normalizePath(Core::getAlias('@app').'/'.App::$instance->request->args[1]);
-
+        if (!is_file($configFile)){
+            throw new ErrorException("Invalid configuration file path - \"$configFile\" given");
+        }
         $this->loadConfiguration($configFile);
+        $bundles = $this->loadBundles($this->bundles);
+        foreach ($bundles as $name => $bundle){
+            Console::output($name, Console::FG_GREEN);
+        }
         Console::output("Configuration loaded");
     }
 
@@ -119,6 +126,39 @@ class AssetController extends Controller
         }
 
         $this->getAssetManager(); // check if asset manager configuration is correct
+    }
+
+    protected function loadBundles($bundles)
+    {
+        Console::output("Collecting source bundles information...");
+
+        $result = [];
+        foreach ($bundles as $name) {
+            $result[$name] = new $name();
+        }
+        foreach ($result as $bundle) {
+            $this->loadDependency($bundle, $result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param AssetBundle $bundle
+     * @param $result
+     */
+    protected function loadDependency($bundle, &$result)
+    {
+        foreach ($bundle->depends() as $name) {
+            if (!isset($result[$name])) {
+                $dependencyBundle = new $name();
+                $result[$name] = false;
+                $this->loadDependency($dependencyBundle, $result);
+                $result[$name] = $dependencyBundle;
+            } elseif ($result[$name] === false) {
+                throw new ErrorException("A circular dependency is detected for bundle '{$name}'");
+            }
+        }
     }
 
 }
