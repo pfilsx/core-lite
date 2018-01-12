@@ -13,21 +13,40 @@ abstract class AssetBundle extends BaseObject
 
     public $basePath;
 
-
+    /**
+     * @return array
+     */
     public function jsAssets()
     {
         return [];
     }
 
+    /**
+     * @return array
+     */
     public function cssAssets()
     {
         return [];
     }
 
+    /**
+     * @return array
+     */
     public function depends(){
         return [];
     }
+
+    /**
+     * @return array
+     */
     public function fonts(){
+        return [];
+    }
+
+    /**
+     * @return array
+     */
+    public function includedBundles(){
         return [];
     }
 
