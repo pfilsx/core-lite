@@ -21,10 +21,16 @@ class MigrateController extends Controller
      */
     private $db;
 
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action, $params = [])
     {
         Console::output('<== Core-Lite Migration Tool ==>' . PHP_EOL);
     }
+    /**
+     * @inheritdoc
+     */
     public function init(){
         if (isset(App::$instance->request->args['migrationPath'])) {
             $this->_migrationsPath = FileHelper::normalizePath(Core::getAlias('@app/' . App::$instance->request->args['migrationPath']));
@@ -37,7 +43,9 @@ class MigrateController extends Controller
         }
         FileHelper::createDirectory($this->_migrationsPath);
     }
-
+    /**
+     * @inheritdoc
+     */
     public function actionIndex()
     {
         $this->actionUp();
@@ -258,12 +266,14 @@ class MigrateController extends Controller
         ]);
     }
 
+    /**
+     * @param string $migrationName
+     */
     private function removeMigrationRecord($migrationName)
     {
-        $query = 'DELETE FROM ' . $this->db->quoteColumnName('migrations') . ' WHERE ' . $this->db->quoteColumnName('migration_name')
-            . ' = :migration_name';
-        $command = $this->db->createCommand($query, ['migration_name' => $migrationName]);
-        $command->execute();
+        $this->db->createQueryBuilder()->delete()->from('migrations')->where([
+            'migration_name' => $migrationName
+        ])->execute();
     }
 
 }
