@@ -78,12 +78,12 @@ class View extends BaseObject
             $this->_layout = Core::getAlias($controller->layout . '.php');
             $this->_viewsPath = $controller->viewsPath;
         }
-        $config = empty($config) ? App::$instance->config['view'] : $config;
+        $config = empty($config) && isset(Core::$app->config['view']) ? Core::$app->config['view'] : $config;
         parent::__construct($config);
         if (static::$viewRenderer != null){
             $this->_renderer = new static::$viewRenderer();
         }
-        $request = App::$instance->getRequest();
+        $request = Core::$app->getRequest();
         if ($request instanceof Request && $request->enableCsrfValidation) {
             $this->registerMetaTag(['name' => 'csrf-param', 'content' => $request->csrfParam]);
             $this->registerMetaTag(['name' => 'csrf-token', 'content' => $request->getCsrfToken()]);
@@ -252,7 +252,7 @@ class View extends BaseObject
 
     private function getViewFile($view){
         if (strncmp($view, '@', 1) === 0){
-            $file =Core::getAlias($view);
+            $file = Core::getAlias($view);
         } elseif (is_file($view)){
           return $view;
         } else {

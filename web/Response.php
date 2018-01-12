@@ -4,6 +4,7 @@
 namespace core\web;
 
 
+use Core;
 use core\base\BaseObject;
 use core\exceptions\ErrorException;
 use core\formatters\ResponseFormatterInterface;
@@ -156,7 +157,7 @@ class Response extends BaseObject
             }
         }
         if ($this->charset === null) {
-            $this->charset = App::$instance->charset;
+            $this->charset = Core::$app->charset;
         }
         $this->formatters = array_merge($this->defaultFormatters(), $this->formatters);
     }

@@ -29,15 +29,17 @@ abstract class Controller extends BaseObject
 
     function __construct()
     {
-        $config = App::$instance->config['view'];
-        if (empty($this->layout)) {
-            $this->layout = $config['layout'];
-        }
-        if (empty($this->viewPath)) {
-            if (isset($config['viewsPath'])) {
-                $this->viewsPath = FileHelper::normalizePath(Core::getAlias($config['viewsPath']));
-            } else {
-                $this->viewsPath = Core::getAlias('@app/views');
+        if (Core::$app instanceof App){
+            $config = App::$instance->config['view'];
+            if (empty($this->layout)) {
+                $this->layout = $config['layout'];
+            }
+            if (empty($this->viewPath)) {
+                if (isset($config['viewsPath'])) {
+                    $this->viewsPath = FileHelper::normalizePath(Core::getAlias($config['viewsPath']));
+                } else {
+                    $this->viewsPath = Core::getAlias('@app/views');
+                }
             }
         }
         parent::__construct([]);
@@ -74,10 +76,10 @@ abstract class Controller extends BaseObject
 
     public final function runAction($action, $params = [])
     {
-        if ($this->enableCsrfValidation
+        if (Core::$app instanceof App && ($this->enableCsrfValidation
             && App::$instance->getExceptionManager()->exception === null
             && !App::$instance->getRequest()->validateCsrfToken()
-        ) {
+        )) {
             throw new ErrorException('Unable to verify your data submission.');
         }
         $this->action = $action;
@@ -103,14 +105,14 @@ abstract class Controller extends BaseObject
                 if ($content instanceof Response) {
                     return $content;
                 } else {
-                    $response = App::$instance->response;
+                    $response = Core::$app->response;
                     if ($content !== null) {
                         $response->data = $content;
                     }
                     return $response;
                 }
             } else {
-                if (CRL_DEBUG === true) {
+                if (CRL_DEBUG === true || Core::$app instanceof \core\console\App) {
                     $controllerClass = static::className();
                     throw new NotFoundException("Action {$action} does not exist in {$controllerClass}");
                 } else {

@@ -4,16 +4,15 @@
 namespace core\console\controllers;
 
 use Core;
-use core\base\BaseObject;
+use core\components\Controller;
+use core\components\View;
 use core\console\App;
-use core\db\Command;
 use core\db\Connection;
 use core\db\Migration;
-use core\db\QueryBuilder;
 use core\helpers\Console;
 use core\helpers\FileHelper;
 
-class MigrateController extends BaseObject
+class MigrateController extends Controller
 {
     private $_migrationsPath;
 
@@ -22,19 +21,31 @@ class MigrateController extends BaseObject
      */
     private $db;
 
-    public function beforeAction()
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action, $params = [])
     {
         Console::output('<== Core-Lite Migration Tool ==>' . PHP_EOL);
     }
+    /**
+     * @inheritdoc
+     */
     public function init(){
-        if (isset(App::$instance->request->args['migrationPath']) && is_string(App::$instance->request->args['migrationPath'])) {
+        if (isset(App::$instance->request->args['migrationPath'])) {
             $this->_migrationsPath = FileHelper::normalizePath(Core::getAlias('@app/' . App::$instance->request->args['migrationPath']));
         } else {
             $this->_migrationsPath = Core::getAlias('@app' . DIRECTORY_SEPARATOR . 'migrations');
         }
+        if (isset(App::$instance->request->args['db'])){
+            $dbName = App::$instance->request->args['db'];
+            $this->db = App::$instance->$dbName;
+        }
         FileHelper::createDirectory($this->_migrationsPath);
     }
-
+    /**
+     * @inheritdoc
+     */
     public function actionIndex()
     {
         $this->actionUp();
@@ -53,12 +64,14 @@ class MigrateController extends BaseObject
         }
         $migrationName = 'm' . date('ymd') . '_' . time() . '_' . $name;
         $migrationPath = $this->_migrationsPath . DIRECTORY_SEPARATOR . $migrationName . '.php';
-        if (Console::confirm("Create new migration $migrationName.php?", true)) {
+        $migrationFullName = (isset(App::$instance->request->args['migrationPath'])
+                ? App::$instance->request->args['migrationPath'].'/' : '') .$migrationName;
+        if (Console::confirm("Create new migration $migrationFullName.php?", true)) {
             $handle = fopen($migrationPath, 'w');
             if ($handle !== false) {
-                //TODO View::renderPartial();
-                $template = file_get_contents(FileHelper::normalizePath(Core::getAlias('@crl/view/migration.tpl')));
-                $template = str_replace('{classname}', $migrationName, $template);
+                $template = View::renderPartial(FileHelper::normalizePath(Core::getAlias('@crl/view/migration.php')),[
+                   'classname' => $migrationName
+                ]);
                 fwrite($handle, $template);
                 fclose($handle);
                 Console::output("Migration $migrationName created.", Console::FG_GREEN);
@@ -71,7 +84,7 @@ class MigrateController extends BaseObject
 
     public function actionUp()
     {
-        $this->db = App::$instance->db;
+        $this->db = $this->db != null ? $this->db : App::$instance->db;
         if ($this->checkForMigrationTable()) {
             $applied = array_map([$this, 'getMigrationName'], $this->db->createQueryBuilder()->select('migration_name')
                 ->from('migrations')->queryAll());
@@ -119,7 +132,7 @@ class MigrateController extends BaseObject
 
     public function actionDown()
     {
-        $this->db = App::$instance->db;
+        $this->db = $this->db != null ? $this->db : App::$instance->db;
         if ($this->checkForMigrationTable()) {
             $limit = isset(App::$instance->request->args[0]) ? App::$instance->request->args[0] : 1;
             $toDowngrade = array_map([$this, 'getMigrationName'], $this->db->createQueryBuilder()->select('migration_name')
@@ -160,7 +173,7 @@ class MigrateController extends BaseObject
 
     public function actionHistory()
     {
-        $this->db = App::$instance->db;
+        $this->db = $this->db != null ? $this->db : App::$instance->db;
         if ($this->checkForMigrationTable()) {
             $limit = isset(App::$instance->request->args[0]) ? App::$instance->request->args[0] : 10;
             $history = $this->db->createQueryBuilder()->select('*')
@@ -225,15 +238,10 @@ class MigrateController extends BaseObject
      */
     private function applyMigration($migration)
     {
-        try {
-            if ($migration->up() === false) {
-                return false;
-            }
-            return true;
-        } catch (\Exception $ex) {
-            $this->printException($ex);
+        if ($migration->up() === false) {
             return false;
         }
+        return true;
     }
 
     /**
@@ -242,15 +250,10 @@ class MigrateController extends BaseObject
      */
     private function revertMigration($migration)
     {
-        try {
-            if ($migration->down() === false) {
-                return false;
-            }
-            return true;
-        } catch (\Exception $ex) {
-            $this->printException($ex);
+        if ($migration->down() === false) {
             return false;
         }
+        return true;
     }
 
     /**
@@ -258,28 +261,19 @@ class MigrateController extends BaseObject
      */
     private function createMigrationRecord($migrationName)
     {
-
-        App::$instance->db->createQueryBuilder()->insert('migrations', [
+        $this->db->createQueryBuilder()->insert('migrations', [
             'migration_name' => $migrationName
         ]);
     }
 
+    /**
+     * @param string $migrationName
+     */
     private function removeMigrationRecord($migrationName)
     {
-        $query = 'DELETE FROM ' . $this->db->quoteColumnName('migrations') . ' WHERE ' . $this->db->quoteColumnName('migration_name')
-            . ' = :migration_name';
-        $command = $this->db->createCommand($query, ['migration_name' => $migrationName]);
-        $command->execute();
-    }
-
-    /**
-     * @param \Exception $ex
-     */
-    private function printException($ex)
-    {
-        Console::output($ex->getMessage());
-        Console::output('Stack trace:');
-        Console::output($ex->getTraceAsString());
+        $this->db->createQueryBuilder()->delete()->from('migrations')->where([
+            'migration_name' => $migrationName
+        ])->execute();
     }
 
 }
