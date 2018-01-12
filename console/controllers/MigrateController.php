@@ -4,14 +4,11 @@
 namespace core\console\controllers;
 
 use Core;
-use core\base\BaseObject;
 use core\components\Controller;
 use core\components\View;
 use core\console\App;
-use core\db\Command;
 use core\db\Connection;
 use core\db\Migration;
-use core\db\QueryBuilder;
 use core\helpers\Console;
 use core\helpers\FileHelper;
 
@@ -29,10 +26,14 @@ class MigrateController extends Controller
         Console::output('<== Core-Lite Migration Tool ==>' . PHP_EOL);
     }
     public function init(){
-        if (isset(App::$instance->request->args['migrationPath']) && is_string(App::$instance->request->args['migrationPath'])) {
+        if (isset(App::$instance->request->args['migrationPath'])) {
             $this->_migrationsPath = FileHelper::normalizePath(Core::getAlias('@app/' . App::$instance->request->args['migrationPath']));
         } else {
             $this->_migrationsPath = Core::getAlias('@app' . DIRECTORY_SEPARATOR . 'migrations');
+        }
+        if (isset(App::$instance->request->args['db'])){
+            $dbName = App::$instance->request->args['db'];
+            $this->db = App::$instance->$dbName;
         }
         FileHelper::createDirectory($this->_migrationsPath);
     }
@@ -60,12 +61,9 @@ class MigrateController extends Controller
         if (Console::confirm("Create new migration $migrationFullName.php?", true)) {
             $handle = fopen($migrationPath, 'w');
             if ($handle !== false) {
-                //TODO View::renderPartial();
                 $template = View::renderPartial(FileHelper::normalizePath(Core::getAlias('@crl/view/migration.php')),[
                    'classname' => $migrationName
                 ]);
-                //$template = file_get_contents(FileHelper::normalizePath(Core::getAlias('@crl/view/migration.tpl')));
-                //$template = str_replace('{classname}', $migrationName, $template);
                 fwrite($handle, $template);
                 fclose($handle);
                 Console::output("Migration $migrationName created.", Console::FG_GREEN);
@@ -78,7 +76,7 @@ class MigrateController extends Controller
 
     public function actionUp()
     {
-        $this->db = App::$instance->db;
+        $this->db = $this->db != null ? $this->db : App::$instance->db;
         if ($this->checkForMigrationTable()) {
             $applied = array_map([$this, 'getMigrationName'], $this->db->createQueryBuilder()->select('migration_name')
                 ->from('migrations')->queryAll());
@@ -126,7 +124,7 @@ class MigrateController extends Controller
 
     public function actionDown()
     {
-        $this->db = App::$instance->db;
+        $this->db = $this->db != null ? $this->db : App::$instance->db;
         if ($this->checkForMigrationTable()) {
             $limit = isset(App::$instance->request->args[0]) ? App::$instance->request->args[0] : 1;
             $toDowngrade = array_map([$this, 'getMigrationName'], $this->db->createQueryBuilder()->select('migration_name')
@@ -167,7 +165,7 @@ class MigrateController extends Controller
 
     public function actionHistory()
     {
-        $this->db = App::$instance->db;
+        $this->db = $this->db != null ? $this->db : App::$instance->db;
         if ($this->checkForMigrationTable()) {
             $limit = isset(App::$instance->request->args[0]) ? App::$instance->request->args[0] : 10;
             $history = $this->db->createQueryBuilder()->select('*')
@@ -255,8 +253,7 @@ class MigrateController extends Controller
      */
     private function createMigrationRecord($migrationName)
     {
-
-        App::$instance->db->createQueryBuilder()->insert('migrations', [
+        $this->db->createQueryBuilder()->insert('migrations', [
             'migration_name' => $migrationName
         ]);
     }

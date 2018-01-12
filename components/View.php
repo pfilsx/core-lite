@@ -252,7 +252,7 @@ class View extends BaseObject
 
     private function getViewFile($view){
         if (strncmp($view, '@', 1) === 0){
-            $file =Core::getAlias($view);
+            $file = Core::getAlias($view);
         } elseif (is_file($view)){
           return $view;
         } else {

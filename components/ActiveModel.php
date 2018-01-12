@@ -52,11 +52,11 @@ abstract class ActiveModel extends Model
 
     }
 
-    public function save()
+    public function save($validate = true)
     {
         $this->beforeSave();
         $this->invoke(self::EVENT_BEFORE_SAVE);
-        if ($this->validate() !== true){
+        if ($validate && $this->validate() !== true){
             return false;
         }
         if ($this->isNewRecord) {
