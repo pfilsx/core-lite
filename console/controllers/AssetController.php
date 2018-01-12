@@ -72,6 +72,13 @@ class AssetController extends Controller
         }
         return $this->_assetManager;
     }
+    public function setAssetManager($assetManager)
+    {
+        if (is_array($assetManager)) {
+            throw new ErrorException('"' . get_class($this) . '::assetManager" should be array - "' . gettype($assetManager) . '" given.');
+        }
+        $this->_assetManager = $assetManager;
+    }
 
 
     public function actionIndex()
