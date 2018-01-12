@@ -4,10 +4,12 @@
 namespace core\console\controllers;
 
 
+use Core;
 use core\components\Controller;
 use core\console\App;
 use core\exceptions\ErrorException;
 use core\helpers\Console;
+use core\helpers\FileHelper;
 
 class AssetController extends Controller
 {
@@ -85,8 +87,8 @@ class AssetController extends Controller
         if (!isset(App::$instance->request->args[1])){
             throw new ErrorException("Missed bundle file param");
         }
-        $configFile = App::$instance->request->args[0];
-        $bundleFile = App::$instance->request->args[1];
+        $configFile = FileHelper::normalizePath(Core::getAlias('@app').'/'.App::$instance->request->args[0]);
+        $bundleFile = FileHelper::normalizePath(Core::getAlias('@app').'/'.App::$instance->request->args[1]);
 
         $this->loadConfiguration($configFile);
         Console::output("Configuration loaded");
