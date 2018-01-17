@@ -29,11 +29,11 @@ abstract class ActiveModel extends Model
         return empty($this->old_params);
     }
 
-    private static $_primaryKey;
+    protected static $_primaryKey;
 
     private $old_params = [];
 
-    private static $_tableSchema;
+    protected static $_tableSchema;
 
     protected function initializeAttributes()
     {
