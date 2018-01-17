@@ -29,19 +29,12 @@ abstract class ActiveModel extends Model
         return empty($this->old_params);
     }
 
-    protected static $_primaryKey;
-
     private $old_params = [];
-
-    protected static $_tableSchema;
 
     protected function initializeAttributes()
     {
         foreach (static::getTableSchema()->columns as $key => $column){
             $this->createProperty($key);
-            if ($column->isPrimaryKey){
-                static::$_primaryKey = $key;
-            }
         }
     }
 
@@ -114,28 +107,28 @@ abstract class ActiveModel extends Model
     }
 
     public function getPrimaryKey(){
-        return static::$_primaryKey;
+        return static::primaryKey();
     }
     public static function primaryKey(){
-        if (static::$_primaryKey == null){
-           if (isset(static::getTableSchema()->primaryKey[0])){
-               static::$_primaryKey = static::getTableSchema()->primaryKey[0];
-           } else {
-               throw new ErrorException('"' . get_called_class() . '" must have a primary key.');
-           }
+
+        if (isset(static::getTableSchema()->primaryKey[0])){
+            return static::getTableSchema()->primaryKey[0];
+        } else {
+            throw new ErrorException('"' . get_called_class() . '" must have a primary key.');
         }
-        return static::$_primaryKey;
     }
 
     /**
      * @param bool $refresh
      * @return TableSchema
+     * @throws ErrorException
      */
     public static function getTableSchema($refresh = false){
-        if (static::$_tableSchema == null || $refresh){
-            static::$_tableSchema = App::$instance->db->getSchema()->getTableSchema(static::schemaTableName());
+        $tableSchema =  App::$instance->db->getSchema()->getTableSchema(static::schemaTableName(), $refresh);
+        if ($tableSchema === null) {
+            throw new ErrorException('The table does not exist: ' . static::schemaTableName());
         }
-        return static::$_tableSchema;
+        return $tableSchema;
     }
 
     private function update()
