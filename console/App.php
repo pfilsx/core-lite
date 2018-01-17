@@ -6,9 +6,6 @@ namespace core\console;
 
 use Core;
 use core\base\BaseApp;
-use core\base\BaseObject;
-use core\db\Connection;
-use core\helpers\Console;
 use core\web\Response;
 
 
@@ -36,13 +33,6 @@ final class App extends BaseApp
      * @return int
      */
     public function run(){
-        try {
-            return $this->_router->route();
-        } catch (\Exception $ex) {
-            Console::output($ex->getMessage());
-            Console::output('Stack trace:');
-            Console::output($ex->getTraceAsString());
-        }
-        return 1;
+        return $this->_router->route();
     }
 }

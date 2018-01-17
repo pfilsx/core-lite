@@ -6,15 +6,9 @@ use Core;
 
 use core\base\AssetManager;
 use core\base\BaseApp;
-use core\base\BaseObject;
 use core\base\BaseUser;
-use core\base\ExceptionManager;
-use core\base\Security;
-use core\components\Module;
 use core\components\View;
-use core\db\Connection;
 use core\exceptions\ErrorException;
-use core\translate\TranslateManager;
 
 /**
  * Class App
@@ -40,10 +34,7 @@ final class App extends BaseApp
      * @var null|View
      */
     public $view = null;
-    /**
-     * @var ExceptionManager
-     */
-    private $_exceptionManager = null;
+
 
     /**
      * App constructor.
@@ -51,18 +42,10 @@ final class App extends BaseApp
      */
     public function __construct($config = [])
     {
-        $this->registerExceptionManager();
         parent::__construct($config);
     }
 
-    /**
-     * Registering exception manager for handling errors
-     */
-    private function registerExceptionManager()
-    {
-        $this->_exceptionManager = new ExceptionManager();
-        $this->_exceptionManager->register();
-    }
+
 
     /**
      * Main function of Application.
@@ -151,12 +134,6 @@ final class App extends BaseApp
     public function setUser($value)
     {
         $this->_user = $value;
-    }
-    /**
-     * @return ExceptionManager
-     */
-    public function getExceptionManager(){
-        return $this->_exceptionManager;
     }
 
 }

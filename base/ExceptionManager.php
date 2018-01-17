@@ -5,6 +5,7 @@ namespace core\base;
 
 
 use core\components\View;
+use core\helpers\Console;
 use core\web\App;
 use core\web\Response;
 
@@ -145,17 +146,23 @@ final class ExceptionManager extends BaseObject
      */
     public function renderException($exception)
     {
-        $response = new Response();
-        $this->invoke(static::EVENT_BEFORE_RENDER, ['exception' => $exception, 'response' => $response]);
-        if (CRL_DEBUG === true) {
-            $_params_ = ['exception' => $exception];
-            $response->content = View::renderPartial(CRL_PATH.'/view/exception.php', $_params_);
+        if (\Core::$app instanceof \core\console\App){
+            Console::output($exception->getMessage(), Console::FG_RED);
+            Console::output('Stack trace:');
+            Console::output($exception->getTraceAsString());
         } else {
-            $response->content = '';
+            $response = new Response();
+            $this->invoke(static::EVENT_BEFORE_RENDER, ['exception' => $exception, 'response' => $response]);
+            if (CRL_DEBUG === true) {
+                $_params_ = ['exception' => $exception];
+                $response->content = View::renderPartial(CRL_PATH.'/view/exception.php', $_params_);
+            } else {
+                $response->content = '';
+            }
+            $this->invoke(static::EVENT_AFTER_RENDER, ['exception' => $exception, 'response' => $response]);
+            $response->setStatusCode($exception->getCode() < 100 || $exception->getCode() > 600 ? 500 : $exception->getCode());
+            $response->send();
         }
-        $this->invoke(static::EVENT_AFTER_RENDER, ['exception' => $exception, 'response' => $response]);
-        $response->setStatusCode($exception->getCode() < 100 || $exception->getCode() > 600 ? 500 : $exception->getCode());
-        $response->send();
     }
     /**
      * Render lines from file with exception

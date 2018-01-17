@@ -71,12 +71,28 @@ abstract class BaseApp extends BaseObject
      */
     protected $_charset = 'UTF-8';
 
+    /**
+     * @var ExceptionManager
+     */
+    protected $_exceptionManager = null;
+
     public function __construct(array $config = [])
     {
+        $this->registerExceptionManager();
         $this->preInit($config);
         parent::__construct($config);
         unset($config);
     }
+
+    /**
+     * Registering exception manager for handling errors
+     */
+    protected function registerExceptionManager()
+    {
+        $this->_exceptionManager = new ExceptionManager();
+        $this->_exceptionManager->register();
+    }
+
     protected function preInit($config)
     {
         Core::$app = static::$instance = $this;
@@ -234,6 +250,13 @@ abstract class BaseApp extends BaseObject
         }
         return null;
     }
+    /**
+     * @return ExceptionManager
+     */
+    public function getExceptionManager(){
+        return $this->_exceptionManager;
+    }
+
     /**
      * Translate string line by specified dictionary
      * @param string $dictionary - dictionary name
