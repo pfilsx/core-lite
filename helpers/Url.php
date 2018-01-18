@@ -32,7 +32,7 @@ class Url
             1 => $controller,
             2 => $action
         ];
-        if ($module !== null){
+        if (!empty($module)){
             $route[0] = $module;
         }
         ksort($route);
