@@ -28,14 +28,14 @@ class Url
 
         $controller = App::$instance->getRouter()->controller;
         $module = App::$instance->getRouter()->module;
-        $route = [
+        $route = [];
+        if (!empty($module)){
+            $route[] = $module;
+        }
+        $route = array_merge($route, [
             1 => $controller,
             2 => $action
-        ];
-        if (!empty($module)){
-            $route[0] = $module;
-        }
-        ksort($route);
+        ]);
         return static::toRoute($route, $params);
     }
 
