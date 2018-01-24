@@ -10,7 +10,7 @@ abstract class BaseUser extends BaseObject
      * Indicates whether the user is guest
      * @var boolean
      */
-    protected $_isGuest;
+    protected $_isGuest = true;
     /**
      * Sign in user by login and password
      * @param string $login

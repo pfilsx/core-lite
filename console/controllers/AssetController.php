@@ -102,10 +102,10 @@ class AssetController extends Controller
         }
         $this->loadConfiguration($configFile);
         $bundles = $this->loadBundles($this->bundles);
-        foreach ($bundles as $name => $bundle){
-            Console::output($name, Console::FG_GREEN);
-        }
-        Console::output("Configuration loaded");
+        Console::output("Creating output bundle '{$bundleFile}':");
+        $this->build($bundleFile, $bundles);
+
+        //Console::output("Configuration loaded");
     }
 
     /**
@@ -127,7 +127,11 @@ class AssetController extends Controller
 
         $this->getAssetManager(); // check if asset manager configuration is correct
     }
-
+    /**
+     * Creates full list of source asset bundles.
+     * @param string[] $bundles list of asset bundle names
+     * @return AssetBundle[] list of source asset bundles.
+     */
     protected function loadBundles($bundles)
     {
         Console::output("Collecting source bundles information...");
@@ -144,8 +148,10 @@ class AssetController extends Controller
     }
 
     /**
-     * @param AssetBundle $bundle
-     * @param $result
+     * Loads asset bundle dependencies recursively.
+     * @param AssetBundle $bundle bundle instance
+     * @param array $result already loaded bundles list.
+     * @throws ErrorException on failure.
      */
     protected function loadDependency($bundle, &$result)
     {
@@ -159,6 +165,41 @@ class AssetController extends Controller
                 throw new ErrorException("A circular dependency is detected for bundle '{$name}'");
             }
         }
+    }
+
+    /**
+     * Builds target asset bundle file
+     * @param $bundleFile
+     * @param $bundles
+     */
+    protected function build($bundleFile, $bundles){
+        $jsFiles = [];
+        $cssFiles = [];
+        $fonts = [];
+        /**
+         * @var AssetBundle $bundle
+         */
+        foreach ($bundles as $bundle){
+            foreach ($bundle->jsAssets() as $jsFile){
+                if (!empty($bundle->basePath)){
+                    $jsFile = FileHelper::normalizePath(Core::getAlias($bundle->basePath.'/'.$jsFile));
+                }
+                $jsFiles[md5_file($jsFile)] = $jsFile;
+            }
+            foreach ($bundle->cssAssets() as $cssFile){
+                if (!empty($bundle->basePath)){
+                    $cssFile = FileHelper::normalizePath(Core::getAlias($bundle->basePath.'/'.$cssFile));
+                }
+                $cssFiles[md5_file($cssFile)] = $cssFile;
+            }
+            foreach ($bundle->fonts() as $font){
+                if (!empty($bundle->basePath)){
+                    $font = FileHelper::normalizePath(Core::getAlias($bundle->basePath.'/'.$font));
+                }
+                $fonts[] = $font;
+            }
+        }
+
     }
 
 }

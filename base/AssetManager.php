@@ -5,6 +5,7 @@ namespace core\base;
 
 use Core;
 use core\components\AssetBundle;
+use core\exceptions\ErrorException;
 use core\helpers\FileHelper;
 use core\web\App;
 
@@ -25,7 +26,9 @@ class AssetManager extends BaseObject
      */
     public $dirMode = 0775;
 
-    public $destPath;
+    private $destPath;
+
+    private $_baseUrl;
 
     public $beforeCopy;
     /**
@@ -42,7 +45,8 @@ class AssetManager extends BaseObject
      */
     function __construct($config = [])
     {
-        $this->destPath = FileHelper::normalizePath(Core::getAlias('@webroot') . '\\assets\\');
+        $this->destPath = FileHelper::normalizePath(Core::getAlias('@webroot/assets'));
+        $this->_baseUrl = Core::getAlias('@web/assets');
         parent::__construct($config);
     }
 
@@ -58,19 +62,6 @@ class AssetManager extends BaseObject
                 }
             }
         }
-    }
-
-    /**
-     * Publish fonts directory to assets
-     * @param $path
-     */
-    private function placeFonts($path)
-    {
-        $fontPath = FileHelper::normalizePath(Core::getAlias($path));
-        if (is_file($fontPath)) {
-            $fontPath = dirname($fontPath);
-        }
-        $this->publishDirectory($fontPath, []);
     }
     /**
      * Register predefined asset bundles
@@ -109,26 +100,13 @@ class AssetManager extends BaseObject
             $bundle->basePath = FileHelper::normalizePath(Core::getAlias($bundle->basePath));
         }
         $depends = $bundle->depends();
-        $fonts = $bundle->fonts();
         $cssAssets = $bundle->cssAssets();
         $jsAssets = $bundle->jsAssets();
         if (!empty($depends)) {
             foreach ($depends as $subBundle) {
-                if (is_subclass_of($subBundle, AssetBundle::className())) {
-                    /**
-                     * @var AssetBundle $subBundle
-                     */
-                    $subBundle::register();
+                if (class_exists($subBundle) && is_subclass_of($subBundle, AssetBundle::className())) {
+                    $this->registerBundle($subBundle);
                 }
-            }
-        }
-        if (!empty($fonts)) {
-            $fontsPaths = (array)$fonts;
-            foreach ($fontsPaths as $path) {
-                if (!empty($bundle->basePath)) {
-                    $path = $bundle->basePath . DIRECTORY_SEPARATOR . $path;
-                }
-                $this->placeFonts($path);
             }
         }
         if (!empty($cssAssets)) {
@@ -176,35 +154,56 @@ class AssetManager extends BaseObject
         $this->registeredBundles[] = $bundle::className();
     }
 
+    private $_published = [];
+
+    public function publish($path, $options = []){
+        $path = Core::getAlias($path);
+        if (isset($this->_published[$path])) {
+            return $this->_published[$path];
+        }
+        if (!is_string($path) || ($src = realpath($path)) === false) {
+            throw new ErrorException("The file or directory to be published does not exist: $path");
+        }
+        if (is_file($src)) {
+            return $this->_published[$path] = $this->publishFile($src);
+        }
+
+        return $this->_published[$path] = $this->publishDirectory($src, $options);
+    }
+
     /**
      * Publish file to assets directory
      * @param $path
-     * @return bool|string
+     * @return bool|array
      */
     public function publishFile($path)
     {
         $path = FileHelper::normalizePath(Core::getAlias($path));
-        //if file already in webroot directory
-        $webrootPath = FileHelper::normalizePath(Core::getAlias('@webroot'));
-        if (substr($path, 0, strlen($webrootPath)) == $webrootPath){
-            return App::$instance->request->getBaseUrl().'/'.ltrim(str_replace([$webrootPath, '\\'],['','/'], $path), '/');
-        }
         if (is_file($path)) {
-            $md5 = md5_file($path);
-            $baseName = basename($path);
-            $assetPath = FileHelper::normalizePath("{$this->destPath}/$md5/$baseName");
-            if (is_file($assetPath)) {
-                if (md5_file($assetPath) !== $md5) {
-                    copy($path, $assetPath);
-                    @chmod($assetPath, $this->fileMode);
-                }
+            //if file already in webroot directory
+            $webrootPath = FileHelper::normalizePath(Core::getAlias('@webroot'));
+            if (substr($path, 0, strlen($webrootPath)) == $webrootPath){
+                return [
+                    $path,
+                    Core::getAlias('@web').'/'.ltrim(str_replace([$webrootPath, '\\'],['','/'], $path), '/')
+                ];
             } else {
-                if (FileHelper::createDirectory(dirname($assetPath), $this->dirMode)) {
-                    copy($path, $assetPath);
-                    @chmod($assetPath, $this->fileMode);
+                $md5 = md5_file($path);
+                $baseName = basename($path);
+                $assetPath = FileHelper::normalizePath("{$this->destPath}/$md5/$baseName");
+                if (is_file($assetPath)) {
+                    if (md5_file($assetPath) !== $md5) {
+                        copy($path, $assetPath);
+                        @chmod($assetPath, $this->fileMode);
+                    }
+                } else {
+                    if (FileHelper::createDirectory(dirname($assetPath), $this->dirMode)) {
+                        copy($path, $assetPath);
+                        @chmod($assetPath, $this->fileMode);
+                    }
                 }
+                return [$assetPath, "{$this->_baseUrl}/$md5/$baseName"];
             }
-            return App::$instance->request->getBaseUrl()."/assets/$md5/$baseName";
         }
         return false;
     }
@@ -213,38 +212,42 @@ class AssetManager extends BaseObject
      * Publish directory to web accessible place
      * @param $path
      * @param $options
-     * @return bool
+     * @return bool|array
      */
     public function publishDirectory($path, $options)
     {
         if (is_dir($path)) {
+            $md5 = md5($path);
             if (!is_dir($this->destPath)) {
                 if (!FileHelper::createDirectory($this->destPath, $this->dirMode)) {
                     return false;
                 }
             }
             if (is_dir($this->destPath)) {
-                $destPath = $this->destPath . DIRECTORY_SEPARATOR . basename($path);
-                $opts = array_merge(
-                    $options,
-                    [
-                        'dirMode' => $this->dirMode,
-                        'fileMode' => $this->fileMode,
-                    ]
-                );
-                if (!isset($opts['beforeCopy'])) {
-                    if ($this->beforeCopy !== null) {
-                        $opts['beforeCopy'] = $this->beforeCopy;
-                    } else {
-                        $opts['beforeCopy'] = function ($from, $to) {
-                            return strncmp(basename($from), '.', 1) !== 0;
-                        };
+                $destPath = FileHelper::normalizePath("{$this->destPath}/$md5");
+                if ($options['forceCopy'] || !is_dir($destPath)){
+                    $opts = array_merge(
+                        $options,
+                        [
+                            'dirMode' => $this->dirMode,
+                            'fileMode' => $this->fileMode,
+                        ]
+                    );
+                    if (!isset($opts['beforeCopy'])) {
+                        if ($this->beforeCopy !== null) {
+                            $opts['beforeCopy'] = $this->beforeCopy;
+                        } else {
+                            $opts['beforeCopy'] = function ($from, $to) {
+                                return strncmp(basename($from), '.', 1) !== 0;
+                            };
+                        }
                     }
+                    if (!isset($opts['afterCopy']) && $this->afterCopy !== null) {
+                        $opts['afterCopy'] = $this->afterCopy;
+                    }
+                    FileHelper::copyDirectory($path, $destPath, $opts);
                 }
-                if (!isset($opts['afterCopy']) && $this->afterCopy !== null) {
-                    $opts['afterCopy'] = $this->afterCopy;
-                }
-                FileHelper::copyDirectory($path, $destPath, $opts);
+                return [$destPath, "$this->_baseUrl/$md5"];
             }
         }
         return false;
