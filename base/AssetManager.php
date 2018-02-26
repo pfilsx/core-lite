@@ -225,7 +225,7 @@ class AssetManager extends BaseObject
             }
             if (is_dir($this->destPath)) {
                 $destPath = FileHelper::normalizePath("{$this->destPath}/$md5");
-                if ($options['forceCopy'] || !is_dir($destPath)){
+                if ((!empty($options['forceCopy']) && $options['forceCopy']) || !is_dir($destPath)){
                     $opts = array_merge(
                         $options,
                         [
