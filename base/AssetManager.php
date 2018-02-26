@@ -82,78 +82,6 @@ class AssetManager extends BaseObject
         $this->_bundles = [];
     }
 
-    /**
-     * Register specified asset bundle
-     * @param $className
-     */
-    public function registerBundle($className)
-    {
-        /**
-         * @var AssetBundle $bundle
-         */
-        $bundle = new $className();
-        $view = App::$instance->view;
-        if ($view == null || !$bundle instanceof AssetBundle || in_array($bundle::className(), $this->registeredBundles)) {
-            return;
-        }
-        if (!empty($bundle->basePath)) {
-            $bundle->basePath = FileHelper::normalizePath(Core::getAlias($bundle->basePath));
-        }
-        $depends = $bundle->depends();
-        $cssAssets = $bundle->cssAssets();
-        $jsAssets = $bundle->jsAssets();
-        if (!empty($depends)) {
-            foreach ($depends as $subBundle) {
-                if (class_exists($subBundle) && is_subclass_of($subBundle, AssetBundle::className())) {
-                    $this->registerBundle($subBundle);
-                }
-            }
-        }
-        if (!empty($cssAssets)) {
-            if (isset($cssAssets[0])) {
-                foreach ($cssAssets as $path) {
-                    if (!empty($bundle->basePath)) {
-                        $path = $bundle->basePath . DIRECTORY_SEPARATOR . $path;
-                    }
-                    if (($assetPath = $this->publishFile($path)) !== false) {
-                        $view->registerCssFile($assetPath, AssetBundle::POS_HEAD);
-                    }
-                }
-            } else {
-                foreach ($cssAssets as $path => $position) {
-                    if (!empty($bundle->basePath)) {
-                        $path = $bundle->basePath . DIRECTORY_SEPARATOR . $path;
-                    }
-                    if (($assetPath = $this->publishFile($path)) !== false) {
-                        $view->registerCssFile($assetPath, $position);
-                    }
-                }
-            }
-        }
-        if (!empty($jsAssets)) {
-            if (isset($jsAssets[0])) {
-                foreach ($jsAssets as $path) {
-                    if (!empty($bundle->basePath)) {
-                        $path = $bundle->basePath . DIRECTORY_SEPARATOR . $path;
-                    }
-                    if (($assetPath = $this->publishFile($path)) !== false) {
-                        $view->registerJsFile($assetPath, AssetBundle::POS_BODY_END);
-                    }
-                }
-            } else {
-                foreach ($jsAssets as $path => $position) {
-                    if (!empty($bundle->basePath)) {
-                        $path = $bundle->basePath . DIRECTORY_SEPARATOR . $path;
-                    }
-                    if (($assetPath = $this->publishFile($path)) !== false) {
-                        $view->registerJsFile($assetPath, $position);
-                    }
-                }
-            }
-        }
-        $this->registeredBundles[] = $bundle::className();
-    }
-
     private $_published = [];
 
     public function publish($path, $options = []){
@@ -181,7 +109,7 @@ class AssetManager extends BaseObject
         $path = FileHelper::normalizePath(Core::getAlias($path));
         if (is_file($path)) {
             //if file already in webroot directory
-            $webrootPath = FileHelper::normalizePath(Core::getAlias('@webroot'));
+            $webrootPath = realpath(FileHelper::normalizePath(Core::getAlias('@webroot')));
             if (substr($path, 0, strlen($webrootPath)) == $webrootPath){
                 return [
                     $path,

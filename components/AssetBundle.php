@@ -54,7 +54,6 @@ abstract class AssetBundle extends BaseObject
 
     public final static function register()
     {
-        //App::$instance->assetManager->registerBundle(get_called_class());
         $className = get_called_class();
         if (in_array($className, App::$instance->assetManager->registeredBundles)){
             return;
@@ -68,9 +67,9 @@ abstract class AssetBundle extends BaseObject
                 $depend::register();
             }
         }
-        $bundle->publish(App::$instance->assetManager);
+        $bundle->publish(Core::$app->assetManager);
         $bundle->registerBundle(App::$instance->view);
-        App::$instance->assetManager->registeredBundles[] = $className;
+        Core::$app->assetManager->registeredBundles[] = $className;
     }
 
     /**
@@ -81,74 +80,84 @@ abstract class AssetBundle extends BaseObject
             $publishResult = $am->publish($this->sourcePath);
             $this->basePath = $publishResult[0];
             $this->baseUrl = $publishResult[1];
-            if (isset($this->jsAssets()[0])){
-                foreach ($this->jsAssets() as $jsPath){
-                    $this->_jsAssets[$this->basePath.'/'.ltrim($jsPath, '/')] = [
-                        $this->baseUrl.'/'.ltrim($jsPath, '/'),
-                        View::POS_BODY_END
-                    ];
-                }
-            } else {
-                foreach ($this->jsAssets() as $jsPath => $position){
-                    $this->_jsAssets[$this->basePath.'/'.ltrim($jsPath, '/')] = [
-                        $this->baseUrl.'/'.ltrim($jsPath, '/'),
-                        $position
-                    ];
-                }
-            }
-            if (isset($this->cssAssets()[0])){
-                foreach ($this->cssAssets() as $cssPath){
-                    $this->_cssAssets[$this->basePath.'/'.ltrim($cssPath, '/')] = [
-                        $this->baseUrl.'/'.ltrim($cssPath, '/'),
-                        View::POS_HEAD
-                    ];
-                }
-            } else {
-                foreach ($this->cssAssets() as $cssPath => $position){
-                    $this->_cssAssets[$this->basePath.'/'.ltrim($cssPath, '/')] = [
-                        $this->baseUrl.'/'.ltrim($cssPath, '/'),
-                        $position
-                    ];
-                }
-            }
-
+            $this->prepareSource();
         } else {
             if ($this->basePath !== null){
                 $this->basePath = FileHelper::normalizePath(Core::getAlias($this->basePath));
             }
-            if (isset($this->jsAssets()[0])){
-                foreach ($this->jsAssets() as $jsPath){
-                    $publishResult = $am->publish($this->basePath.'/'.ltrim(Core::getAlias($jsPath), '/'));
-                    $this->_jsAssets[$publishResult[0]] = [
-                        $publishResult[1],
-                        View::POS_BODY_END
-                    ];
-                }
-            } else {
-                foreach ($this->jsAssets() as $jsPath => $position){
-                    $publishResult = $am->publish($this->basePath.'/'.ltrim(Core::getAlias($jsPath), '/'));
-                    $this->_jsAssets[$publishResult[0]] = [
-                        $publishResult[1],
-                        $position
-                    ];
-                }
+            $this->prepareFiles($am);
+        }
+    }
+
+    protected function prepareSource(){
+        if (isset($this->jsAssets()[0])){
+            foreach ($this->jsAssets() as $jsPath){
+                $this->_jsAssets[$this->basePath.'/'.ltrim($jsPath, '/')] = [
+                    $this->baseUrl.'/'.ltrim($jsPath, '/'),
+                    View::POS_BODY_END
+                ];
             }
-            if (isset($this->cssAssets()[0])){
-                foreach ($this->cssAssets() as $cssPath){
-                    $publishResult = $am->publish($this->basePath.'/'.ltrim(Core::getAlias($cssPath), '/'));
-                    $this->_cssAssets[$publishResult[0]] = [
-                        $publishResult[1],
-                        View::POS_HEAD
-                    ];
-                }
-            } else {
-                foreach ($this->cssAssets() as $cssPath => $position){
-                    $publishResult = $am->publish($this->basePath.'/'.ltrim(Core::getAlias($cssPath), '/'));
-                    $this->_cssAssets[$publishResult[0]] = [
-                        $publishResult[1],
-                        $position
-                    ];
-                }
+        } else {
+            foreach ($this->jsAssets() as $jsPath => $position){
+                $this->_jsAssets[$this->basePath.'/'.ltrim($jsPath, '/')] = [
+                    $this->baseUrl.'/'.ltrim($jsPath, '/'),
+                    $position
+                ];
+            }
+        }
+        if (isset($this->cssAssets()[0])){
+            foreach ($this->cssAssets() as $cssPath){
+                $this->_cssAssets[$this->basePath.'/'.ltrim($cssPath, '/')] = [
+                    $this->baseUrl.'/'.ltrim($cssPath, '/'),
+                    View::POS_HEAD
+                ];
+            }
+        } else {
+            foreach ($this->cssAssets() as $cssPath => $position){
+                $this->_cssAssets[$this->basePath.'/'.ltrim($cssPath, '/')] = [
+                    $this->baseUrl.'/'.ltrim($cssPath, '/'),
+                    $position
+                ];
+            }
+        }
+    }
+
+    /**
+     * @param AssetManager $am
+     */
+    protected function prepareFiles($am){
+        if (isset($this->jsAssets()[0])){
+            foreach ($this->jsAssets() as $jsPath){
+                $publishResult = $am->publish($this->basePath.'/'.ltrim(Core::getAlias($jsPath), '/'));
+                $this->_jsAssets[$publishResult[0]] = [
+                    $publishResult[1],
+                    View::POS_BODY_END
+                ];
+            }
+        } else {
+            foreach ($this->jsAssets() as $jsPath => $position){
+                $publishResult = $am->publish($this->basePath.'/'.ltrim(Core::getAlias($jsPath), '/'));
+                $this->_jsAssets[$publishResult[0]] = [
+                    $publishResult[1],
+                    $position
+                ];
+            }
+        }
+        if (isset($this->cssAssets()[0])){
+            foreach ($this->cssAssets() as $cssPath){
+                $publishResult = $am->publish($this->basePath.'/'.ltrim(Core::getAlias($cssPath), '/'));
+                $this->_cssAssets[$publishResult[0]] = [
+                    $publishResult[1],
+                    View::POS_HEAD
+                ];
+            }
+        } else {
+            foreach ($this->cssAssets() as $cssPath => $position){
+                $publishResult = $am->publish($this->basePath.'/'.ltrim(Core::getAlias($cssPath), '/'));
+                $this->_cssAssets[$publishResult[0]] = [
+                    $publishResult[1],
+                    $position
+                ];
             }
         }
     }

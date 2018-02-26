@@ -9,6 +9,7 @@ use core\components\Module;
 use core\db\Connection;
 use core\exceptions\ErrorException;
 use core\translate\TranslateManager;
+
 /**
     * @property \core\web\Request|\core\console\Request request
     * @property \core\web\Response response
@@ -19,7 +20,8 @@ use core\translate\TranslateManager;
     * @property BaseUser user
     * @property string charset
     * @property \core\web\Router|\core\console\Router router
-*/
+    * @property AssetManager assetManager
+ */
 abstract class BaseApp extends BaseObject
 {
     /**
@@ -66,6 +68,11 @@ abstract class BaseApp extends BaseObject
      * @var string
      */
     protected $_vendorPath;
+
+    /**
+     * @var AssetManager
+     */
+    protected $_assetManager;
     /**
      * @var string
      */
@@ -255,6 +262,22 @@ abstract class BaseApp extends BaseObject
      */
     public function getExceptionManager(){
         return $this->_exceptionManager;
+    }
+    /**
+     * Get AssetManager instance
+     * @return AssetManager
+     */
+    public function getAssetManager()
+    {
+        return $this->_assetManager;
+    }
+
+    /**
+     * Set AssetManager instance
+     * @param $am
+     */
+    public function setAssetManager($am){
+        $this->_assetManager = $am;
     }
 
     /**

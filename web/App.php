@@ -19,10 +19,6 @@ use core\exceptions\ErrorException;
 final class App extends BaseApp
 {
     /**
-     * @var AssetManager
-     */
-    private $_assetManager;
-    /**
      * @var Session
      */
     private $_session;
@@ -82,7 +78,7 @@ final class App extends BaseApp
         $this->_router = new Router(isset($this->_config['routing']) ? $this->_config['routing'] : []);
         Core::setAlias('@web', $this->_request->baseUrl);
         Core::setAlias('@webroot', dirname($this->_request->scriptFile));
-        $this->_assetManager = new AssetManager(isset($this->_config['assets']) ? $this->_config['assets'] : []);
+        $this->assetManager = new AssetManager(isset($this->_config['assets']) ? $this->_config['assets'] : []);
         $this->_session = new Session();
         parent::init();
         if (isset($this->_config['auth'])) {
@@ -98,15 +94,6 @@ final class App extends BaseApp
         if (isset($this->_config['view']['extension'])) {
             View::$defaultExtension = $this->_config['view']['extension'];
         }
-    }
-
-    /**
-     * Get AssetManager instance
-     * @return AssetManager
-     */
-    public function getAssetManager()
-    {
-        return $this->_assetManager;
     }
 
     /**
